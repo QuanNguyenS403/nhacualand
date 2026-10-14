@@ -1,13 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import type { MapRoom } from '@/lib/map-rooms-data';
+import type { MapRoom, CommunityReviewPin } from '@/lib/map-rooms-data';
 
 interface MapRoomCanvasProps {
   rooms: MapRoom[];
   selectedRoom: MapRoom | null;
   onSelectRoom: (room: MapRoom, clusterRooms?: MapRoom[]) => void;
   centerCoords?: { lat: number; lng: number } | null;
+  communityReviews?: CommunityReviewPin[];
+  selectedReview?: CommunityReviewPin | null;
+  onSelectReview?: (review: CommunityReviewPin) => void;
+  showReviewsLayer?: boolean;
+  onToggleReviewsLayer?: () => void;
 }
 
 export function MapRoomCanvas({
@@ -15,19 +20,25 @@ export function MapRoomCanvas({
   selectedRoom,
   onSelectRoom,
   centerCoords,
+  communityReviews = [],
+  selectedReview,
+  onSelectReview,
+  showReviewsLayer = false,
+  onToggleReviewsLayer,
 }: MapRoomCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
-  const markersLayerRef = useRef<any>(null);
+  const roomMarkersLayerRef = useRef<any>(null);
+  const reviewMarkersLayerRef = useRef<any>(null);
   const [isLeafletReady, setIsLeafletReady] = useState(false);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(13);
 
-  // Mặc định trung tâm Hà Nội (khu vực Hai Bà Trưng / Đống Đa)
+  // Mặc định trung tâm Hà Nội
   const DEFAULT_LAT = 21.015;
   const DEFAULT_LNG = 105.835;
 
-  // 1. Tải Leaflet CSS & JS an toàn từ CDN với cơ chế tự phát hiện ngay lập tức
+  // 1. Tải Leaflet CSS & JS từ CDN với kiểm tra an toàn
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -36,7 +47,6 @@ export function MapRoomCanvas({
       return;
     }
 
-    // Nạp Leaflet CSS nếu chưa có
     const cssId = 'leaflet-cdn-css';
     if (!document.getElementById(cssId)) {
       const link = document.createElement('link');
@@ -47,7 +57,6 @@ export function MapRoomCanvas({
       document.head.appendChild(link);
     }
 
-    // Nạp Leaflet JS nếu chưa có
     const scriptId = 'leaflet-cdn-js';
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
     if (!script) {
@@ -62,7 +71,6 @@ export function MapRoomCanvas({
       script.addEventListener('load', () => setIsLeafletReady(true));
     }
 
-    // Định kỳ quét phát hiện window.L để chống nghẽn race-condition
     const timer = setInterval(() => {
       if ((window as any).L) {
         setIsLeafletReady(true);
@@ -79,7 +87,6 @@ export function MapRoomCanvas({
     const L = (window as any).L;
     if (!L) return;
 
-    // Bảo vệ phòng ngừa Leaflet đọc _leaflet_pos khi phần tử đang unmount hoặc _mapPane bị null
     if (L.DomUtil && !L.DomUtil._safePositionPatched) {
       const origGetPosition = L.DomUtil.getPosition;
       L.DomUtil.getPosition = function (el: any) {
@@ -102,9 +109,7 @@ export function MapRoomCanvas({
       (L.Map.prototype as any)._safePanePosPatched = true;
     }
 
-    if (mapInstanceRef.current) {
-      return;
-    }
+    if (mapInstanceRef.current) return;
 
     const startLat = centerCoords?.lat ?? DEFAULT_LAT;
     const startLng = centerCoords?.lng ?? DEFAULT_LNG;
@@ -115,14 +120,14 @@ export function MapRoomCanvas({
       zoomControl: false,
     });
 
-    // Lớp Google Maps Road Tiles chuẩn
+    // Lớp Google Maps Road Tiles
     const googleTileLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       maxZoom: 20,
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       attribution: '© Google Maps',
     });
 
-    // Lớp fallback dự phòng an toàn CartoDB Voyager nếu Google tile bị gián đoạn mạng
+    // Lớp fallback CartoDB
     const fallbackTileLayer = L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       {
@@ -140,20 +145,18 @@ export function MapRoomCanvas({
 
     googleTileLayer.addTo(map);
 
-    // Cập nhật zoom level khi người dùng thu phóng
     map.on('zoomend', () => {
       setCurrentZoom(map.getZoom());
     });
 
-    // Thêm zoom control ở góc trên bên phải
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Tạo layer group chứa markers
-    const markersLayer = L.layerGroup().addTo(map);
-    markersLayerRef.current = markersLayer;
+    const roomMarkersLayer = L.layerGroup().addTo(map);
+    const reviewMarkersLayer = L.layerGroup().addTo(map);
+    roomMarkersLayerRef.current = roomMarkersLayer;
+    reviewMarkersLayerRef.current = reviewMarkersLayer;
     mapInstanceRef.current = map;
 
-    // Đảm bảo Leaflet map lấp đầy toàn bộ khung nhìn khi màn hình co giãn hoặc render lần đầu
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
@@ -168,30 +171,27 @@ export function MapRoomCanvas({
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.stop?.();
-          mapInstanceRef.current.scrollWheelZoom?.disable();
           mapInstanceRef.current.remove();
-        } catch (err) {
-          console.warn('Leaflet cleanup warning:', err);
-        }
+        } catch {}
         mapInstanceRef.current = null;
       }
     };
   }, [isLeafletReady]);
 
-  // 3. Gom nhóm phòng theo mức zoom động (Dynamic Clustering theo Ảnh 1)
+  // 3. Gom cụm phòng theo khoảng cách hình học thực tế
   const clusteredRooms = useMemo(() => {
     const grid = new Map<string, MapRoom[]>();
 
     rooms.forEach((r) => {
       let key: string;
       if (currentZoom < 14) {
-        // Thu phóng xa (< 14): gom cụm lớn theo ô ~1.5km như Ảnh 1
+        // Thu phóng xa (< 14): gom ô ~1.5km
         key = `${(Math.round(r.lat * 50) / 50).toFixed(3)}_${(Math.round(r.lng * 50) / 50).toFixed(3)}`;
       } else if (currentZoom < 16) {
-        // Thu phóng vừa (14 - 15): gom cụm nhỏ theo ô ~300m
+        // Thu phóng vừa (14 - 15): gom ô ~300m
         key = `${(Math.round(r.lat * 200) / 200).toFixed(4)}_${(Math.round(r.lng * 200) / 200).toFixed(4)}`;
       } else {
-        // Thu phóng gần (>= 16): hiển thị từng phòng riêng biệt (chỉ gom nếu trùng tọa độ tuyệt đối)
+        // Thu phóng gần (>= 16): chỉ gom nếu tọa độ trùng nhau
         key = `${r.lat.toFixed(5)}_${r.lng.toFixed(5)}`;
       }
 
@@ -204,83 +204,140 @@ export function MapRoomCanvas({
     return Array.from(grid.values());
   }, [rooms, currentZoom]);
 
-  // 4. Vẽ các marker lên bản đồ Google Maps
+  // 4. Vẽ Marker phòng lên bản đồ
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current || !isLeafletReady) return;
+    if (!mapInstanceRef.current || !roomMarkersLayerRef.current || !isLeafletReady) return;
     const L = (window as any).L;
     if (!L) return;
 
-    const markersLayer = markersLayerRef.current;
-    markersLayer.clearLayers();
+    const layer = roomMarkersLayerRef.current;
+    layer.clearLayers();
 
     clusteredRooms.forEach((cluster) => {
-      const mainRoom = cluster[0];
       const count = cluster.length;
-      const isSelected = selectedRoom ? cluster.some((r) => r.id === selectedRoom.id) : false;
+      // Tâm hình học thực sự của cụm phòng
+      const avgLat = cluster.reduce((sum, it) => sum + it.lat, 0) / count;
+      const avgLng = cluster.reduce((sum, it) => sum + it.lng, 0) / count;
 
-      // Icon marker tròn tím viền trắng tái hiện chuẩn Ảnh 1
+      const isSelected = selectedRoom ? cluster.some((r) => r.id === selectedRoom.id) : false;
+      const hasPending = cluster.some((r) => r.status === 'pending' || (r as any).isOwnerListing || (r as any).isOwnerPending);
+
       const isCluster = count > 1;
-      const iconHtml = isCluster
-        ? `<div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-20'}">
-            <div class="w-8 h-8 rounded-full bg-[#52296b] text-white flex items-center justify-center text-xs font-black shadow-lg border-2 ${isSelected ? 'border-teal-400 ring-4 ring-teal-400/40 bg-teal-800' : 'border-white'}">
+
+      let iconHtml = '';
+      if (hasPending) {
+        // Pin của chính chủ nhà ở trạng thái "Chờ duyệt"
+        iconHtml = `
+          <div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-30'}">
+            <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[11px] shadow-xl border-2 border-white flex items-center gap-1.5 whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              <span>Chờ duyệt</span>
+            </div>
+            <div class="absolute -inset-1 rounded-full bg-amber-400 animate-ping opacity-35 pointer-events-none"></div>
+          </div>
+        `;
+      } else if (isCluster) {
+        iconHtml = `
+          <div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-20'}">
+            <div class="w-8 h-8 rounded-full bg-[#52296b] text-white flex items-center justify-center text-xs font-black shadow-lg border-2 ${isSelected ? 'border-amber-400 ring-4 ring-amber-400/40 bg-brand-800' : 'border-white'}">
               <span>${count}</span>
             </div>
-            ${isSelected ? '<div class="absolute -inset-1 rounded-full bg-teal-400 animate-ping opacity-30 pointer-events-none"></div>' : ''}
-          </div>`
-        : `<div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-20'}">
-            <div class="w-7 h-7 rounded-full bg-[#52296b] text-white flex items-center justify-center shadow-lg border-2 ${isSelected ? 'border-teal-400 ring-4 ring-teal-400/40 bg-teal-800' : 'border-white'}">
+            ${isSelected ? '<div class="absolute -inset-1 rounded-full bg-amber-400 animate-ping opacity-30 pointer-events-none"></div>' : ''}
+          </div>
+        `;
+      } else {
+        iconHtml = `
+          <div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-20'}">
+            <div class="w-7 h-7 rounded-full bg-[#52296b] text-white flex items-center justify-center shadow-lg border-2 ${isSelected ? 'border-amber-400 ring-4 ring-amber-400/40 bg-brand-800' : 'border-white'}">
               <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
               </svg>
             </div>
-            ${isSelected ? '<div class="absolute -inset-1 rounded-full bg-teal-400 animate-ping opacity-30 pointer-events-none"></div>' : ''}
-          </div>`;
+            ${isSelected ? '<div class="absolute -inset-1 rounded-full bg-amber-400 animate-ping opacity-30 pointer-events-none"></div>' : ''}
+          </div>
+        `;
+      }
 
       const customIcon = L.divIcon({
         className: 'custom-map-div-icon',
         html: iconHtml,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: hasPending ? [80, 28] : [32, 32],
+        iconAnchor: hasPending ? [40, 14] : [16, 16],
       });
 
-      const marker = L.marker([mainRoom.lat, mainRoom.lng], { icon: customIcon });
+      const marker = L.marker([avgLat, avgLng], { icon: customIcon });
 
       marker.on('click', () => {
-        onSelectRoom(mainRoom, cluster);
+        onSelectRoom(cluster[0], cluster);
         if (isCluster && currentZoom < 16) {
-          // Khi click vào cụm đông phòng ở mức zoom xa, tự động phóng to gần hơn để bung cụm
           const nextZoom = Math.min(17, currentZoom + 2);
-          mapInstanceRef.current?.flyTo([mainRoom.lat, mainRoom.lng], nextZoom, {
-            duration: 0.6,
-          });
+          mapInstanceRef.current?.flyTo([avgLat, avgLng], nextZoom, { duration: 0.6 });
         } else {
-          mapInstanceRef.current?.flyTo([mainRoom.lat, mainRoom.lng], 16, {
-            duration: 0.6,
-          });
+          mapInstanceRef.current?.flyTo([avgLat, avgLng], 16, { duration: 0.6 });
         }
       });
 
-      markersLayer.addLayer(marker);
+      layer.addLayer(marker);
     });
   }, [clusteredRooms, selectedRoom, isLeafletReady, onSelectRoom, currentZoom]);
 
+  // 5. Vẽ Marker Đánh giá cộng đồng (Lớp riêng biệt)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !reviewMarkersLayerRef.current || !isLeafletReady) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    const layer = reviewMarkersLayerRef.current;
+    layer.clearLayers();
+
+    if (!showReviewsLayer || communityReviews.length === 0) return;
+
+    // Giới hạn hiển thị 200 đánh giá gần nhất để giữ hiệu năng mượt mà
+    const visibleReviews = communityReviews.slice(0, 200);
+
+    visibleReviews.forEach((rv) => {
+      const isSelected = selectedReview?.id === rv.id;
+      const iconHtml = `
+        <div class="relative flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'}">
+          <div class="px-2 py-0.5 rounded-full bg-amber-600 text-white font-bold text-[10px] shadow-md border border-white flex items-center gap-1">
+            <span class="text-amber-200">★</span>
+            <span>${rv.rating.toFixed(1)}</span>
+          </div>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        className: 'custom-review-div-icon',
+        html: iconHtml,
+        iconSize: [46, 22],
+        iconAnchor: [23, 11],
+      });
+
+      const marker = L.marker([rv.lat, rv.lng], { icon: customIcon });
+      marker.on('click', () => {
+        onSelectReview?.(rv);
+        mapInstanceRef.current?.flyTo([rv.lat, rv.lng], 16, { duration: 0.6 });
+      });
+
+      layer.addLayer(marker);
+    });
+  }, [communityReviews, selectedReview, showReviewsLayer, isLeafletReady, onSelectReview]);
+
+  // 6. Cập nhật tâm bản đồ khi centerCoords hoặc selectedRoom thay đổi
   const prevRoomIdRef = useRef<string | null>(null);
   const prevCenterKeyRef = useRef<string | null>(null);
 
-  // 5. Cập nhật tâm bản đồ khi centerCoords hoặc selectedRoom thay đổi
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const currentCenterKey = centerCoords ? `${centerCoords.lat}_${centerCoords.lng}` : null;
     const currentRoomId = selectedRoom?.id ?? null;
 
-    // Ưu tiên bay tới phòng được chọn nếu vừa có sự kiện chọn phòng
     if (currentRoomId && currentRoomId !== prevRoomIdRef.current && selectedRoom?.lat && selectedRoom?.lng) {
       prevRoomIdRef.current = currentRoomId;
       mapInstanceRef.current.flyTo([selectedRoom.lat, selectedRoom.lng], 16, { duration: 0.8 });
       return;
     }
 
-    // Bay tới tọa độ tìm kiếm nếu người dùng vừa tìm kiếm địa chỉ mới
     if (currentCenterKey && currentCenterKey !== prevCenterKeyRef.current && centerCoords?.lat && centerCoords?.lng) {
       prevCenterKeyRef.current = currentCenterKey;
       mapInstanceRef.current.flyTo([centerCoords.lat, centerCoords.lng], 15, { duration: 0.8 });
@@ -292,7 +349,7 @@ export function MapRoomCanvas({
     }
   }, [centerCoords, selectedRoom]);
 
-  // 6. Định vị GPS thiết bị hiện tại (Nút crosshair ở góc dưới bên phải như Ảnh 1)
+  // 7. Định vị GPS người dùng
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
       alert('Trình duyệt không hỗ trợ định vị GPS');
@@ -317,19 +374,34 @@ export function MapRoomCanvas({
 
   return (
     <div className="relative w-full h-full bg-slate-100 overflow-hidden">
-      {/* Container Leaflet Google Maps */}
       <div ref={containerRef} className="absolute inset-0 z-0 w-full h-full" />
 
-      {/* Huy hiệu tổng số phòng ở góc trên — Màu xanh ngọc Teal (#0d9488) chủ đạo website */}
+      {/* Huy hiệu tổng số phòng */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand/95 backdrop-blur-md text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand/20 border border-white/30">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
+          <span className="flex h-2 w-2 rounded-full bg-yellow-300 animate-pulse" />
           <span>{rooms.length} phòng đang hiển thị</span>
         </div>
       </div>
 
-      {/* Nút bấm định vị GPS hình tâm ngắm (Ảnh 1: Bottom Right) */}
-      <div className="absolute bottom-6 right-4 sm:right-6 z-20 flex flex-col gap-2">
+      {/* Điều khiển bản đồ góc dưới bên phải */}
+      <div className="absolute bottom-6 right-4 sm:right-6 z-20 flex flex-col items-end gap-2.5">
+        {onToggleReviewsLayer && (
+          <button
+            type="button"
+            onClick={onToggleReviewsLayer}
+            className={`h-11 px-3.5 rounded-full flex items-center gap-1.5 shadow-xl border text-xs font-bold transition-all active:scale-95 ${
+              showReviewsLayer
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-amber-500/20'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            }`}
+            title="Bật hoặc tắt lớp hiển thị đánh giá cộng đồng"
+          >
+            <span className="text-sm">★</span>
+            <span className="hidden sm:inline">Lớp đánh giá ({communityReviews.length})</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={handleLocateMe}
@@ -348,7 +420,6 @@ export function MapRoomCanvas({
         </button>
       </div>
 
-      {/* Màn hình chờ khi Leaflet đang nạp */}
       {!isLeafletReady && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-100/90 backdrop-blur-xs">
           <div className="w-9 h-9 border-3 border-brand border-t-transparent rounded-full animate-spin mb-3" />

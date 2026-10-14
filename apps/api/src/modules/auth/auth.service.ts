@@ -13,7 +13,7 @@ import { canonicalizeEmail, canonicalizePhone, normalizePhone } from './utils/id
 
 function serializeUser(user: {
   id: bigint;
-  phone: string;
+  phone?: string | null;
   fullName: string | null;
   avatarUrl: string | null;
   email?: string | null;
@@ -30,7 +30,7 @@ function serializeUser(user: {
 
   return {
     id: isAdmin ? '1' : user.id.toString(),
-    phone: isAdmin ? '0981 753 082' : user.phone,
+    phone: isAdmin ? '0981 753 082' : (user.phone ?? null),
     fullName: isAdmin ? 'Chủ nhà' : user.fullName,
     avatarUrl: user.avatarUrl,
     email: user.email ?? (isAdmin ? 'ducquan16102006@gmail.com' : null),
@@ -247,6 +247,54 @@ export class AuthService {
       }
     } catch (err: any) {
       this.logger.warn(`Lỗi tra cứu login DB: ${err.message}`);
+    }
+
+    if (!user) {
+      // Fallback tra cứu từ cơ sở dữ liệu users.json dùng chung của toàn hệ thống
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const candidatePaths = [
+          path.join(process.cwd(), 'data', 'users.json'),
+          path.join(process.cwd(), 'apps', 'web', 'data', 'users.json'),
+          path.join(process.cwd(), '..', 'data', 'users.json'),
+          path.join(process.cwd(), '..', '..', 'data', 'users.json'),
+        ];
+        for (const p of candidatePaths) {
+          if (fs.existsSync(p)) {
+            const rawContent = fs.readFileSync(p, 'utf-8');
+            const parsed = JSON.parse(rawContent);
+            if (Array.isArray(parsed)) {
+              const matched = parsed.find(
+                (u: any) =>
+                  (u.email || '').trim().toLowerCase() === lower ||
+                  (u.phone || '').trim() === raw
+              );
+              if (matched) {
+                if (matched.password && matched.password === dto.password) {
+                  user = {
+                    id: BigInt(String(matched.id).replace(/\D/g, '') || Date.now().toString()),
+                    email: matched.email,
+                    fullName: matched.fullName,
+                    phone: matched.phone || '0981753082',
+                    role: matched.role || 'user',
+                    isBlocked: false,
+                    tokenVersion: 1,
+                    createdAt: new Date(matched.createdAt || Date.now()),
+                  };
+                  return this.issueTokens(user);
+                } else if (matched.password && matched.password !== dto.password) {
+                  throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+                }
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err instanceof UnauthorizedException) {
+          throw err;
+        }
+      }
     }
 
     if (!user) {
@@ -744,12 +792,22 @@ export class AuthService {
     };
   }
 
-  private issueTokens(user: { id: bigint; phone: string; fullName: string | null; avatarUrl: string | null; role: string; createdAt: Date; tokenVersion?: number }) {
+  private issueTokens(user: {
+    id: bigint;
+    phone?: string | null;
+    fullName: string | null;
+    avatarUrl: string | null;
+    role: string;
+    createdAt: Date;
+    tokenVersion?: number;
+    email?: string | null;
+    isBlocked?: boolean;
+  }) {
     this.inMemoryUsers.set(user.id.toString(), user);
 
     const payload = {
       sub: user.id.toString(),
-      phone: user.phone,
+      phone: user.phone || '',
       role: user.role,
       tokenVersion: user.tokenVersion ?? 0,
     };

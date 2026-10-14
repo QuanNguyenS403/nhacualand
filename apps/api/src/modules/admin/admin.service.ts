@@ -436,7 +436,7 @@ export class AdminService {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
       include: {
-        owner: { select: { id: true, phone: true, fullName: true, isBlocked: true, isPhoneVerified: true } },
+        owner: { select: { id: true, phone: true, fullName: true, isBlocked: true, isPhoneVerified: true, role: true } },
       },
     });
     if (!listing) {
@@ -519,7 +519,7 @@ export class AdminService {
     }
 
     // 6. Hạn mức chống spam tách biệt khỏi gói trả tiền (GAP-13, POST-07)
-    let maxAllowedListings = 5;
+    let maxAllowedListings = listing.owner.role === 'admin' ? 100 : 5;
     if (activeMembership) {
       if (activeMembership.planSnapshot && typeof activeMembership.planSnapshot === 'object') {
         const snap = activeMembership.planSnapshot as any;
@@ -991,10 +991,23 @@ export class AdminService {
     if (!owner) throw new NotFoundException('Không tìm thấy chủ nhà');
 
     const created = await this.prisma.$transaction(async (tx) => {
+      let profile = await tx.ownerProfile.findUnique({ where: { userId: data.ownerId } });
+      if (!profile) {
+        profile = await tx.ownerProfile.create({
+          data: {
+            userId: data.ownerId,
+            legalFullName: owner.fullName || 'Chủ nhà',
+            authorityType: 'owner',
+            isVerified: true,
+          },
+        });
+      }
+
       const agreement = await tx.ownerServiceAgreement.create({
         data: {
           agreementCode: data.agreementCode,
           ownerId: data.ownerId,
+          ownerProfileId: profile.id,
           status: data.status || 'active',
           commissionRateBps: data.commissionRateBps || 4000,
           termsVersion: data.termsVersion || '1.0',

@@ -51,25 +51,25 @@ export default function ChinhSachPage() {
       </section>
 
       <div className="container-max max-w-6xl mt-8 space-y-8">
-        {/* Khối cam kết bảo mật nổi bật — Màu xanh lá như trong ảnh */}
-        <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-5 text-emerald-950 shadow-xs space-y-2.5">
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-emerald-900">
-            <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+        {/* Khối cam kết bảo mật nổi bật — Màu vàng gold hoàng gia */}
+        <div className="rounded-2xl border border-brand-300 bg-brand-50/80 p-5 text-brand-950 shadow-xs space-y-2.5">
+          <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-brand-900">
+            <svg className="h-5 w-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Cam kết cốt lõi về quyền riêng tư</span>
           </div>
-          <ul className="space-y-1.5 text-xs sm:text-sm text-emerald-900 pl-7 list-none">
+          <ul className="space-y-1.5 text-xs sm:text-sm text-brand-900 pl-7 list-none">
             <li className="flex items-center gap-2">
-              <span className="text-emerald-600 font-bold">•</span>
+              <span className="text-brand font-bold">•</span>
               <span>Tuân thủ nghiêm ngặt Luật An toàn thông tin mạng và Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-emerald-600 font-bold">•</span>
+              <span className="text-brand font-bold">•</span>
               <span>Tuyệt đối KHÔNG bán, cho thuê hay thương mại hóa dữ liệu cá nhân của người dùng cho bên thứ ba</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-emerald-600 font-bold">•</span>
+              <span className="text-brand font-bold">•</span>
               <span>Áp dụng chuẩn mã hóa SSL/TLS 256-bit và băm mật khẩu một chiều bcrypt cho toàn bộ dữ liệu</span>
             </li>
           </ul>

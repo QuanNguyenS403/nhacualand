@@ -1,3 +1,6 @@
+import type { ListingMapPin } from '@qns/shared';
+export type { ListingMapPin };
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export interface UniversityItem {
@@ -135,6 +138,33 @@ export async function fetchListingBySlug(slug: string) {
     res.title = res.title.replace(/^\[MẪU\]\s*/i, '').replace(/\[MẪU\]/gi, '').trim();
   }
   return res;
+}
+
+export interface MapPinsQuery {
+  bbox?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenities?: string;
+  updatedSince?: string;
+  ownerId?: string;
+  limit?: number;
+}
+
+export async function fetchMapPins(params?: MapPinsQuery): Promise<ListingMapPin[]> {
+  const query = new URLSearchParams();
+  if (params?.bbox) query.set('bbox', params.bbox);
+  if (params?.propertyType) query.set('propertyType', params.propertyType);
+  if (params?.minPrice !== undefined) query.set('minPrice', String(params.minPrice));
+  if (params?.maxPrice !== undefined) query.set('maxPrice', String(params.maxPrice));
+  if (params?.amenities) query.set('amenities', params.amenities);
+  if (params?.updatedSince) query.set('updatedSince', params.updatedSince);
+  if (params?.ownerId) query.set('ownerId', params.ownerId);
+  if (params?.limit !== undefined) query.set('limit', String(params.limit));
+
+  const qs = query.toString();
+  const url = qs ? `/listings/map?${qs}` : '/listings/map';
+  return apiFetch<ListingMapPin[]>(url, { next: { revalidate: 10 } });
 }
 
 export function fetchUniversities(params?: { locationSlug?: string; keyword?: string }) {

@@ -16,6 +16,8 @@
     "dev:api": "npm run dev --workspace=@batdongsan/api",
     "build": "turbo run build",
     "lint": "node packages/database/scripts/static-lint-check.js",
+    "audit:data": "node scripts/audit-data.js",
+    "test:e2e": "node scripts/e2e-map-sync-test.js",
     "test:static-lint": "node packages/database/scripts/static-lint-check.js",
     "db:generate": "npm run generate --workspace=@batdongsan/database",
     "db:migrate": "npm run migrate:dev --workspace=@batdongsan/database",

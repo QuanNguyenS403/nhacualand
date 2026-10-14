@@ -68,7 +68,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
   return (
     <div className="mx-auto max-w-3xl animate-fade-in space-y-6">
       {/* Header giới thiệu */}
-      <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-teal-50/40 p-6 md:p-7 shadow-sm">
+      <div className="rounded-2xl border border-brand-200/80 bg-gradient-to-br from-brand-50/80 via-white to-brand-50/40 p-6 md:p-7 shadow-sm">
         <div className="flex items-center gap-2 mb-2.5">
           <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-bold text-brand ring-1 ring-brand/20">
             <span>QUY ĐỊNH BẮT BUỘC DÀNH CHO NGƯỜI ĐĂNG TIN</span>
@@ -119,7 +119,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
             <p>
               Chủ nhà trực tiếp tiếp nhận tin đăng, liên hệ để xác minh thông tin, khảo sát thực tế và điều phối dẫn khách thuê tới xem phòng trực tiếp tại địa chỉ cho thuê
             </p>
-            <p className="font-medium text-emerald-800 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/60">
+            <p className="font-medium text-brand-900 bg-brand-50/80 p-2.5 rounded-xl border border-brand-200/60">
               Khách thuê phòng được phục vụ hoàn toàn miễn phí 0 đồng, không phải trả bất kỳ chi phí dịch vụ môi giới nào
             </p>
           </section>
@@ -131,10 +131,10 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <span>Biểu phí dịch vụ môi giới minh bạch & Điều kiện thanh toán</span>
             </h3>
             <p>
-              Đăng tin, khảo sát và dẫn khách xem phòng hoàn toàn miễn phí. Chủ nhà / Người cho thuê chỉ thanh toán phí dịch vụ môi giới khi giao dịch cho thuê thành công (hợp đồng thuê được ký kết và khách thuê nhận bàn giao phòng thực tế).
+              Đăng tin, khảo sát và dẫn khách xem phòng hoàn toàn miễn phí. Chủ nhà / Người cho thuê chỉ thanh toán phí dịch vụ môi giới khi giao dịch cho thuê thành công (hợp đồng thuê được ký kết và khách thuê nhận bàn giao phòng thực tế)
             </p>
             <p>
-              Mức phí dịch vụ môi giới tiêu chuẩn là <strong>40%</strong> giá trị hợp đồng thuê trung bình một tháng theo toàn kỳ hạn thuê (tính theo công thức bình quân có trọng số thời hạn hợp đồng).
+              Mức phí dịch vụ môi giới tiêu chuẩn là <strong>40%</strong> giá trị hợp đồng thuê trung bình một tháng theo toàn kỳ hạn thuê (tính theo công thức bình quân có trọng số thời hạn hợp đồng)
             </p>
             <p className="text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-surface-border">
               Ví dụ: Hợp đồng 24 tháng (3 tháng đầu giá 5 triệu/tháng, 21 tháng sau giá 7 triệu/tháng), mức phí môi giới bằng 40% × 6,75 triệu = 2,7 triệu đồng duy nhất một lần cho toàn bộ hợp đồng
@@ -151,10 +151,10 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <span>Nguyên tắc tài chính trực tiếp — Không thu cọc & không thanh toán trực tuyến</span>
             </h3>
             <p>
-              Website QNS BROKER tuyệt đối không tích hợp thanh toán trực tuyến, không thu tiền cọc phòng và không giữ hộ tiền của các bên nhằm loại bỏ hoàn toàn rủi ro gian lận mạng.
+              Website QNS BROKER tuyệt đối không tích hợp thanh toán trực tuyến, không thu tiền cọc phòng và không giữ hộ tiền của các bên nhằm loại bỏ hoàn toàn rủi ro gian lận mạng
             </p>
             <p>
-              Mọi khoản tiền đặt cọc và tiền thuê phòng do Khách thuê và Chủ nhà giao dịch, ký nhận trực tiếp tại địa điểm thuê bằng hợp đồng và biên bản bàn giao thực tế.
+              Mọi khoản tiền đặt cọc và tiền thuê phòng do Khách thuê và Chủ nhà giao dịch, ký nhận trực tiếp tại địa điểm thuê bằng hợp đồng và biên bản bàn giao thực tế
             </p>
             <p>
               Phí dịch vụ môi giới được thanh toán trực tiếp hoặc chuyển khoản cho Chủ nhà sau khi giao dịch chốt thuê hoàn tất

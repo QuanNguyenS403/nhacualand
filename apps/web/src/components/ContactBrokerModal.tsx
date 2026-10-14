@@ -379,7 +379,7 @@ export function ContactBrokerModal({
         {/* Form Body kích thước vừa vặn trong màn hình */}
         {submitted ? (
           <div className="p-6 sm:p-7 text-center space-y-3 my-auto">
-            <div className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
+            <div className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-brand-100 text-brand-700 shadow-sm">
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>

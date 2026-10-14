@@ -103,8 +103,8 @@ export function SubmitReviewModal({ isOpen, onClose, onSuccess }: SubmitReviewMo
         </div>
 
         {successMsg ? (
-          <div className="my-8 text-center p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800">
-            <svg className="w-12 h-12 mx-auto text-emerald-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="my-8 text-center p-6 rounded-2xl bg-brand-50 border border-brand-200 text-brand-900">
+            <svg className="w-12 h-12 mx-auto text-brand-700 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-base font-bold">{successMsg}</p>
@@ -211,7 +211,7 @@ export function SubmitReviewModal({ isOpen, onClose, onSuccess }: SubmitReviewMo
                           ? rating <= 2
                             ? 'text-rose-500 fill-rose-500'
                             : rating >= 4
-                            ? 'text-emerald-500 fill-emerald-500'
+                            ? 'text-brand fill-brand'
                             : 'text-amber-400 fill-amber-400'
                           : 'text-slate-200 fill-slate-100'
                       }`}

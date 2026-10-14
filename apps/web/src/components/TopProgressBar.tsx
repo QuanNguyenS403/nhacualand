@@ -203,7 +203,7 @@ export function TopProgressBar() {
         className="pointer-events-none fixed left-0 top-0 z-[99999] h-[3.5px] w-full overflow-hidden bg-transparent"
       >
         <div
-          className="relative h-full bg-gradient-to-r from-teal-500 via-teal-400 to-emerald-300 shadow-[0_0_12px_rgba(20,184,166,0.95)] transition-all duration-150 ease-out"
+          className="relative h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 shadow-[0_0_12px_rgba(217,158,26,0.95)] transition-all duration-150 ease-out"
           style={{
             width: `${progress}%`,
             opacity: progress === 100 ? 0 : 1,
@@ -220,10 +220,10 @@ export function TopProgressBar() {
       {visible && progress < 100 && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-2.5 right-3.5 z-[99999] flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-sm border border-teal-100 transition-opacity"
+          className="pointer-events-none fixed top-2.5 right-3.5 z-[99999] flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-sm border border-amber-200 transition-opacity"
         >
-          <span className="h-3 w-3 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
-          <span className="text-[11px] font-semibold text-teal-800 tracking-tight">Đang tải</span>
+          <span className="h-3 w-3 rounded-full border-2 border-brand border-t-transparent animate-spin" />
+          <span className="text-[11px] font-semibold text-brand-800 tracking-tight">Đang tải</span>
         </div>
       )}
     </>

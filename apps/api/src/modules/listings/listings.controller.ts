@@ -20,6 +20,7 @@ import { UploadsService } from '../uploads/uploads.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { QueryListingsDto } from './dto/query-listings.dto';
+import { QueryMapListingsDto } from './dto/query-map-listings.dto';
 import { QueryMyListingsDto } from './dto/query-my-listings.dto';
 import { ReportListingDto } from './dto/report-listing.dto';
 import { Public } from '../../common/decorators/public.decorator';
@@ -78,6 +79,17 @@ export class ListingsController {
     });
   }
 
+  /**
+   * Endpoint bản đồ siêu nhẹ phục vụ /danh-gia và /thue.
+   * Chỉ trả pin toạ độ và thông tin cần thiết nhất, có cache control ngắn (10s).
+   * PHẢI khai báo TRƯỚC @Get(':idOrSlug') để không bị nuốt bởi param động.
+   */
+  @Public()
+  @Get('map')
+  getMapPins(@Query() query: QueryMapListingsDto) {
+    return this.listingsService.getMapPins(query);
+  }
+
   @Public()
   @Get(':idOrSlug')
   findOne(@Param('idOrSlug') idOrSlug: string) {
@@ -92,6 +104,7 @@ export class ListingsController {
 
   @ApiBearerAuth()
   @Put(':id')
+  @Patch(':id')
   update(@CurrentUser() user: AuthUser, @Param('id', ParseBigIntPipe) id: bigint, @Body() dto: UpdateListingDto) {
     return this.listingsService.update(id, user, dto);
   }

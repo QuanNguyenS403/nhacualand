@@ -221,7 +221,7 @@ export function Header() {
           <Link
             href="/dang-tin"
             onClick={handleDangTinClick}
-            className="inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-white text-brand px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm transition-all hover:bg-teal-50 active:scale-[0.98]"
+            className="inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-white text-brand px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm transition-all hover:bg-brand-50 active:scale-[0.98]"
           >
             <span>+ Đăng tin</span>
           </Link>
@@ -396,7 +396,7 @@ export function Header() {
                             <Link
                               href="/admin"
                               onClick={() => setMenuOpen(false)}
-                              className="flex items-center px-4 py-2 text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors"
+                              className="flex items-center px-4 py-2 text-xs font-bold text-brand-700 hover:bg-brand-50 transition-colors"
                             >
                               <span>Trang Quản trị Hệ thống</span>
                             </Link>

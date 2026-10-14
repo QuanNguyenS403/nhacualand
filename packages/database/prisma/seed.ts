@@ -90,6 +90,32 @@ async function main() {
     },
   });
 
+  const adminProfile = await prisma.ownerProfile.upsert({
+    where: { userId: admin.id },
+    update: { isVerified: true },
+    create: {
+      userId: admin.id,
+      legalFullName: 'Chủ sàn QNS',
+      authorityType: 'owner',
+      isVerified: true,
+    },
+  });
+
+  await prisma.ownerServiceAgreement.upsert({
+    where: { agreementCode: 'HD01-ADMIN-QNS' },
+    update: { status: 'active' },
+    create: {
+      agreementCode: 'HD01-ADMIN-QNS',
+      ownerId: admin.id,
+      ownerProfileId: adminProfile.id,
+      status: 'active',
+      commissionRateBps: 4000,
+      termsVersion: '1.0',
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 3600 * 1000),
+    },
+  });
+
   const broker = await prisma.user.upsert({
     where: { phone: '0900000002' },
     update: {
@@ -270,7 +296,7 @@ async function main() {
       ownerId: broker.id,
       locationId: phuongTanPhong.id,
       transactionType: TransactionType.rent,
-      propertyType: 'phong-tro-sinh-vien',
+      propertyType: 'phong_tro',
       title: 'Phòng trọ khép kín có gác lửng, máy lạnh gần ĐH Tôn Đức Thắng & RMIT',
       slug: 'mau-phong-tro-gac-lung-gan-tdtu-id1',
       description:
@@ -296,6 +322,8 @@ async function main() {
       bathrooms: 1,
       legalStatus: 'hop_dong_6_thang',
       addressDetail: 'Đường số 10, Phường Tân Phong, Quận 7, TP.HCM',
+      lat: 10.7335,
+      lng: 106.7032,
       status: ListingStatus.active,
       verificationStatus: 'da_xac_thuc' as any,
       verifiedAt: new Date(),
@@ -325,7 +353,7 @@ async function main() {
       ownerId: broker.id,
       locationId: quan1.id,
       transactionType: TransactionType.rent,
-      propertyType: 'can_ho_mini',
+      propertyType: 'chung_cu_mini',
       title: 'Căn hộ Studio Quận 1 full nội thất cao cấp gần ĐH Kinh Tế UEH',
       slug: 'mau-can-ho-studio-quan-1-full-noi-that-id2',
       description:
@@ -352,6 +380,8 @@ async function main() {
       bathrooms: 1,
       legalStatus: 'hop_dong_1_nam',
       addressDetail: 'Đường Nguyễn Thị Minh Khai, Phường Bến Nghé, Quận 1, TP.HCM',
+      lat: 10.7828,
+      lng: 106.6958,
       status: ListingStatus.active,
       verificationStatus: 'chua_xac_thuc' as any,
       publishedAt: new Date(),

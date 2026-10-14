@@ -14,6 +14,7 @@
     "import:listings": "dotenv -e ../../.env -- ts-node --transpile-only scripts/import-listings.ts",
     "bootstrap:admin": "dotenv -e ../../.env -- ts-node --transpile-only scripts/bootstrap-admin.ts",
     "backfill:ledgers": "dotenv -e ../../.env -- ts-node --transpile-only scripts/backfill-finance-ledgers.ts",
+    "migrate:legacy": "dotenv -e ../../.env -- ts-node --transpile-only scripts/migrate-legacy-listings.ts",
     "test:wave0": "dotenv -e ../../.env -- ts-node scripts/test-wave-0.ts"
   },
   "dependencies": {

@@ -147,8 +147,8 @@ export default function ThongTinTaiKhoanPage() {
       <h1 className="text-3xl font-bold text-text-primary">Thông tin tài khoản</h1>
 
       {error && <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-600">{error}</div>}
-      {profileSuccess && <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{profileSuccess}</div>}
-      {passwordSuccess && <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{passwordSuccess}</div>}
+      {profileSuccess && <div className="mt-4 rounded-xl bg-brand-50 border border-brand-200 p-3 text-sm text-brand-900">{profileSuccess}</div>}
+      {passwordSuccess && <div className="mt-4 rounded-xl bg-brand-50 border border-brand-200 p-3 text-sm text-brand-900">{passwordSuccess}</div>}
 
       {profile && (
         <div className="mt-6 space-y-6">

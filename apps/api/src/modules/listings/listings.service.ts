@@ -5,9 +5,17 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { QueryListingsDto } from './dto/query-listings.dto';
+import { QueryMapListingsDto } from './dto/query-map-listings.dto';
 import { EmailService } from '../email/email.service';
 import { GoogleSheetsService } from '../google-sheets/google-sheets.service';
 import { OutboxService } from '../outbox/outbox.service';
+import {
+  ListingMapPin,
+  normalizeLegacyPropertyType,
+  normalizeAmenities,
+  buildSlug,
+  isValidVietnamCoordinate,
+} from '@qns/shared';
 
 const PUBLIC_LISTING_SELECT = {
   id: true,
@@ -93,6 +101,159 @@ export class ListingsService {
         { expiresAt: { gt: new Date() } },
       ],
     };
+  }
+
+  /**
+   * Truy vấn danh sách pin bản đồ siêu nhẹ phục vụ /danh-gia và bản đồ toàn site.
+   * Chỉ trả các bản ghi có toạ độ hợp lệ tại Việt Nam.
+   * Hỗ trợ bounding box bbox, loại hình, khoảng giá, và thời gian polling.
+   */
+  async getMapPins(query: QueryMapListingsDto): Promise<ListingMapPin[]> {
+    if (!this.prisma.isConnected) {
+      throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+    }
+
+    const where: Prisma.ListingWhereInput = {
+      lat: { not: null },
+      lng: { not: null },
+      owner: { isBlocked: false },
+    };
+
+    // Mặc định công chúng chỉ thấy tin active còn hạn.
+    // Nếu có ownerId thì cho phép trả kèm tin pending của chính chủ đó (để họ thấy pin chờ duyệt ngay sau khi đăng).
+    if (query.ownerId) {
+      let ownerIdBigInt: bigint | null = null;
+      try {
+        ownerIdBigInt = BigInt(query.ownerId);
+      } catch {}
+
+      if (ownerIdBigInt) {
+        where.OR = [
+          {
+            status: ListingStatus.active,
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
+          },
+          {
+            status: ListingStatus.pending,
+            ownerId: ownerIdBigInt,
+          },
+        ];
+      } else {
+        where.status = ListingStatus.active;
+        where.OR = [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ];
+      }
+    } else {
+      where.status = ListingStatus.active;
+      where.OR = [
+        { expiresAt: null },
+        { expiresAt: { gt: new Date() } },
+      ];
+    }
+
+    // Bounding box lọc theo viewport: bbox = minLng,minLat,maxLng,maxLat
+    if (query.bbox) {
+      const parts = query.bbox.split(',').map((p) => parseFloat(p.trim()));
+      if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
+        const [minLng, minLat, maxLng, maxLat] = parts;
+        where.lat = { gte: minLat, lte: maxLat };
+        where.lng = { gte: minLng, lte: maxLng };
+      }
+    }
+
+    // Lọc theo loại hình phòng chuẩn hoá
+    if (query.propertyType && query.propertyType !== 'all') {
+      const norm = normalizeLegacyPropertyType(query.propertyType);
+      where.propertyType = norm;
+    }
+
+    // Lọc theo khoảng giá
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      const priceFilter: Prisma.BigIntFilter = {};
+      if (query.minPrice !== undefined) {
+        priceFilter.gte = BigInt(query.minPrice);
+      }
+      if (query.maxPrice !== undefined) {
+        priceFilter.lte = BigInt(query.maxPrice);
+      }
+      where.price = priceFilter;
+    }
+
+    // Polling thời gian cập nhật để nhận dữ liệu mới trong ≤ 10s
+    if (query.updatedSince) {
+      const sinceDate = new Date(query.updatedSince);
+      if (!isNaN(sinceDate.getTime())) {
+        where.updatedAt = { gt: sinceDate };
+      }
+    }
+
+    const takeLimit = Math.min(query.limit || 500, 2000);
+
+    const items = await this.prisma.listing.findMany({
+      where,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        lat: true,
+        lng: true,
+        price: true,
+        propertyType: true,
+        areaM2: true,
+        status: true,
+        ownerId: true,
+        depositAmount: true,
+        electricityPricePerKwh: true,
+        waterPricePerM3: true,
+        waterPriceFlat: true,
+        amenities: true,
+        images: {
+          select: { imageUrl: true },
+          orderBy: { sortOrder: 'asc' },
+          take: 1,
+        },
+        location: {
+          select: { name: true },
+        },
+      },
+      take: takeLimit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return items
+      .filter((item) => isValidVietnamCoordinate(item.lat, item.lng))
+      .map((item) => {
+        const isOwnerPending =
+          item.status === ListingStatus.pending &&
+          Boolean(query.ownerId && String(item.ownerId) === String(query.ownerId));
+
+        return {
+          id: String(item.id),
+          slug: item.slug,
+          lat: Number(item.lat),
+          lng: Number(item.lng),
+          title: item.title,
+          price: Number(item.price),
+          propertyType: normalizeLegacyPropertyType(item.propertyType),
+          areaM2: Number(item.areaM2),
+          thumbnailUrl: item.images?.[0]?.imageUrl || null,
+          locationName: item.location?.name || 'Hà Nội',
+          status: item.status as any,
+          depositAmount: item.depositAmount ? Number(item.depositAmount) : undefined,
+          electricityPricePerKwh: item.electricityPricePerKwh ?? undefined,
+          waterPricePerM3: item.waterPricePerM3 ?? undefined,
+          waterPriceFlat: item.waterPriceFlat ?? undefined,
+          amenities: typeof item.amenities === 'object' && item.amenities !== null
+            ? normalizeAmenities(item.amenities as Record<string, any>)
+            : undefined,
+          isOwnerPending,
+        };
+      });
   }
 
   async findAll(query: QueryListingsDto) {
@@ -782,12 +943,13 @@ export class ListingsService {
         orderBy: { endDate: 'desc' },
       });
 
-      let maxAllowedListings = activeMembership?.plan.maxActiveListings ?? 3;
-      let planName = activeMembership?.plan.name ?? 'Gói Dùng Thử';
+      const ownerUser = await tx.user.findUnique({ where: { id: ownerId }, select: { role: true } });
+      let maxAllowedListings = ownerUser?.role === 'admin' ? 100 : (activeMembership?.plan.maxActiveListings ?? 3);
+      let planName = activeMembership?.plan.name ?? (ownerUser?.role === 'admin' ? 'Quản trị viên' : 'Gói Dùng Thử');
       if (activeMembership?.planSnapshot && typeof activeMembership.planSnapshot === 'object') {
         const snap = activeMembership.planSnapshot as any;
         if (typeof snap.maxActiveListings === 'number') {
-          maxAllowedListings = snap.maxActiveListings;
+          maxAllowedListings = ownerUser?.role === 'admin' ? 100 : snap.maxActiveListings;
         }
         if (snap.name) {
           planName = snap.name;
@@ -807,6 +969,39 @@ export class ListingsService {
         );
       }
 
+      // 1.1 Kiểm tra tính hợp lệ của toạ độ nếu được cung cấp
+      if (dto.lat !== undefined && dto.lng !== undefined) {
+        if (!isValidVietnamCoordinate(dto.lat, dto.lng)) {
+          throw new BadRequestException('Toạ độ không nằm trong phạm vi phục vụ hợp lệ tại Việt Nam');
+        }
+      }
+
+      // 1.2 Kiểm tra chống đăng tin trùng lặp liên tiếp (cùng chủ, cùng giá/toạ độ trong 5 phút)
+      const recentDuplicate = await tx.listing.findFirst({
+        where: {
+          ownerId,
+          createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+          OR: [
+            { title: dto.title.trim() },
+            ...(dto.lat !== undefined && dto.lng !== undefined
+              ? [
+                  {
+                    lat: { gte: dto.lat - 0.0002, lte: dto.lat + 0.0002 },
+                    lng: { gte: dto.lng - 0.0002, lte: dto.lng + 0.0002 },
+                    price: BigInt(dto.price),
+                  },
+                ]
+              : []),
+          ],
+        },
+      });
+      if (recentDuplicate) {
+        throw new BadRequestException('Phòng có thông tin tương tự vừa được tạo, vui lòng không đăng lặp lại liên tiếp');
+      }
+
+      const normPropertyType = normalizeLegacyPropertyType(dto.propertyType);
+      const normAmenities = dto.amenities ? (normalizeAmenities(dto.amenities) as unknown as Prisma.InputJsonValue) : undefined;
+
       // 2. Tạo bản ghi tin đăng
       const created = await tx.listing.create({
         data: {
@@ -814,7 +1009,7 @@ export class ListingsService {
           locationId: dto.locationId,
           projectId: dto.projectId ? BigInt(dto.projectId) : undefined,
           transactionType: dto.transactionType ?? TransactionType.rent,
-          propertyType: dto.propertyType,
+          propertyType: normPropertyType,
           title: dto.title,
           slug: `${slugify(dto.title, { lower: true, strict: true, locale: 'vi' })}-idtemp`,
           description: dto.description,
@@ -825,7 +1020,7 @@ export class ListingsService {
           electricityPricePerKwh: dto.electricityPricePerKwh,
           waterPricePerM3: dto.waterPricePerM3,
           waterPriceFlat: dto.waterPriceFlat,
-          amenities: dto.amenities as Prisma.InputJsonValue | undefined,
+          amenities: normAmenities,
           areaM2: dto.areaM2,
           bedrooms: dto.bedrooms,
           bathrooms: dto.bathrooms,
@@ -861,7 +1056,7 @@ export class ListingsService {
       });
 
       // 3. Cập nhật finalSlug nguyên tử ngay trong transaction (loại bỏ race idtemp - RB-10)
-      const finalSlug = `${slugify(dto.title, { lower: true, strict: true, locale: 'vi' })}-id${created.id}`;
+      const finalSlug = buildSlug(dto.title, created.id);
       const saved = await tx.listing.update({
         where: { id: created.id },
         data: { slug: finalSlug },

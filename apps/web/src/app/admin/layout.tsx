@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent align-[-0.125em]" />
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand border-r-transparent align-[-0.125em]" />
           <p className="mt-3 text-sm font-medium text-gray-600">Đang xác thực quyền Quản trị...</p>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex flex-col gap-2.5">
             <Link
               href="/qnsbroker/admin"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2"
             >
               <span>Vào Cổng Quản trị qnsbroker/admin</span>
               <span>→</span>
@@ -130,7 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex flex-col sm:flex-row gap-2.5">
               <Link
                 href="/dang-nhap?redirect=/admin"
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-3 rounded-xl text-xs transition-colors text-center shadow-sm"
+                className="flex-1 bg-brand hover:bg-brand-dark text-white font-medium py-2 px-3 rounded-xl text-xs transition-colors text-center shadow-sm"
               >
                 Đăng nhập Quản trị hệ thống
               </Link>
@@ -189,7 +189,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </svg>
       ),
       badge: badges.pendingMemberships > 0 ? badges.pendingMemberships : null,
-      badgeColor: 'bg-teal-600 text-white',
+      badgeColor: 'bg-brand text-white',
     },
     {
       href: '/admin/mua-cao-diem',
@@ -247,7 +247,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-base tracking-tight text-white leading-tight">
-                QNS<span className="text-teal-400 font-semibold">.Admin</span>
+                QNS<span className="text-amber-400 font-semibold">.Admin</span>
               </span>
               <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                 Trung tâm Quản trị
@@ -279,7 +279,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-teal-600 text-white shadow-sm font-semibold'
+                    ? 'bg-brand text-white shadow-sm font-semibold'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
@@ -289,7 +289,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
                 {item.badge !== null && (
                   <span
-                    className={`px-2 py-0.5 text-xs font-bold rounded-full ${item.badgeColor ?? 'bg-teal-500 text-white'}`}
+                    className={`px-2 py-0.5 text-xs font-bold rounded-full ${item.badgeColor ?? 'bg-brand text-white'}`}
                   >
                     {item.badge}
                   </span>
@@ -321,11 +321,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <img
                   src={user.avatarUrl}
                   alt={user.fullName || 'Admin'}
-                  className="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-teal-500/50"
+                  className="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-brand/50"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-teal-600/30 border border-teal-500/50 text-teal-300 flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="w-9 h-9 rounded-full bg-brand/30 border border-brand/50 text-amber-300 flex items-center justify-center font-bold text-sm shrink-0">
                   {(user.fullName ?? user.email ?? user.phone ?? 'A').charAt(0).toUpperCase()}
                 </div>
               )}
@@ -363,7 +363,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
             <div className="flex items-center gap-2">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-xs font-medium text-slate-500 hidden sm:inline">Hệ thống sẵn sàng</span>
             </div>
           </div>

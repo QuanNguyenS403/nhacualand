@@ -18,7 +18,6 @@ import {
   DEMO_STUDIO_RENT_LISTINGS,
   DEMO_SPACE_RENT_LISTINGS,
 } from '@/lib/demo-data';
-import { getPublicCustomListingsServer } from '@/lib/custom-listings-server';
 
 export const metadata: Metadata = {
   title: 'Cho thuê Chung cư & Chung cư mini giá tốt — QNS BROKER',
@@ -123,16 +122,6 @@ export default async function ThuePage({ searchParams }: Props) {
       mergedMap.set(item.slug, item);
     }
   }
-
-  // Nạp thêm tin từ server custom listings (chỉ lấy tin active, tự động loại bỏ tin đã cho thuê)
-  try {
-    const serverCustom = getPublicCustomListingsServer();
-    for (const item of serverCustom) {
-      if (item?.slug && !mergedMap.has(item.slug)) {
-        mergedMap.set(item.slug, item as any);
-      }
-    }
-  } catch {}
 
   // Tự động loại bỏ triệt để mọi bài đăng phòng đã cho thuê hoặc đã gỡ
   let displayItems = Array.from(mergedMap.values()).filter((it) => {
@@ -313,7 +302,7 @@ export default async function ThuePage({ searchParams }: Props) {
     <div className="min-h-screen bg-surface-muted">
       <div className="container-max py-8 sm:py-10 md:py-12">
         {isApiError && cleanItems.length === 0 && (
-          <div className="mb-4 sm:mb-5 rounded-xl border border-teal-200 bg-teal-50 p-3.5 text-xs text-teal-800">
+          <div className="mb-4 sm:mb-5 rounded-xl border border-brand-200 bg-brand-50 p-3.5 text-xs text-brand-900">
             Đang hiển thị danh mục phòng tiêu biểu đã xác thực, bạn có thể xem chi tiết hoặc đặt lịch xem trực tiếp
           </div>
         )}

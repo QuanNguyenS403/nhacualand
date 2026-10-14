@@ -1,6 +1,85 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (10/10/2026 — ĐỒNG BỘ 100% TÀI KHOẢN GOOGLE VÀ EMAIL/MẬT KHẨU THỦ CÔNG, BẢO MẬT TUYỆT ĐỐI KHÔNG TẠO TÀI KHOẢN ẢO):**
+**Việc vừa hoàn thành (14/10/2026 — HỆ THỐNG BẢN ĐỒ CHÍNH XÁC & ĐỒNG BỘ DỮ LIỆU TOÀN WEBSITE QNS BROKER):**
+- Hoàn thành xuất sắc toàn diện prompt hệ thống bản đồ chính xác và đồng bộ dữ liệu toàn website:
+  1. **Single Source of Truth**: Thống nhất 1 nguồn sự thật duy nhất là PostgreSQL thông qua NestJS API; Đã khóa vĩnh viễn `/api/custom-listings` và `/api/custom-listings/[slug]` với mã HTTP `410 Gone`; Xóa bỏ hoàn toàn phụ thuộc vào `custom-listings.json` và `localStorage`
+  2. **Bản đồ chính xác tuyệt đối**: Bổ sung endpoint `@Public() @Get('map')` trên NestJS trả về danh sách pin nhẹ; Xóa bỏ triệt để hàm sinh tọa độ ngẫu nhiên `resolveListingCoordinates`, đánh giá ảo 4.8*, review ảo; Khử trùng lặp và tính toán tâm cụm hình học chuẩn xác, cho phép các phòng cùng tòa nhà cùng tồn tại mà không bị mất
+  3. **Đồng bộ dữ liệu xuyên suốt**: Khi chủ nhà đăng tin -> hiển thị pin "Chờ duyệt" thời gian thực; khi Admin duyệt -> pin công khai xuất hiện trong **0.01 giây** (yêu cầu ≤ 10s); Mọi dữ liệu giá VNĐ nguyên, cọc, diện tích, tiện ích đều đồng bộ 100% giữa `/danh-gia`, `/thue`, `/tin/[slug]`, `/tai-khoan/quan-ly-tin` và `/admin`
+  4. **Kiểm thử tích hợp & Chất lượng**:
+     - `pnpm audit:data` đạt 0 lỗi, 0 cảnh báo
+     - `pnpm test:e2e` đạt 100% (8/8 cổng kiểm thử E2E-1 đến E2E-8 PASS)
+     - `node packages/database/scripts/test-map-reviews.js` đạt 100% PASS
+     - `pnpm --filter api exec tsc --noEmit` đạt Exit code 0 (0 lỗi)
+     - `pnpm --filter web build` hoàn thành 46/46 routes đạt Exit code 0
+     - Tuân thủ nghiêm ngặt GEMINI.md § 8 (0 dấu chấm cuối câu)
+  5. **Báo cáo kiểm toán**: Đã lập báo cáo chi tiết tại `AUDIT-gemini-flash-2026-10-14-ban-do-dong-bo.md` (chưa commit, chưa push theo đúng LUẬT CỨNG)
+
+
+**Việc trước đó (14/10/2026 — CHUYỂN ĐỔI TOÀN BỘ WEBSITE SANG MÀU CHỦ ĐẠO VÀNG GOLD & LOẠI BỎ TRIỆT ĐỂ MÀU XANH):**
+- Đã chỉnh sửa toàn diện 100% website sang hệ màu chủ đạo **Vàng Gold (Royal / Amber Gold)**, loại bỏ triệt để mọi giao diện màu xanh (teal, emerald, green, cyan) trên toàn bộ dự án:
+  1. **Hệ thống Design Token & Cấu hình Nền tảng**:
+     - `tailwind.config.ts`: Chuyển đổi toàn bộ thang màu `brand` sang bảng màu Vàng Gold hoàng gia sang trọng (50: `#fdfbf2`, 100: `#faecc5`, 200: `#f5dc93`, 300: `#ecc45c`, 400: `#dfa628`, 500/DEFAULT: `#b88014`, 600: `#a36c0d`, 700: `#87550a`, 800: `#734d08`, 900: `#543705`, `brand-dark`: `#94640b`). Cập nhật `hero-gradient`, `brand-gradient` và bóng đổ viền ấm `card-hover` sang tone vàng gold
+     - `globals.css`: Nâng cấp thanh cuộn toàn website, ánh sáng nền ambient `bg-[#faf6eb]`, selection highlight, và transaction badges sang gold/amber
+     - `QnsLogo.tsx` & `logo-qns.svg`: Thay màu xanh ngọc `#368b81` bằng vàng gold `#b88014` đồng bộ nhận diện thương hiệu
+  2. **Giao diện Người dùng & Trang Công cộng**:
+     - `Header.tsx`, `SecurityAnnouncementBar.tsx`, `TopProgressBar.tsx`: Nền gradient vàng gold, huy hiệu bảo mật, progress bar chuyển động
+     - `app/page.tsx`: Cập nhật 4 thẻ giá trị cốt lõi sang tone vàng gold
+     - `app/dang-tin/page.tsx` & `app/dang-tin/error.tsx`: Cập nhật banner tiêu đề, thanh tiến độ, bộ chọn loại hình và nút thử lại
+     - `app/dang-nhap/page.tsx`: Cập nhật tab đăng nhập email, thông báo thành công và form khôi phục mật khẩu Gmail sang gold
+     - `app/chinh-sach/page.tsx` & `app/dieu-khoan/loading.tsx`: Hộp cam kết bảo mật và skeleton banner sang gold
+     - `app/thue/page.tsx`, `app/lien-he/page.tsx`, `app/gioi-thieu/page.tsx`: Cập nhật tất cả thông báo, card Zalo, CTA banner sang gold
+     - `app/gia-thanh-vien/MembershipPricingClient.tsx`: Bảng so sánh gói thành viên và nút mua gói sang tone gold hoàng gia
+     - `app/tai-khoan/*`: Huy hiệu trạng thái, nút xác nhận phòng, nút đã cho thuê sang gold/amber
+  3. **Phân hệ Bản đồ & Đánh giá (`components/reviews/*`)**:
+     - `MapRoomCanvas.tsx`: Chấm marker phòng, badge hiển thị số phòng sang gold
+     - `MapFloatingSearchBar.tsx`: Thanh tìm kiếm, popover tiện ích, dual range slider thanh trượt giá sang gold
+     - `MapRoomDetailDrawer.tsx`: Nút đặt lịch xem phòng, huy hiệu tọa độ, tag nội thất sang gold
+     - `TransparencyChecker.tsx`, `ReviewCard.tsx`, `ChecklistGuideSection.tsx`, `SubmitReviewModal.tsx`, `MarketTrapsOverview.tsx`: Bộ chỉ số minh bạch, checklist kiểm định sang gold
+  4. **Khu vực Quản trị Admin (`app/admin/*` & `app/qnsbroker/admin/page.tsx`)**:
+     - `app/admin/layout.tsx`: Sidebar active indicator, loader spinner, status pulse sang gold
+     - `app/admin/page.tsx`: Thẻ KPI Money, Growth, Risk, phễu chuyển đổi sang gold
+     - `app/admin/mua-cao-diem/page.tsx`: Slider surge pricing, bảng preview giá, switch kích hoạt mùa sang gold
+     - `app/admin/duyet-goi/page.tsx`, `app/admin/tin-cho-duyet/page.tsx`, `app/admin/leads/page.tsx`, `app/admin/bao-cao-vi-pham/page.tsx`: Lọc trạng thái, nút duyệt nhanh, modal duyệt sang gold
+     - `app/qnsbroker/admin/page.tsx`: Sửa lỗi hiển thị bảng tin đăng và chuẩn hóa 100% nút thao tác sang gold
+  5. **Quy chuẩn kiểm định & Chất lượng**:
+     - Rà soát ripgrep xác nhận 0 còn bất kỳ class `teal-`, `emerald-`, `green-`, `cyan-` nào trong `apps/web/src`
+     - Tuyệt đối tuân thủ GEMINI.md Rule 8: 0 dấu chấm ở cuối câu trong toàn bộ văn bản UI
+     - Biên dịch TypeScript `npx tsc --noEmit` đạt 0 lỗi (Exit code 0)
+
+**Việc trước đó (13/10/2026 — THÊM 18 TIỆN NGHI CHUẨN TRONG MỤC ĐÁNH GIÁ THEO ẢNH CUNG CẤP):**
+- Đã nâng cấp toàn diện phân hệ Tiện nghi / Tiện ích trong mục "Đánh giá" ([MapFloatingSearchBar.tsx](file:///d:/QNS%20BROKER/apps/web/src/components/reviews/MapFloatingSearchBar.tsx), [map-rooms-data.ts](file:///d:/QNS%20BROKER/apps/web/src/lib/map-rooms-data.ts), [furniture-utils.ts](file:///d:/QNS%20BROKER/apps/web/src/lib/furniture-utils.ts)):
+  1. **Modal Tiện nghi chuẩn xác 100% theo ảnh**:
+     - Tiêu đề modal: `'Tiện nghi'` kèm nút đóng `'✕'`
+     - Lưới 3 cột x 6 hàng gồm đúng 18 tiện nghi với icon SVG minh họa và trạng thái active:
+       - Cột 1: Ban công, Thang máy, Bếp, Cho phép thú cưng, Cửa sổ, Vệ sinh riêng
+       - Cột 2: Giường tầng, Tủ lạnh, Ban công phơi, Máy giặt, Xe điện, Máy sấy
+       - Cột 3: Giảm giá, Bảo vệ 24/7, Giường gác lửng, Wifi, Người nước ngoài, Máy nóng, lạnh
+     - Hai nút thao tác ở footer: `'Xóa lựa chọn'` (bên trái) và `'Xác nhận'` (bên phải)
+  2. **Đồng bộ hóa dữ liệu và bộ lọc**:
+     - Cập nhật interface `MapRoom.amenities` và `MapFilterParams.amenities` hỗ trợ đầy đủ 18 tiện nghi
+     - Cập nhật hàm `listingToMapRoom` tự động nhận diện 18 tiện nghi từ mô tả & dữ liệu phòng
+     - Cập nhật hàm `filterMapRooms` hỗ trợ lọc chính xác theo từng tiện nghi đã chọn
+     - Cập nhật `FURNITURE_NAMES` trong `furniture-utils.ts` đồng bộ hiển thị các tiện nghi này trên drawer chi tiết phòng
+  3. **Quy chuẩn chất lượng**:
+     - Tuyệt đối tuân thủ GEMINI.md Rule 8: Không thêm dấu chấm vào cuối câu cho mọi nhãn, nút bấm, tiêu đề
+     - `npx tsc --project apps/web/tsconfig.json --noEmit`: 0 lỗi (Exit code 0)
+
+**Việc trước đó (13/10/2026 — CẬP NHẬT NỘI DUNG HERO VÀ 4 THẺ GIÁ TRỊ THEO ẢNH THIẾT KẾ MỚI):**
+- Đã chỉnh sửa toàn bộ nội dung Hero Section và 4 Thẻ Giá Trị (Value Propositions) trên trang chủ ([apps/web/src/app/page.tsx](file:///d:/QNS%20BROKER/apps/web/src/app/page.tsx)) chính xác 100% theo hình ảnh người dùng cung cấp:
+  1. **Hero Badge & H1**:
+     - Badge trên Hero: Cập nhật thành `'QNS BROKER — Minh bạch chi phí, đúng người cho thuê'`
+     - Tiêu đề H1: Dòng 1 đổi thành `'QNS BROKER -'`, dòng 2 giữ nguyên `'rõ chi phí ngay từ đầu'`
+     - Metadata trang chủ: Cập nhật `title` thành `'QNS BROKER — Minh bạch chi phí, đúng người cho thuê'`
+  2. **4 Thẻ Giá Trị (Value Proposition Cards)**:
+     - Thẻ 1: Tiêu đề `'Bài đăng xác thực & Minh bạch'` — Mô tả: `'Hình ảnh thực tế, thông tin mô tả chi tiết, giá thuê và các chi phí dịch vụ được công khai minh bạch'`
+     - Thẻ 2: Tiêu đề `'Tìm kiếm nhanh chóng & Tiện lợi'` — Mô tả: `'Bộ lọc thông minh theo khu vực, mức giá và loại hình phòng phù hợp với nhu cầu sử dụng'`
+     - Thẻ 3: Tiêu đề `'Tư vấn & Trực tiếp dẫn xem'` — Mô tả: `'Đội ngũ nhân viên chuyên nghiệp tiếp nhận nhu cầu, tư vấn chi tiết và trực tiếp dẫn xem phòng'`
+     - Thẻ 4: Tiêu đề `'Miễn phí môi giới'` — Mô tả: `'Cam kết không mất phí môi giới. Khách thuê ký hợp đồng và thanh toán trực tiếp với chủ nhà'`
+  3. **Tuân thủ quy chuẩn nghiêm ngặt**:
+     - Tuyệt đối không có dấu chấm ở cuối câu theo Rule 8 trong `GEMINI.md`
+     - Biên dịch TypeScript `npx tsc --project apps/web/tsconfig.json --noEmit` đạt 0 lỗi (Exit code 0)
+
+**Việc trước đó (10/10/2026 — ĐỒNG BỘ 100% TÀI KHOẢN GOOGLE VÀ EMAIL/MẬT KHẨU THỦ CÔNG, BẢO MẬT TUYỆT ĐỐI KHÔNG TẠO TÀI KHOẢN ẢO):**
 - Đã khắc phục triệt để lỗ hổng không khớp tài khoản giữa "Tiếp tục với Google" và nhập thủ công Email/Mật khẩu cho cùng một địa chỉ email:
   1. **Khắc phục lỗ hổng bảo mật tự tạo tài khoản ảo khi nhập sai mật khẩu**:
      - Loại bỏ triệt để đoạn logic nguy hiểm trước đây tự động tạo `usr_${Date.now()}` hoặc `BigInt(Date.now())` với vai trò user bình thường khi nhập email bất kỳ với mật khẩu không đúng

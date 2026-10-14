@@ -47,7 +47,7 @@ export function MoveInCostEstimator({
   const totalMoveInCost = customDeposit + rent + monthlyUtilitiesEstimate;
 
   return (
-    <div id="move-in-estimator" className="rounded-2xl border border-teal-200 bg-white p-6 shadow-card scroll-mt-28">
+    <div id="move-in-estimator" className="rounded-2xl border border-brand-200 bg-white p-6 shadow-card scroll-mt-28">
       <div className="flex items-center justify-between gap-3 border-b border-surface-border pb-4">
         <div>
           <h3 className="text-lg font-bold text-text-primary">
@@ -58,7 +58,7 @@ export function MoveInCostEstimator({
           </p>
         </div>
         {utilitiesIncluded && (
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+          <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-900">
             Đã bao điện nước
           </span>
         )}
@@ -169,9 +169,9 @@ export function MoveInCostEstimator({
         </div>
 
         {/* Cột phải: Bảng kết quả tổng hợp */}
-        <div className="rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50/50 border border-teal-200 p-5 flex flex-col justify-between">
+        <div className="rounded-xl bg-gradient-to-br from-brand-50 to-amber-100/50 border border-brand-200 p-5 flex flex-col justify-between">
           <div>
-            <span className="text-xs uppercase tracking-wider font-semibold text-teal-800">
+            <span className="text-xs uppercase tracking-wider font-semibold text-brand-900">
               Tổng chi phí cần chuẩn bị (Tháng đầu)
             </span>
             <div className="mt-2 flex items-baseline gap-2">
@@ -181,10 +181,10 @@ export function MoveInCostEstimator({
               <span className="text-sm font-semibold text-brand-800">VNĐ</span>
             </div>
             <p className="mt-1 text-xs text-text-muted">
-              Đã bao gồm tiền cọc hoàn lại khi trả phòng.
+              Đã bao gồm tiền cọc hoàn lại khi trả phòng
             </p>
 
-            <div className="mt-4 space-y-2 border-t border-teal-200/80 pt-3 text-xs">
+            <div className="mt-4 space-y-2 border-t border-brand-200/80 pt-3 text-xs">
               <div className="flex justify-between text-text-secondary">
                 <span>1. Tiền cọc (hoàn lại):</span>
                 <span className="font-semibold text-text-primary">{customDeposit.toLocaleString('vi-VN')} đ</span>
@@ -200,8 +200,8 @@ export function MoveInCostEstimator({
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-teal-200/80">
-            <div className="flex justify-between text-xs font-bold text-teal-900">
+          <div className="mt-5 pt-3 border-t border-brand-200/80">
+            <div className="flex justify-between text-xs font-bold text-brand-900">
               <span>Các tháng tiếp theo chỉ trả:</span>
               <span className="text-sm text-brand-800">
                 ~{(rent + monthlyUtilitiesEstimate).toLocaleString('vi-VN')} đ/tháng

@@ -7,7 +7,7 @@ export function SecurityAnnouncementBar() {
     <div
       role="region"
       aria-label="Cảnh báo an toàn QNS BROKER"
-      className="relative w-full overflow-hidden bg-[#0f4e48] border-t border-white/10 shadow-inner select-none pointer-events-none"
+      className="relative w-full overflow-hidden bg-[#5c3e07] border-t border-white/10 shadow-inner select-none pointer-events-none"
     >
       <div className="animate-marquee-scroll py-1.5 sm:py-2">
         {/* Track 1 */}

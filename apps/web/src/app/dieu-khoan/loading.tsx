@@ -7,8 +7,8 @@ export default function DieuKhoanLoading() {
       {/* Header Banner skeleton */}
       <div className="bg-gradient-to-b from-brand to-brand-700 py-14 md:py-18 text-center text-white">
         <div className="container-max max-w-4xl mx-auto space-y-3">
-          <div className="mx-auto h-9 w-64 rounded-xl bg-teal-800/80" />
-          <div className="mx-auto h-4 w-96 max-w-full rounded bg-teal-800/60" />
+          <div className="mx-auto h-9 w-64 rounded-xl bg-brand-900/80" />
+          <div className="mx-auto h-4 w-96 max-w-full rounded bg-brand-900/60" />
         </div>
       </div>
 

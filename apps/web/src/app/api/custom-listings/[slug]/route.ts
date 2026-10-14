@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomListingBySlugServer, deleteCustomListingServer } from '@/lib/custom-listings-server';
+import { getCustomListingBySlugServer } from '@/lib/custom-listings-server';
 
 interface Params {
   params: { slug: string };
@@ -23,14 +23,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  try {
-    const ok = deleteCustomListingServer(params.slug);
-    return NextResponse.json({ success: ok });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, message: 'Lỗi máy chủ khi xóa tin đăng' },
-      { status: 500 }
-    );
-  }
+export async function DELETE() {
+  return NextResponse.json(
+    { success: false, message: 'Cổng xóa dữ liệu file tạm thời đã ngừng hoạt động' },
+    { status: 410 }
+  );
 }

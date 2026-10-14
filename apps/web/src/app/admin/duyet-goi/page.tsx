@@ -266,7 +266,7 @@ export default function AdminDuyetGoiPage() {
 
       setFeedback({
         type: 'success',
-        message: `Đã xử lý hoàn tiền cho SĐT ${userPhone} và hủy kích hoạt gói.`,
+        message: `Đã xử lý hoàn tiền cho SĐT ${userPhone} và hủy kích hoạt gói`,
       });
       loadRequests();
       loadFinanceSummary();
@@ -297,7 +297,7 @@ export default function AdminDuyetGoiPage() {
 
       setFeedback({
         type: 'success',
-        message: `Đã từ chối yêu cầu của SĐT ${userPhone}.`,
+        message: `Đã từ chối yêu cầu của SĐT ${userPhone}`,
       });
       loadRequests();
       loadFinanceSummary();
@@ -316,19 +316,19 @@ export default function AdminDuyetGoiPage() {
           Duyệt Yêu Cầu Gói Thành Viên & Sổ Cái Tài Chính
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Đối soát sao kê ngân hàng và kích hoạt gói đăng tin cho chủ trọ / môi giới. Dòng tiền thực thu được ghi nhận độc lập vào Sổ cái tài chính (FinanceLedger).
+          Đối soát sao kê ngân hàng và kích hoạt gói đăng tin cho chủ trọ / môi giới. Dòng tiền thực thu được ghi nhận độc lập vào Sổ cái tài chính (FinanceLedger)
         </p>
       </div>
 
       {/* Finance Ledger Summary (AF-10: Truth từ FinanceLedger) */}
       {financeSummary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 shadow-xs">
-            <p className="text-xs font-medium text-emerald-800">Tiền thực thu (Confirmed Cash-in)</p>
-            <p className="text-xl font-extrabold text-emerald-700 font-mono mt-1">
+          <div className="bg-brand-50 border border-brand-200 rounded-2xl p-4 shadow-xs">
+            <p className="text-xs font-medium text-brand-900">Tiền thực thu (Confirmed Cash-in)</p>
+            <p className="text-xl font-extrabold text-brand font-mono mt-1">
               {formatExactPrice(financeSummary.confirmedCashIn)}
             </p>
-            <p className="text-[11px] text-emerald-600 mt-1">{financeSummary.cashInCount} giao dịch xác nhận</p>
+            <p className="text-[11px] text-brand-800 mt-1">{financeSummary.cashInCount} giao dịch xác nhận</p>
           </div>
 
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 shadow-xs">
@@ -339,12 +339,12 @@ export default function AdminDuyetGoiPage() {
             <p className="text-[11px] text-rose-600 mt-1">{financeSummary.refundCount} giao dịch hoàn</p>
           </div>
 
-          <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 shadow-xs">
-            <p className="text-xs font-medium text-teal-800">Doanh thu thuần (Net Cash-in)</p>
-            <p className="text-xl font-extrabold text-teal-800 font-mono mt-1">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-xs">
+            <p className="text-xs font-medium text-amber-900">Doanh thu thuần (Net Cash-in)</p>
+            <p className="text-xl font-extrabold text-amber-800 font-mono mt-1">
               {formatExactPrice(financeSummary.netCashIn)}
             </p>
-            <p className="text-[11px] text-teal-600 mt-1">Nguồn sự thật: Sổ cái bất biến</p>
+            <p className="text-[11px] text-amber-700 mt-1">Nguồn sự thật: Sổ cái bất biến</p>
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-xs">
@@ -361,7 +361,7 @@ export default function AdminDuyetGoiPage() {
         <div
           className={`rounded-2xl p-4 text-sm flex items-center justify-between shadow-sm animate-fade-in ${
             feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              ? 'bg-brand-50 text-brand-900 border border-brand-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
           }`}
         >
@@ -381,7 +381,7 @@ export default function AdminDuyetGoiPage() {
             onClick={() => setActiveTab('pending')}
             className={`pb-3 text-sm font-bold border-b-2 -mb-3 transition-all ${
               activeTab === 'pending'
-                ? 'border-teal-600 text-teal-700'
+                ? 'border-brand text-brand'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -391,7 +391,7 @@ export default function AdminDuyetGoiPage() {
             onClick={() => setActiveTab('all')}
             className={`pb-3 text-sm font-bold border-b-2 -mb-3 transition-all ${
               activeTab === 'all'
-                ? 'border-teal-600 text-teal-700'
+                ? 'border-brand text-brand'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -406,11 +406,11 @@ export default function AdminDuyetGoiPage() {
             placeholder="Tìm theo số điện thoại..."
             value={searchPhone}
             onChange={(e) => setSearchPhone(e.target.value)}
-            className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-teal-500 w-full sm:w-56"
+            className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:border-brand w-full sm:w-56"
           />
           <button
             type="submit"
-            className="px-3 py-1.5 bg-teal-600 text-white font-semibold text-xs rounded-xl hover:bg-teal-700"
+            className="px-3 py-1.5 bg-brand text-white font-semibold text-xs rounded-xl hover:bg-brand-dark"
           >
             Tìm
           </button>
@@ -456,7 +456,7 @@ export default function AdminDuyetGoiPage() {
                         </p>
                         <a
                           href={`tel:${item.user.phone}`}
-                          className="text-[11px] text-teal-600 font-mono font-bold hover:underline"
+                          className="text-[11px] text-brand font-mono font-bold hover:underline"
                         >
                           {item.user.phone}
                         </a>
@@ -481,8 +481,8 @@ export default function AdminDuyetGoiPage() {
                           </div>
                         ) : (
                           <div>
-                            <span className="text-[10px] font-bold text-emerald-600 block">Thực thu:</span>
-                            <strong className="text-emerald-700 font-extrabold text-sm font-mono">
+                            <span className="text-[10px] font-bold text-brand-800 block">Thực thu:</span>
+                            <strong className="text-brand font-extrabold text-sm font-mono">
                               {formatExactPrice(item.confirmedPaymentAmount || item.pricePaid)}
                             </strong>
                           </div>
@@ -522,8 +522,8 @@ export default function AdminDuyetGoiPage() {
                           </span>
                         )}
                         {isActive && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-brand-100 text-brand-900">
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                             Đã kích hoạt
                           </span>
                         )}
@@ -543,7 +543,7 @@ export default function AdminDuyetGoiPage() {
                               type="button"
                               disabled={actionLoading === item.id}
                               onClick={() => handleApprove(item.id, item.plan.name, item.user.phone, item.quotedAmount || item.pricePaid)}
-                              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-colors shadow-xs"
+                              className="px-3 py-1.5 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-colors shadow-xs"
                             >
                               {actionLoading === item.id ? 'Đang duyệt...' : 'Xác nhận & Kích hoạt'}
                             </button>

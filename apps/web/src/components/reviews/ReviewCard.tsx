@@ -63,7 +63,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
                       ? isDanger
                         ? 'text-rose-500 fill-rose-500'
                         : isGood
-                        ? 'text-emerald-500 fill-emerald-500'
+                        ? 'text-brand fill-brand'
                         : 'text-amber-400 fill-amber-400'
                       : 'text-slate-200 fill-slate-100'
                   }`}
@@ -78,7 +78,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
                 isDanger
                   ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60'
                   : isGood
-                  ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60'
+                  ? 'bg-brand-50 text-brand-900 ring-1 ring-brand-200/60'
                   : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60'
               }`}
             >
@@ -180,10 +180,10 @@ export function ReviewCard({ review }: ReviewCardProps) {
                 badgeClass = 'bg-orange-50 text-orange-800 ring-1 ring-orange-200/60';
               } else if (tag === 'ha_tang') {
                 label = 'Hạ tầng xuống cấp';
-                badgeClass = 'bg-sky-50 text-sky-800 ring-1 ring-sky-200/60';
+                badgeClass = 'bg-slate-100 text-slate-800 ring-1 ring-slate-200/60';
               } else if (tag === 'tro_tot') {
                 label = 'Trọ uy tín';
-                badgeClass = 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/60';
+                badgeClass = 'bg-brand-50 text-brand-900 ring-1 ring-brand-200/60';
               }
 
               if (!label) return null;
@@ -216,7 +216,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
           title="Sao chép liên kết chia sẻ hồ sơ"
         >
           {copied ? (
-            <span className="text-emerald-600 font-semibold">Đã chép mã</span>
+            <span className="text-brand font-semibold">Đã chép mã</span>
           ) : (
             <>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

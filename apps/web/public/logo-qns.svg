@@ -2,21 +2,21 @@
   <!-- Biểu tượng Q kết hợp Ngôi nhà & Kính lúp -->
   <g id="emblem">
     <!-- Thân tròn Q -->
-    <circle cx="92" cy="88" r="66" fill="#368b81" />
+    <circle cx="92" cy="88" r="66" fill="#b88014" />
     <!-- Cán kính lúp / Đuôi Q bo tròn -->
-    <path d="M 112 128 L 148 164 A 14.5 14.5 0 0 0 168.5 143.5 L 132.5 107.5 Z" fill="#368b81" />
+    <path d="M 112 128 L 148 164 A 14.5 14.5 0 0 0 168.5 143.5 L 132.5 107.5 Z" fill="#b88014" />
     <!-- Khoang cắt hình ngôi nhà -->
     <path d="M 92 41 L 130 75 L 130 125 C 130 131 125 136 119 136 L 65 136 C 59 136 54 131 54 125 L 54 75 Z" fill="#ffffff" />
     <!-- Cửa sổ 4 cánh -->
-    <rect x="80.5" y="60" width="9.5" height="9.5" rx="2" fill="#368b81" />
-    <rect x="94" y="60" width="9.5" height="9.5" rx="2" fill="#368b81" />
-    <rect x="80.5" y="73" width="9.5" height="9.5" rx="2" fill="#368b81" />
-    <rect x="94" y="73" width="9.5" height="9.5" rx="2" fill="#368b81" />
+    <rect x="80.5" y="60" width="9.5" height="9.5" rx="2" fill="#b88014" />
+    <rect x="94" y="60" width="9.5" height="9.5" rx="2" fill="#b88014" />
+    <rect x="80.5" y="73" width="9.5" height="9.5" rx="2" fill="#b88014" />
+    <rect x="94" y="73" width="9.5" height="9.5" rx="2" fill="#b88014" />
     <!-- Cửa vòm -->
-    <path d="M 78 136 L 78 111 A 14 14 0 0 1 106 111 L 106 136 Z" fill="#368b81" />
+    <path d="M 78 136 L 78 111 A 14 14 0 0 1 106 111 L 106 136 Z" fill="#b88014" />
     <!-- Nút nắm cửa -->
     <circle cx="100" cy="118" r="2.6" fill="#ffffff" />
   </g>
   <!-- Chữ QNS -->
-  <text x="92" y="215" text-anchor="middle" fill="#368b81" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="42" letter-spacing="0.04em">QNS</text>
+  <text x="92" y="215" text-anchor="middle" fill="#b88014" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="42" letter-spacing="0.04em">QNS</text>
 </svg>

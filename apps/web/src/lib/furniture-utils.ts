@@ -39,7 +39,16 @@ export const FURNITURE_NAMES: Record<string, string> = {
   choDeXe: 'Chỗ để xe',
   parking: 'Nhà để xe',
   thuCung: 'Thú cưng',
+  petsAllowed: 'Thú cưng',
   xeDien: 'Xe điện',
+  electricVehicle: 'Xe điện',
+  bunkBed: 'Giường tầng',
+  dryingBalcony: 'Ban công phơi',
+  security247: 'Bảo vệ 24/7',
+  window: 'Cửa sổ',
+  privateBathroom: 'Vệ sinh riêng',
+  dryer: 'Máy sấy',
+  foreigner: 'Người nước ngoài',
 };
 
 export function extractListingFurnitureList(listing: any): string[] {

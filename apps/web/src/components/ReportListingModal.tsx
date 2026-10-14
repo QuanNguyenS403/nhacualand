@@ -107,14 +107,14 @@ export function ReportListingModal({ listingId }: { listingId: string }) {
             </div>
 
             {success ? (
-              <div className="mt-4 rounded-2xl bg-green-50 p-5 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <div className="mt-4 rounded-2xl bg-brand-50 p-5 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
+                  <svg className="h-6 w-6 text-brand-700" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                 </div>
-                <p className="font-semibold text-green-800">Cảm ơn bạn đã gửi phản ánh!</p>
-                <p className="mt-1 text-xs text-green-600">
+                <p className="font-semibold text-brand-900">Cảm ơn bạn đã gửi phản ánh</p>
+                <p className="mt-1 text-xs text-brand-700">
                  Đội ngũ kiểm duyệt sẽ xem xét và xử lý tin đăng này trong thời gian sớm nhất
                 </p>
               </div>

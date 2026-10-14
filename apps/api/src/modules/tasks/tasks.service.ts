@@ -173,12 +173,12 @@ export class TasksService implements OnApplicationBootstrap, OnApplicationShutdo
             eventType: 'EMAIL_LISTING_EXPIRED',
             payload: {
               listing: { id: item.id.toString(), title: item.title },
-              landlordPhone: item.owner.phone,
+              landlordPhone: item.owner.phone ?? '',
             },
           });
         } catch {
           // fallback trực tiếp nếu outbox fail
-          void this.emailService.sendListingExpiredToLandlord(item, item.owner.phone);
+          void this.emailService.sendListingExpiredToLandlord(item, item.owner.phone ?? '');
         }
       }
     }

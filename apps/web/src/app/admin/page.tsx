@@ -207,19 +207,19 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
             <span>Bảng Điều Khiển Quản Trị</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 font-semibold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-900 font-semibold">
               Chuẩn §8.1
             </span>
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Vận hành theo 3 bảng độc lập: <strong>TIỀN TỆ (MONEY)</strong>, <strong>TĂNG TRƯỞNG (GROWTH)</strong>, <strong>RỦI RO (RISK)</strong>.
+            Vận hành theo 3 bảng độc lập: <strong>TIỀN TỆ (MONEY)</strong>, <strong>TĂNG TRƯỞNG (GROWTH)</strong>, <strong>RỦI RO (RISK)</strong>
           </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={handleRunSweep}
             disabled={sweeping}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-brand-800 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-colors disabled:opacity-50"
             title="Quét dọn các tin quá hạn 30 ngày và thu hồi bộ nhớ OTP"
           >
             <span>{sweeping ? 'Đang quét...' : 'Quét dọn tin quá hạn & OTP'}</span>
@@ -252,8 +252,8 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('money')}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
             activeTab === 'money'
-              ? 'bg-emerald-700 text-white shadow-xs'
-              : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+              ? 'bg-brand text-white shadow-xs'
+              : 'text-brand-800 bg-brand-50 hover:bg-brand-100'
           }`}
         >
           1. BẢNG TIỀN TỆ (MONEY)
@@ -262,8 +262,8 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('growth')}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
             activeTab === 'growth'
-              ? 'bg-teal-700 text-white shadow-xs'
-              : 'text-teal-700 bg-teal-50 hover:bg-teal-100'
+              ? 'bg-amber-600 text-white shadow-xs'
+              : 'text-amber-800 bg-amber-50 hover:bg-amber-100'
           }`}
         >
           2. BẢNG TĂNG TRƯỞNG (GROWTH)
@@ -302,7 +302,7 @@ export default function AdminDashboardPage() {
       )}
 
       {actionMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center gap-2">
+        <div className="p-4 bg-brand-50 border border-brand-200 text-brand-900 rounded-xl text-sm font-medium flex items-center gap-2">
           <span>{actionMessage}</span>
         </div>
       )}
@@ -311,7 +311,7 @@ export default function AdminDashboardPage() {
       {/* 1. BẢNG TIỀN TỆ (MONEY) — Thu/chi thực ở đâu, lệch gì? */}
       {/* ========================================================= */}
       {(activeTab === 'all' || activeTab === 'money') && money && (
-        <div className="bg-white rounded-2xl border border-emerald-200/80 shadow-xs p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-brand-200/80 shadow-xs p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/duyet-goi"
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+              className="text-xs font-semibold text-brand-800 hover:text-brand-900 flex items-center gap-1"
             >
               Đối soát sổ cái & Duyệt gói →
             </Link>
@@ -331,27 +331,27 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Tiền thực thu */}
-            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4">
-              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+            <div className="bg-brand-50/70 border border-brand-200 rounded-xl p-4">
+              <span className="text-xs font-bold text-brand-900 uppercase tracking-wider">
                 Thu đã đối soát
               </span>
-              <p className="text-2xl font-extrabold text-emerald-700 font-mono mt-1">
+              <p className="text-2xl font-extrabold text-brand font-mono mt-1">
                 {money.confirmedCashInFormatted}
               </p>
-              <p className="text-[11px] text-emerald-600 mt-1">
+              <p className="text-[11px] text-brand-800 mt-1">
                 Ghi nhận vào Sổ cái Dòng tiền thực thu (Finance Ledger / FinanceLedger)
               </p>
             </div>
 
             {/* Tiền vào ròng */}
-            <div className="bg-teal-50/70 border border-teal-200 rounded-xl p-4">
-              <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">
+            <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
+              <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                 Tiền vào ròng (Net Cash Flow)
               </span>
-              <p className="text-2xl font-extrabold text-teal-800 font-mono mt-1">
+              <p className="text-2xl font-extrabold text-amber-800 font-mono mt-1">
                 {money.netCashFlowFormatted}
               </p>
-              <p className="text-[11px] text-teal-600 mt-1">
+              <p className="text-[11px] text-amber-700 mt-1">
                 Đã trừ {money.refundsPaidFormatted} tiền hoàn
               </p>
             </div>
@@ -396,7 +396,7 @@ export default function AdminDashboardPage() {
       {/* 2. BẢNG TĂNG TRƯỞNG (GROWTH) — Nguồn cung tốt & kết nối */}
       {/* ========================================================= */}
       {(activeTab === 'all' || activeTab === 'growth') && growth && (
-        <div className="bg-white rounded-2xl border border-teal-200/80 shadow-xs p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-amber-200/80 shadow-xs p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -406,7 +406,7 @@ export default function AdminDashboardPage() {
                 </span>
               </h2>
             </div>
-            <span className="text-xs font-semibold text-teal-700">
+            <span className="text-xs font-semibold text-amber-800">
               Đo lường nguồn cung thực tế
             </span>
           </div>
@@ -415,7 +415,7 @@ export default function AdminDashboardPage() {
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
               <span className="text-xs font-semibold text-slate-500 uppercase">Tin còn phòng công khai</span>
               <p className="text-2xl font-extrabold text-slate-900 mt-1">{growth.totalActiveListings}</p>
-              <p className="text-[11px] text-teal-600 mt-1">
+              <p className="text-[11px] text-amber-700 mt-1">
                 {growth.verifiedActiveListings} tin đã xác thực thực tế
               </p>
             </div>
@@ -431,7 +431,7 @@ export default function AdminDashboardPage() {
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
               <span className="text-xs font-semibold text-slate-500 uppercase">Khách thuê để lại liên hệ</span>
               <p className="text-2xl font-extrabold text-slate-900 mt-1">{growth.totalLeadsCount}</p>
-              <p className="text-[11px] text-emerald-600 mt-1">
+              <p className="text-[11px] text-brand mt-1">
                 +{growth.leadsLast7Days} lead trong 7 ngày qua
               </p>
             </div>
@@ -446,26 +446,26 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Phễu kết nối & chuyển đổi (Conversion Funnel) */}
-          <div className="bg-teal-50/50 rounded-xl p-4 border border-teal-100">
-            <h3 className="text-xs font-bold text-teal-900 uppercase tracking-wider mb-2">
+          <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100">
+            <h3 className="text-xs font-bold text-amber-950 uppercase tracking-wider mb-2">
               Phễu Kết Nối Người Thuê (Funnel)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="p-2.5 bg-white rounded-lg border border-teal-100">
+              <div className="p-2.5 bg-white rounded-lg border border-amber-100">
                 <span className="text-[11px] text-slate-500">1. Tin công khai</span>
                 <p className="text-lg font-bold text-slate-900 mt-0.5">{growth.conversionFunnel.activeListings}</p>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-teal-100">
+              <div className="p-2.5 bg-white rounded-lg border border-amber-100">
                 <span className="text-[11px] text-slate-500">2. Lượt xem SĐT</span>
                 <p className="text-lg font-bold text-slate-900 mt-0.5">{growth.conversionFunnel.phoneReveals}</p>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-teal-100">
+              <div className="p-2.5 bg-white rounded-lg border border-amber-100">
                 <span className="text-[11px] text-slate-500">3. Lead liên hệ</span>
                 <p className="text-lg font-bold text-slate-900 mt-0.5">{growth.conversionFunnel.leadsCreated}</p>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-teal-100">
+              <div className="p-2.5 bg-white rounded-lg border border-amber-100">
                 <span className="text-[11px] text-slate-500">4. Đã trao đổi</span>
-                <p className="text-lg font-bold text-emerald-700 mt-0.5">{growth.conversionFunnel.leadsContacted}</p>
+                <p className="text-lg font-bold text-brand mt-0.5">{growth.conversionFunnel.leadsContacted}</p>
               </div>
             </div>
             <p className="text-[11px] text-slate-500 mt-2 text-center">
@@ -490,7 +490,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-slate-500">Xác nhận còn phòng (7 ngày)</span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      data.pilot.isVerifiedSupplyMet ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      data.pilot.isVerifiedSupplyMet ? 'bg-brand-100 text-brand-900' : 'bg-amber-100 text-amber-800'
                     }`}>
                       {data.pilot.isVerifiedSupplyMet ? 'ĐẠT' : 'CẦN TĂNG'}
                     </span>
@@ -506,7 +506,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-slate-500">Tỷ lệ phản hồi lead</span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      data.pilot.isLeadResponseMet ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      data.pilot.isLeadResponseMet ? 'bg-brand-100 text-brand-900' : 'bg-amber-100 text-amber-800'
                     }`}>
                       {data.pilot.isLeadResponseMet ? 'ĐẠT' : 'CẦN TĂNG'}
                     </span>
@@ -522,7 +522,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-slate-500">Tỷ lệ tin vi phạm</span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      data.pilot.isViolationRateMet ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      data.pilot.isViolationRateMet ? 'bg-brand-100 text-brand-900' : 'bg-rose-100 text-rose-800'
                     }`}>
                       {data.pilot.isViolationRateMet ? 'ĐẠT' : 'CẦN XỬ LÝ'}
                     </span>
@@ -645,7 +645,7 @@ export default function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/tin-cho-duyet"
-              className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+              className="text-xs font-semibold text-brand hover:text-brand-dark"
             >
               Xem tất cả
             </Link>
@@ -678,7 +678,7 @@ export default function AdminDashboardPage() {
                       {item.title}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="text-xs text-teal-600 font-bold">
+                      <span className="text-xs text-brand font-bold">
                         {formatPriceVND(item.price)} • {item.areaM2} m²
                       </span>
                     </div>
@@ -689,7 +689,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => handleQuickApprove(item.id)}
-                      className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                      className="px-2.5 py-1.5 bg-brand hover:bg-brand-dark text-white rounded-lg text-xs font-semibold transition-colors"
                       title="Duyệt nhanh"
                     >
                       Duyệt
@@ -720,7 +720,7 @@ export default function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/bao-cao-vi-pham"
-              className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+              className="text-xs font-semibold text-brand hover:text-brand-dark"
             >
               Xem tất cả
             </Link>

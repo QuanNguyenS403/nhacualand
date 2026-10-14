@@ -11,35 +11,35 @@ import {
 } from '@/lib/demo-data';
 
 export const metadata: Metadata = {
-  title: 'QNS BROKER — Rõ chi phí, đúng người cho thuê',
+  title: 'QNS BROKER — Minh bạch chi phí, đúng người cho thuê',
   description:
     'Nền tảng tìm chỗ thuê minh bạch chi phí: phòng trọ sinh viên, studio, căn hộ, mặt bằng kinh doanh. Xem bảng chi phí trọn gói trước khi liên hệ, kết nối đúng bên có quyền cho thuê',
 };
 
 const VALUE_PROPOSITIONS = [
   {
-    title: 'Tin đăng xác thực, rõ ràng',
+    title: 'Bài đăng xác thực & Minh bạch',
     desc: 'Hình ảnh thực tế, thông tin mô tả chi tiết, giá thuê và các chi phí dịch vụ được công khai minh bạch',
-    color: 'from-teal-500/10 to-teal-500/5',
-    border: 'border-teal-200',
-  },
-  {
-    title: 'Tìm kiếm nhanh chóng, tiện lợi',
-    desc: 'Dễ dàng lọc theo khu vực, mức giá và loại hình phòng phù hợp với nhu cầu mỗi cá nhân',
-    color: 'from-blue-500/10 to-blue-500/5',
-    border: 'border-blue-200',
-  },
-  {
-    title: 'Tư vấn và trực tiếp dẫn xem',
-    desc: 'Chủ nhà tiếp nhận nhu cầu, tư vấn chi tiết và trực tiếp dẫn xem phòng',
-    color: 'from-amber-500/10 to-amber-500/5',
+    color: 'from-amber-500/15 to-yellow-500/5',
     border: 'border-amber-200',
   },
   {
+    title: 'Tìm kiếm nhanh chóng & Tiện lợi',
+    desc: 'Bộ lọc thông minh theo khu vực, mức giá và loại hình phòng phù hợp với nhu cầu sử dụng',
+    color: 'from-brand/15 to-amber-500/5',
+    border: 'border-brand/20',
+  },
+  {
+    title: 'Tư vấn & Trực tiếp dẫn xem',
+    desc: 'Đội ngũ nhân viên chuyên nghiệp tiếp nhận nhu cầu, tư vấn chi tiết và trực tiếp dẫn xem phòng',
+    color: 'from-yellow-500/15 to-amber-500/5',
+    border: 'border-yellow-200',
+  },
+  {
     title: 'Miễn phí môi giới',
-    desc: 'Khách thuê không phải trả bất kỳ khoản phí môi giới nào, ký hợp đồng và thanh toán trực tiếp với chủ nhà',
-    color: 'from-emerald-500/10 to-emerald-500/5',
-    border: 'border-emerald-200',
+    desc: 'Cam kết không mất phí môi giới. Khách thuê ký hợp đồng và thanh toán trực tiếp với chủ nhà',
+    color: 'from-amber-600/15 to-brand/5',
+    border: 'border-amber-300/70',
   },
 ];
 
@@ -109,10 +109,10 @@ export default async function HomePage() {
         <div className="container-max py-6 sm:py-8 lg:py-10">
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-2.5 sm:mb-3 inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">
-              QNS BROKER — Rõ chi phí, đúng người cho thuê
+              QNS BROKER — Minh bạch chi phí, đúng người cho thuê
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl md:text-4xl lg:text-[2.65rem] leading-[1.15] md:leading-[1.18]">
-              <span className="block">Tìm chỗ thuê phù hợp,</span>
+              <span className="block">QNS BROKER -</span>
               <span className="mt-0.5 sm:mt-0.5 block bg-gradient-to-r from-brand to-brand-700 bg-clip-text pb-0.5 text-transparent">
                 rõ chi phí ngay từ đầu
               </span>

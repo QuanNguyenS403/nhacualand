@@ -78,9 +78,9 @@ export function MarketTrapsOverview({ stats, onSelectCategory }: MarketTrapsOver
       title: 'Hạ tầng dột nát & An ninh kém',
       percent: stats.categoriesBreakdown?.badInfrastructure?.percent || 12,
       count: stats.categoriesBreakdown?.badInfrastructure?.count || 104,
-      color: 'from-sky-500 to-blue-600',
-      badgeBg: 'bg-sky-100 text-sky-800',
-      barColor: 'bg-sky-500',
+      color: 'from-amber-600 to-yellow-600',
+      badgeBg: 'bg-amber-100 text-amber-900',
+      barColor: 'bg-amber-500',
       description: 'Tường thấm dột mùa mưa, nhà vệ sinh bốc mùi, mất nước sinh hoạt vào giờ cao điểm',
       tip: 'Xả cùng lúc vòi sen và bồn cầu để kiểm tra áp lực nước thực tế',
       icon: (
@@ -116,7 +116,7 @@ export function MarketTrapsOverview({ stats, onSelectCategory }: MarketTrapsOver
           </div>
           <span className="text-slate-300">|</span>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-emerald-500" />
+            <span className="w-3 h-3 rounded-full bg-brand" />
             <span className="text-xs font-bold text-slate-700">19% Trọ tốt uy tín</span>
           </div>
         </div>

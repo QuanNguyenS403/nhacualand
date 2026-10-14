@@ -37,7 +37,7 @@ export default function DangTinError({
             id="dang-tin-error-retry"
             type="button"
             onClick={() => reset()}
-            className="flex-1 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-700"
+            className="flex-1 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-slate-950 shadow-sm transition-colors hover:bg-brand-dark"
           >
             Thử lại
           </button>

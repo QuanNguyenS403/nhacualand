@@ -18,7 +18,7 @@ interface UserItem {
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   admin: { label: 'Quản trị viên', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  broker: { label: 'Môi giới', color: 'bg-teal-50 text-teal-700 border-teal-200' },
+  broker: { label: 'Môi giới', color: 'bg-brand-50 text-brand-800 border-brand-200' },
   user: { label: 'Người dùng', color: 'bg-slate-50 text-slate-700 border-slate-200' },
 };
 
@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
 
       if (res.ok) {
         const data = await res.json();
-        showToast(data.message ?? 'Cập nhật trạng thái người dùng thành công.');
+        showToast(data.message ?? 'Cập nhật trạng thái người dùng thành công');
         setUserToToggle(null);
         loadUsers();
       } else {
@@ -118,7 +118,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold text-sm shadow-xl flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-brand text-white font-semibold text-sm shadow-xl flex items-center gap-2">
           <span>{toast}</span>
         </div>
       )}
@@ -205,12 +205,12 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo số điện thoại hoặc họ tên thành viên..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand shadow-sm"
           />
         </div>
         <button
           type="submit"
-          className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
+          className="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
         >
           Tìm kiếm
         </button>
@@ -291,7 +291,7 @@ export default function AdminUsersPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1.5">
                           {u.isPhoneVerified ? (
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                            <span className="px-2 py-0.5 rounded bg-brand-50 text-brand-800 text-[10px] font-bold">
                               SĐT đã xác thực
                             </span>
                           ) : (
@@ -300,7 +300,7 @@ export default function AdminUsersPage() {
                             </span>
                           )}
                           {u.isIdVerified && (
-                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold">
+                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[10px] font-bold">
                               CCCD đã duyệt
                             </span>
                           )}
@@ -315,8 +315,8 @@ export default function AdminUsersPage() {
                             Đã bị khóa
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-50 text-brand-800 border border-brand-200 text-[11px] font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand" />
                             Hoạt động
                           </span>
                         )}
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                             onClick={() => setUserToToggle(u)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                               u.isBlocked
-                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                                ? 'bg-brand-50 text-brand-800 hover:bg-brand-100 border border-brand-200'
                                 : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
                             }`}
                           >
@@ -405,7 +405,7 @@ export default function AdminUsersPage() {
                 onClick={handleConfirmToggle}
                 className={`flex-1 py-2 text-xs font-bold text-white rounded-xl shadow-sm transition-colors disabled:opacity-50 ${
                   userToToggle.isBlocked
-                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    ? 'bg-brand hover:bg-brand-dark'
                     : 'bg-rose-600 hover:bg-rose-700'
                 }`}
               >

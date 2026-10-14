@@ -8,7 +8,7 @@ export interface QnsLogoProps {
    */
   variant?: 'emblem' | 'full' | 'horizontal';
   /**
-   * 'brand': Màu xanh ngọc biển đặc trưng (#368b81) chuẩn logo trên nền sáng
+   * 'brand': Màu vàng gold hoàng gia đặc trưng (#b88014) chuẩn logo trên nền sáng
    * 'light': Màu trắng nguyên bản khi đặt trên nền tối (Header, Footer, Admin bar)
    */
   theme?: 'brand' | 'light';
@@ -26,9 +26,9 @@ export function QnsLogo({
   className = '',
   size,
 }: QnsLogoProps) {
-  const primaryColor = theme === 'light' ? '#ffffff' : '#368b81';
-  const cutoutColor = theme === 'light' ? 'rgba(13, 148, 136, 0.95)' : '#ffffff';
-  const knobColor = theme === 'light' ? 'rgba(13, 148, 136, 0.95)' : '#ffffff';
+  const primaryColor = theme === 'light' ? '#ffffff' : '#b88014';
+  const cutoutColor = theme === 'light' ? 'rgba(184, 128, 20, 0.95)' : '#ffffff';
+  const knobColor = theme === 'light' ? 'rgba(184, 128, 20, 0.95)' : '#ffffff';
 
   // SVG Biểu tượng Q kết hợp Ngôi nhà & Kính lúp (Emblem)
   const renderEmblem = (width: number | string = 100, height: number | string = 100) => (
@@ -146,7 +146,7 @@ export function LandlordAvatar({
 
   return (
     <div
-      className={`relative shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-[#f0fdfa] border border-[#99f6e4]/60 shadow-xs ring-2 ring-white p-1 ${className}`}
+      className={`relative shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-[#fdfbf2] border border-[#f5dc93]/60 shadow-xs ring-2 ring-white p-1 ${className}`}
       style={{ width: size, height: size }}
       title={`${name} (Đối tác xác thực QNS)`}
     >

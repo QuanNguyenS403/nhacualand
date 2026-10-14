@@ -169,7 +169,7 @@ export function TransparencyChecker({ onSelectKeyword }: TransparencyCheckerProp
                     ? 'bg-rose-100 text-rose-600'
                     : result.status === 'WARNING'
                     ? 'bg-amber-100 text-amber-600'
-                    : 'bg-emerald-100 text-emerald-600'
+                    : 'bg-brand-100 text-brand-700'
                 }`}
               >
                 {result.status === 'DANGER' ? (
@@ -195,7 +195,7 @@ export function TransparencyChecker({ onSelectKeyword }: TransparencyCheckerProp
                         ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200'
                         : result.status === 'WARNING'
                         ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
-                        : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                        : 'bg-brand-50 text-brand-900 ring-1 ring-brand-200'
                     }`}
                   >
                     {result.severityLabel}

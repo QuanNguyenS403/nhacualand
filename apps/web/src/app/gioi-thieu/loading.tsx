@@ -5,10 +5,10 @@ export default function GioiThieuLoading() {
   return (
     <div className="min-h-screen bg-surface-muted animate-pulse" aria-busy="true" aria-live="polite">
       {/* Hero Banner skeleton */}
-      <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-teal-700 py-16 px-4 text-center">
+      <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-700 py-16 px-4 text-center">
         <div className="container-max max-w-4xl mx-auto space-y-4">
-          <div className="mx-auto h-10 w-64 rounded-xl bg-teal-800/80" />
-          <div className="mx-auto h-4 w-96 max-w-full rounded bg-teal-800/60" />
+          <div className="mx-auto h-10 w-64 rounded-xl bg-brand-800/80" />
+          <div className="mx-auto h-4 w-96 max-w-full rounded bg-brand-800/60" />
         </div>
       </div>
 

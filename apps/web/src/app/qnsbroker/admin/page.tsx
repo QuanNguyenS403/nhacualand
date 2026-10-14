@@ -62,17 +62,17 @@ interface UserAccountItem {
 }
 
 const LEAD_STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
-  new: { label: 'Mới gửi', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-  contacted: { label: 'Đã liên hệ', badgeClass: 'bg-blue-100 text-blue-800 border-blue-300' },
-  qualified: { label: 'Đã hẹn xem', badgeClass: 'bg-purple-100 text-purple-800 border-purple-300' },
-  completed: { label: 'Đã chốt thuê', badgeClass: 'bg-teal-100 text-teal-800 border-teal-300' },
+  new: { label: 'Mới gửi', badgeClass: 'bg-brand-100 text-brand-900 border-brand-300' },
+  contacted: { label: 'Đã liên hệ', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' },
+  qualified: { label: 'Đã hẹn xem', badgeClass: 'bg-yellow-100 text-yellow-900 border-yellow-300' },
+  completed: { label: 'Đã chốt thuê', badgeClass: 'bg-brand-50 text-brand-900 border-brand-300' },
   cancelled: { label: 'Đã hủy', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' },
 };
 
 const LISTING_STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
-  pending: { label: 'Chờ duyệt', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' },
-  active: { label: 'Đang hiển thị', badgeClass: 'bg-green-100 text-green-800 border-green-300' },
-  rented: { label: 'Đã cho thuê', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  pending: { label: 'Chờ duyệt', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' },
+  active: { label: 'Đang hiển thị', badgeClass: 'bg-brand-100 text-brand-900 border-brand-300' },
+  rented: { label: 'Đã cho thuê', badgeClass: 'bg-amber-50 text-amber-900 border-amber-300' },
   rejected: { label: 'Bị từ chối', badgeClass: 'bg-red-100 text-red-800 border-red-300' },
   removed: { label: 'Đã gỡ', badgeClass: 'bg-gray-100 text-gray-700 border-gray-300' },
   expired: { label: 'Hết hạn', badgeClass: 'bg-gray-100 text-gray-600 border-gray-300' },
@@ -193,17 +193,20 @@ export default function QnsBrokerAdminPage() {
       }
     } catch {}
 
-    // ── B. Nạp dữ liệu bài đăng phòng của chủ nhà ──
+    // ── B. Nạp dữ liệu bài đăng phòng của chủ nhà trực tiếp từ API chính thức ──
     const combinedListings: any[] = [];
     const seenListingIds = new Set<string>();
 
-    // Nạp từ server Next.js (file custom-listings.json)
     try {
-      const sRes = await fetch('/api/custom-listings?scope=all');
-      if (sRes.ok) {
-        const sData = await sRes.json();
-        if (Array.isArray(sData.items)) {
-          for (const item of sData.items) {
+      const [pendingRes, allRes] = await Promise.all([
+        authFetch('/admin/listings/pending?pageSize=100').catch(() => null),
+        authFetch('/listings?pageSize=100').catch(() => null),
+      ]);
+
+      if (pendingRes && pendingRes.ok) {
+        const pData = await pendingRes.json();
+        if (Array.isArray(pData.items)) {
+          for (const item of pData.items) {
             const strId = String(item.id);
             if (!seenListingIds.has(strId)) {
               seenListingIds.add(strId);
@@ -215,33 +218,9 @@ export default function QnsBrokerAdminPage() {
           }
         }
       }
-    } catch {}
 
-    // Nạp từ bộ nhớ cục bộ qns_custom_listings
-    try {
-      const rawList = localStorage.getItem('qns_custom_listings');
-      if (rawList) {
-        const parsedList = JSON.parse(rawList);
-        if (Array.isArray(parsedList)) {
-          for (const item of parsedList) {
-            const strId = String(item.id);
-            if (!seenListingIds.has(strId)) {
-              seenListingIds.add(strId);
-              combinedListings.push({
-                ...item,
-                images: sanitizeListingImages(item.images),
-              });
-            }
-          }
-        }
-      }
-    } catch {}
-
-    // Nạp từ Backend API nếu có
-    try {
-      const apiRes = await authFetch('/admin/listings/pending?pageSize=100');
-      if (apiRes.ok) {
-        const aData = await apiRes.json();
+      if (allRes && allRes.ok) {
+        const aData = await allRes.json();
         if (Array.isArray(aData.items)) {
           for (const item of aData.items) {
             const strId = String(item.id);
@@ -469,21 +448,23 @@ export default function QnsBrokerAdminPage() {
   async function handleApproveListing(listingId: string) {
     if (!confirm('Xác nhận phê duyệt bài đăng này lên sàn công khai?')) return;
     try {
-      await authFetch(`/admin/listings/${listingId}/approve`, { method: 'POST' }).catch(() => undefined);
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'active' }),
-      }).catch(() => undefined);
-
-      updateAccountListingStatus(listingId, 'active');
+      const res = await authFetch(`/admin/listings/${listingId}/approve`, { method: 'POST' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Phê duyệt bài đăng thất bại';
+        triggerToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       setListings((prev) =>
         prev.map((it) => (String(it.id) === String(listingId) ? { ...it, status: 'active' } : it))
       );
       triggerToast('Đã phê duyệt bài đăng phòng thành công');
-    } catch {
-      triggerToast('Lỗi khi duyệt bài đăng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      triggerToast(err?.message || 'Lỗi khi duyệt bài đăng');
     }
   }
 
@@ -493,19 +474,18 @@ export default function QnsBrokerAdminPage() {
     const reason = rejectionReasonInput.trim() || 'Thông tin phòng chưa đầy đủ hoặc không hợp lệ';
 
     try {
-      await authFetch(`/admin/listings/${listingId}/reject`, {
+      const res = await authFetch(`/admin/listings/${listingId}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
-      }).catch(() => undefined);
+      });
 
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'rejected' }),
-      }).catch(() => undefined);
-
-      updateAccountListingStatus(listingId, 'rejected');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Từ chối bài đăng thất bại';
+        triggerToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       setListings((prev) =>
         prev.map((it) =>
@@ -517,66 +497,81 @@ export default function QnsBrokerAdminPage() {
       setRejectModalListing(null);
       setRejectionReasonInput('');
       triggerToast('Đã từ chối bài đăng phòng thành công');
-    } catch {
-      triggerToast('Lỗi khi từ chối bài đăng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      triggerToast(err?.message || 'Lỗi khi từ chối bài đăng');
     }
   }
 
   async function handleMarkListingRented(listingId: string) {
     if (!confirm('Xác nhận phòng này đã cho thuê thành công? Bài đăng sẽ tự động gỡ khỏi khách tìm phòng')) return;
     try {
-      await authFetch(`/listings/${listingId}/rented`, { method: 'PATCH' }).catch(() => undefined);
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'rented' }),
-      }).catch(() => undefined);
-
-      updateAccountListingStatus(listingId, 'rented');
+      const res = await authFetch(`/listings/${listingId}/rented`, { method: 'PATCH' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Cập nhật trạng thái thất bại';
+        triggerToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       setListings((prev) =>
         prev.map((it) => (String(it.id) === String(listingId) ? { ...it, status: 'rented' } : it))
       );
       triggerToast('Đã chuyển bài đăng sang Đã cho thuê và tự động gỡ khỏi khách tìm phòng');
-    } catch {
-      triggerToast('Lỗi khi cập nhật trạng thái');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      triggerToast(err?.message || 'Lỗi khi cập nhật trạng thái');
     }
   }
 
   async function handleReactivateListing(listingId: string) {
     if (!confirm('Xác nhận mở lại bài đăng phòng này cho khách tìm phòng thuê?')) return;
     try {
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'active' }),
-      }).catch(() => undefined);
-
-      updateAccountListingStatus(listingId, 'active');
+      const res = await authFetch(`/admin/listings/${listingId}/approve`, { method: 'POST' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Mở lại bài đăng thất bại';
+        triggerToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       setListings((prev) =>
         prev.map((it) => (String(it.id) === String(listingId) ? { ...it, status: 'active' } : it))
       );
       triggerToast('Đã mở lại bài đăng phòng thành công');
-    } catch {
-      triggerToast('Lỗi khi mở lại bài đăng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      triggerToast(err?.message || 'Lỗi khi mở lại bài đăng');
     }
   }
 
   async function handleDeleteListingPermanent(listingId: string) {
     if (!confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa bài đăng phòng này vĩnh viễn khỏi toàn bộ hệ thống?')) return;
     try {
-      await authFetch(`/listings/${listingId}`, { method: 'DELETE' }).catch(() => undefined);
-      await fetch(`/api/custom-listings?id=${listingId}`, { method: 'DELETE' }).catch(() => undefined);
-
-      updateAccountListingStatus(listingId, 'removed');
+      const res = await authFetch(`/listings/${listingId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Xóa bài đăng thất bại';
+        triggerToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       setListings((prev) => prev.filter((it) => String(it.id) !== String(listingId)));
       triggerToast('Đã xóa vĩnh viễn bài đăng phòng');
-    } catch {
-      triggerToast('Lỗi khi xóa bài đăng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      triggerToast(err?.message || 'Lỗi khi xóa bài đăng');
     }
   }
+
 
   // ── Thao tác Quản trị viên trên Tài khoản người dùng ──
   async function handleToggleBlockUser(userId: string, currentBlocked: boolean) {
@@ -720,7 +715,7 @@ export default function QnsBrokerAdminPage() {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-white">
-          <div className="h-9 w-9 animate-spin rounded-full border-3 border-teal-400 border-t-transparent" />
+          <div className="h-9 w-9 animate-spin rounded-full border-3 border-brand border-t-transparent" />
           <p className="text-sm font-medium text-slate-300">Đang kiểm tra quyền Quản trị viên</p>
         </div>
       </div>
@@ -732,14 +727,14 @@ export default function QnsBrokerAdminPage() {
   // ════════════════════════════════════════════════════════════════
   if (!isAdminAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950 flex items-center justify-center px-4 py-12 relative overflow-hidden">
         {/* Background Decorative Rings */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative w-full max-w-md bg-slate-900/90 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-8 sm:p-10 shadow-2xl">
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 text-slate-950 font-black text-2xl shadow-lg shadow-teal-500/20">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand to-amber-400 text-slate-950 font-black text-2xl shadow-lg shadow-brand/20">
               Q
             </div>
             <div>
@@ -748,8 +743,8 @@ export default function QnsBrokerAdminPage() {
                 Hệ thống quản lý dữ liệu khách thuê và bài đăng chủ nhà QNS BROKER
               </p>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-mono">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 border border-brand/30 text-amber-400 text-xs font-mono">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
               <span>Đường dẫn bảo mật: qnsbroker/admin</span>
             </div>
           </div>
@@ -771,7 +766,7 @@ export default function QnsBrokerAdminPage() {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 placeholder="ducquan16102006@gmail.com"
-                className="w-full rounded-xl bg-slate-800/90 border border-slate-700 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors"
+                className="w-full rounded-xl bg-slate-800/90 border border-slate-700 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
               />
             </div>
 
@@ -786,7 +781,7 @@ export default function QnsBrokerAdminPage() {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Nhập mật khẩu quản trị viên"
-                  className="w-full rounded-xl bg-slate-800/90 border border-slate-700 px-4 py-3 pr-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors"
+                  className="w-full rounded-xl bg-slate-800/90 border border-slate-700 px-4 py-3 pr-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
                 />
                 <button
                   type="button"
@@ -810,14 +805,14 @@ export default function QnsBrokerAdminPage() {
             <button
               type="submit"
               disabled={loginLoading}
-              className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-slate-950 font-bold py-3.5 text-sm transition-all shadow-lg shadow-teal-500/20 active:scale-[0.99] disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-to-r from-brand to-amber-400 hover:from-brand-dark hover:to-amber-500 text-slate-950 font-bold py-3.5 text-sm transition-all shadow-lg shadow-brand/20 active:scale-[0.99] disabled:opacity-50"
             >
               {loginLoading ? 'Đang xác thực thông tin' : 'Đăng nhập Quản trị'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/" className="text-xs text-slate-400 hover:text-teal-400 transition-colors">
+            <Link href="/" className="text-xs text-slate-400 hover:text-amber-400 transition-colors">
               ‹ Quay lại Trang chủ website
             </Link>
           </div>
@@ -833,7 +828,7 @@ export default function QnsBrokerAdminPage() {
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 rounded-xl bg-teal-500 text-slate-950 px-4 py-3 font-semibold text-xs shadow-xl animate-fade-in flex items-center gap-2">
+        <div className="fixed top-5 right-5 z-50 rounded-xl bg-brand text-slate-950 px-4 py-3 font-semibold text-xs shadow-xl animate-fade-in flex items-center gap-2">
           <span>✓</span>
           <span>{toastMessage}</span>
         </div>
@@ -843,15 +838,15 @@ export default function QnsBrokerAdminPage() {
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3.5">
           <Link href="/qnsbroker/admin" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center font-black text-slate-950 text-base shadow-sm">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-brand to-amber-400 flex items-center justify-center font-black text-slate-950 text-base shadow-sm">
               Q
             </div>
             <div>
               <p className="font-bold text-white text-base leading-tight">QNS BROKER ADMIN</p>
-              <p className="text-[11px] text-teal-400 font-mono">qnsbroker/admin</p>
+              <p className="text-[11px] text-amber-400 font-mono">qnsbroker/admin</p>
             </div>
           </Link>
-          <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/30">
+          <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-brand/10 text-amber-300 border border-brand/30">
             Quản trị viên toàn quyền
           </span>
         </div>
@@ -897,7 +892,7 @@ export default function QnsBrokerAdminPage() {
             <div className="flex items-baseline justify-between">
               <p className="text-2xl font-bold text-white">{stats.totalLeadsCount}</p>
               {stats.newLeadsCount > 0 && (
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-brand/20 text-amber-400 border border-brand/30">
                   {stats.newLeadsCount} mới
                 </span>
               )}
@@ -907,7 +902,7 @@ export default function QnsBrokerAdminPage() {
 
           <div className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4 space-y-1">
             <p className="text-xs text-slate-400 font-medium">Phòng đang hiển thị</p>
-            <p className="text-2xl font-bold text-green-400">{stats.activeListingsCount}</p>
+            <p className="text-2xl font-bold text-brand">{stats.activeListingsCount}</p>
             <p className="text-[11px] text-slate-400">Đang công khai cho khách</p>
           </div>
 
@@ -926,7 +921,7 @@ export default function QnsBrokerAdminPage() {
 
           <div className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4 space-y-1">
             <p className="text-xs text-slate-400 font-medium">Phòng đã cho thuê</p>
-            <p className="text-2xl font-bold text-teal-400">{stats.rentedListingsCount}</p>
+            <p className="text-2xl font-bold text-amber-400">{stats.rentedListingsCount}</p>
             <p className="text-[11px] text-slate-400">Đã thuê, ẩn khỏi khách</p>
           </div>
 
@@ -943,7 +938,7 @@ export default function QnsBrokerAdminPage() {
             onClick={() => setActiveTab('leads')}
             className={`flex items-center gap-2 pb-3 px-3 text-sm font-bold border-b-2 transition-colors ${
               activeTab === 'leads'
-                ? 'border-teal-400 text-teal-400'
+                ? 'border-brand text-amber-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -957,7 +952,7 @@ export default function QnsBrokerAdminPage() {
             onClick={() => setActiveTab('listings')}
             className={`flex items-center gap-2 pb-3 px-3 text-sm font-bold border-b-2 transition-colors ${
               activeTab === 'listings'
-                ? 'border-teal-400 text-teal-400'
+                ? 'border-brand text-amber-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -971,7 +966,7 @@ export default function QnsBrokerAdminPage() {
             onClick={() => setActiveTab('users')}
             className={`flex items-center gap-2 pb-3 px-3 text-sm font-bold border-b-2 transition-colors ${
               activeTab === 'users'
-                ? 'border-teal-400 text-teal-400'
+                ? 'border-brand text-amber-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -995,12 +990,12 @@ export default function QnsBrokerAdminPage() {
                   value={leadSearch}
                   onChange={(e) => setLeadSearch(e.target.value)}
                   placeholder="Tìm theo tên khách, SĐT, email hoặc tên phòng..."
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-teal-400 w-full sm:w-80"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-brand w-full sm:w-80"
                 />
                 <select
                   value={leadStatusFilter}
                   onChange={(e) => setLeadStatusFilter(e.target.value)}
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-brand"
                 >
                   <option value="">Tất cả trạng thái lead</option>
                   <option value="new">Mới gửi</option>
@@ -1013,7 +1008,7 @@ export default function QnsBrokerAdminPage() {
 
               <button
                 onClick={exportLeadsCSV}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-xs font-semibold transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand/20 hover:bg-brand/30 text-amber-300 border border-brand/40 text-xs font-semibold transition-colors"
               >
                 <span>↓</span>
                 <span>Xuất dữ liệu CSV</span>
@@ -1061,12 +1056,12 @@ export default function QnsBrokerAdminPage() {
                               )}
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
-                              <p className="font-mono text-teal-300 font-bold">{item.phone}</p>
+                              <p className="font-mono text-amber-300 font-bold">{item.phone}</p>
                               <p className="text-slate-400 text-[11px]">{item.email || 'Không có email'}</p>
                               <div className="flex items-center gap-1.5 mt-1.5">
                                 <a
                                   href={`tel:${cleanPhone}`}
-                                  className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold hover:bg-emerald-500/30"
+                                  className="px-2 py-0.5 rounded bg-brand/20 text-amber-300 border border-brand/30 text-[10px] font-semibold hover:bg-brand/30"
                                 >
                                   Gọi ngay
                                 </a>
@@ -1074,7 +1069,7 @@ export default function QnsBrokerAdminPage() {
                                   href={`https://zalo.me/${cleanPhone}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold hover:bg-blue-500/30"
+                                  className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold hover:bg-amber-500/30"
                                 >
                                   Zalo
                                 </a>
@@ -1088,7 +1083,7 @@ export default function QnsBrokerAdminPage() {
                                 <Link
                                   href={`/tin/${item.listing.slug}`}
                                   target="_blank"
-                                  className="text-[11px] text-teal-400 hover:underline inline-flex items-center gap-0.5 mt-0.5"
+                                  className="text-[11px] text-amber-400 hover:underline inline-flex items-center gap-0.5 mt-0.5"
                                 >
                                   <span>Xem chi tiết phòng</span>
                                   <span>↗</span>
@@ -1099,7 +1094,7 @@ export default function QnsBrokerAdminPage() {
                               <p className="font-semibold text-white">
                                 {item.preferredDate ? item.preferredDate : 'Chưa chọn ngày'}
                               </p>
-                              <p className="text-[11px] text-teal-300 mt-0.5 font-medium">
+                              <p className="text-[11px] text-amber-300 mt-0.5 font-medium">
                                 {item.preferredTime ? item.preferredTime : 'Linh hoạt'}
                               </p>
                             </td>
@@ -1158,6 +1153,26 @@ export default function QnsBrokerAdminPage() {
         {/* ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'listings' && (
           <div className="space-y-4">
+            {/* Cổng duyệt tin tập trung chính thức */}
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-200 shadow-md">
+              <div className="space-y-1">
+                <p className="font-bold text-sm text-white flex items-center gap-2">
+                  <span className="text-amber-400">⚡</span>
+                  <span>Cổng duyệt tin đăng tập trung</span>
+                </p>
+                <p className="text-xs text-amber-200/90">
+                  Mọi tin đăng mới từ chủ nhà được đồng bộ và kiểm duyệt chính thức tại trang Duyệt tin chuẩn
+                </p>
+              </div>
+              <Link
+                href="/admin/tin-cho-duyet"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand to-amber-400 text-slate-950 font-bold text-xs hover:brightness-105 transition-all shadow-md shrink-0"
+              >
+                <span>Chuyển tới Trang Duyệt Tin</span>
+                <span>→</span>
+              </Link>
+            </div>
+
             {/* Search and Status Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="flex flex-1 items-center gap-2.5 flex-wrap">
@@ -1166,12 +1181,12 @@ export default function QnsBrokerAdminPage() {
                   value={listingSearch}
                   onChange={(e) => setListingSearch(e.target.value)}
                   placeholder="Tìm theo tiêu đề, địa chỉ, mã tin, tên hoặc SĐT chủ nhà..."
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-teal-400 w-full sm:w-96"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-brand w-full sm:w-96"
                 />
                 <select
                   value={listingStatusFilter}
                   onChange={(e) => setListingStatusFilter(e.target.value)}
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-brand"
                 >
                   <option value="">Tất cả trạng thái bài đăng</option>
                   <option value="pending">Chờ duyệt</option>
@@ -1185,7 +1200,7 @@ export default function QnsBrokerAdminPage() {
               <Link
                 href="/dang-tin"
                 target="_blank"
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-slate-950 text-xs font-bold transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand-dark text-slate-950 text-xs font-bold transition-colors shadow-sm"
               >
                 <span>+</span>
                 <span>Đăng tin phòng mới</span>
@@ -1252,9 +1267,8 @@ export default function QnsBrokerAdminPage() {
                               <p className="text-slate-200 font-medium line-clamp-2">
                                 {listing.addressDetail || listing.location?.name || 'Hà Nội'}
                               </p>
-                            </td>
-                            <td className="p-3.5 whitespace-nowrap">
-                              <p className="font-bold text-teal-400 text-sm">{formatPrice(listing.price)}</p>
+                            </td><td className="p-3.5 whitespace-nowrap">
+                              <p className="font-bold text-brand text-sm">{formatPrice(listing.price)}</p>
                               {listing.depositAmount && (
                                 <p className="text-[11px] text-slate-400">
                                   Cọc: {formatExactPrice(listing.depositAmount)}
@@ -1263,7 +1277,7 @@ export default function QnsBrokerAdminPage() {
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
                               <p className="font-bold text-white">{owner.fullName || 'Chủ nhà'}</p>
-                              <p className="font-mono text-teal-300 text-[11px]">{owner.phone || '0981 753 082'}</p>
+                              <p className="font-mono text-amber-300 text-[11px]">{owner.phone || '0981 753 082'}</p>
                               <p className="text-slate-400 text-[11px]">{owner.email || 'chunha@qns.com'}</p>
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
@@ -1292,7 +1306,7 @@ export default function QnsBrokerAdminPage() {
                                   <>
                                     <button
                                       onClick={() => handleApproveListing(String(listing.id))}
-                                      className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold"
+                                      className="px-2.5 py-1 rounded bg-brand/20 hover:bg-brand/30 text-amber-300 border border-brand/40 text-xs font-bold"
                                     >
                                       Duyệt tin
                                     </button>
@@ -1311,7 +1325,7 @@ export default function QnsBrokerAdminPage() {
                                 {st === 'active' && (
                                   <button
                                     onClick={() => handleMarkListingRented(String(listing.id))}
-                                    className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold"
+                                    className="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold"
                                     title="Đánh dấu phòng đã cho thuê và tự động gỡ khỏi khách tìm phòng"
                                   >
                                     Đã cho thuê
@@ -1321,7 +1335,7 @@ export default function QnsBrokerAdminPage() {
                                 {(st === 'rented' || st === 'removed' || st === 'rejected') && (
                                   <button
                                     onClick={() => handleReactivateListing(String(listing.id))}
-                                    className="px-2 py-1 rounded bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-xs font-semibold"
+                                    className="px-2.5 py-1 rounded bg-brand/20 hover:bg-brand/30 text-amber-300 border border-brand/40 text-xs font-semibold"
                                   >
                                     Mở lại tin
                                   </button>
@@ -1360,12 +1374,12 @@ export default function QnsBrokerAdminPage() {
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="Tìm theo họ tên, email hoặc số điện thoại..."
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-teal-400 w-full sm:w-80"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-brand w-full sm:w-80"
                 />
                 <select
                   value={userRoleFilter}
                   onChange={(e) => setUserRoleFilter(e.target.value)}
-                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                  className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white focus:outline-none focus:border-brand"
                 >
                   <option value="">Tất cả vai trò tài khoản</option>
                   <option value="admin">Quản trị viên</option>
@@ -1400,7 +1414,7 @@ export default function QnsBrokerAdminPage() {
                         return (
                           <tr key={u.id} className="hover:bg-slate-800/50 transition-colors">
                             <td className="p-3.5 font-bold text-white flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center font-bold text-[11px] text-teal-400">
+                              <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center font-bold text-[11px] text-amber-400">
                                 {u.fullName ? u.fullName[0].toUpperCase() : 'U'}
                               </div>
                               <div>
@@ -1411,14 +1425,14 @@ export default function QnsBrokerAdminPage() {
                               </div>
                             </td>
                             <td className="p-3.5 font-mono text-slate-300">{u.email || 'Chưa cập nhật'}</td>
-                            <td className="p-3.5 font-mono text-teal-300">{u.phone || 'Chưa có SĐT'}</td>
+                            <td className="p-3.5 font-mono text-amber-300">{u.phone || 'Chưa có SĐT'}</td>
                             <td className="p-3.5 whitespace-nowrap">
                               <span
                                 className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                                   u.role === 'admin'
                                     ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                                     : u.role === 'broker'
-                                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                                      ? 'bg-brand/20 text-amber-300 border border-brand/30'
                                       : 'bg-slate-700 text-slate-300'
                                 }`}
                               >
@@ -1431,7 +1445,7 @@ export default function QnsBrokerAdminPage() {
                                   Đã khóa
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-brand/20 text-amber-300 border border-brand/30">
                                   Hoạt động
                                 </span>
                               )}
@@ -1442,7 +1456,7 @@ export default function QnsBrokerAdminPage() {
                                   onClick={() => handleToggleBlockUser(u.id, u.isBlocked)}
                                   className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
                                     u.isBlocked
-                                      ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
+                                      ? 'bg-brand/20 hover:bg-brand/30 text-amber-300 border border-brand/30'
                                       : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30'
                                   }`}
                                 >
@@ -1519,7 +1533,7 @@ export default function QnsBrokerAdminPage() {
                 value={internalNoteInput}
                 onChange={(e) => setInternalNoteInput(e.target.value)}
                 placeholder="Ví dụ: Đã gọi điện lúc 10h, khách chốt hẹn xem phòng 15h thứ 7 tuần này..."
-                className="w-full rounded-xl bg-slate-800 border border-slate-700 p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-400"
+                className="w-full rounded-xl bg-slate-800 border border-slate-700 p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand"
               />
             </div>
             <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -1533,7 +1547,7 @@ export default function QnsBrokerAdminPage() {
               <button
                 type="button"
                 onClick={handleSaveLeadNote}
-                className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-xs font-bold text-slate-950"
+                className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-xs font-bold text-slate-950"
               >
                 Lưu ghi chú
               </button>

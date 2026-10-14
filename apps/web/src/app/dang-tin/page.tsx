@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authFetch, getAccessToken, setTokens, parseGoogleJwt, saveAccountCustomListing } from '@/lib/auth-client';
+import { authFetch, getAccessToken, setTokens, parseGoogleJwt } from '@/lib/auth-client';
 import { GoogleMapAddressPicker, type SelectedUniversityDistance } from '@/components/GoogleMapAddressPicker';
 import { compressImage } from '@/lib/image-compressor';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { AuthModal } from '@/components/AuthModal';
+import { PROPERTY_TYPES, isValidVietnamCoordinate } from '@qns/shared';
 
 interface LocationItem {
   id: number;
@@ -19,18 +20,6 @@ interface LocationItem {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
-interface PropertyTypeOption {
-  value: string;
-  label: string;
-}
-
-const PROPERTY_TYPES: PropertyTypeOption[] = [
-  { value: 'chung-cu', label: 'Chung cư' },
-  { value: 'chung-cu-mini', label: 'Chung cư mini' },
-  { value: 'phong-tro', label: 'Phòng trọ' },
-  { value: 'mat-bang-kinh-doanh', label: 'Mặt bằng kinh doanh' },
-];
-
 export default function DangTinPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -38,7 +27,7 @@ export default function DangTinPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const [locations, setLocations] = useState<LocationItem[]>([]);
-  const [propertyType, setPropertyType] = useState('chung-cu');
+  const [propertyType, setPropertyType] = useState('phong_tro');
 
   // Quản lý hình ảnh và xem trước
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -301,160 +290,58 @@ export default function DangTinPage() {
       bathrooms: form.get('bathrooms') ? Number(form.get('bathrooms')) : 1,
     };
 
+    if (!mapCoords?.lat || !mapCoords?.lng || !isValidVietnamCoordinate(mapCoords.lat, mapCoords.lng)) {
+      setError('Vui lòng chọn vị trí toạ độ chính xác trên bản đồ trước khi gửi tin đăng');
+      return;
+    }
+
     setLoading(true);
-    let createdListingId: string | null = null;
+    setError(null);
+    setMessage(null);
 
     try {
-      // 1. Tải hình ảnh lên máy chủ tĩnh Next.js để có đường dẫn ảnh vĩnh viễn không bao giờ lỗi
-      let serverImageUrls: string[] = [];
-      if (selectedFiles.length > 0) {
-        setUploadStatus(`Đang xử lý ${selectedFiles.length} hình ảnh thực tế`);
-        try {
-          const imgForm = new FormData();
-          selectedFiles.forEach((file) => imgForm.append('files', file));
-          const uploadRes = await fetch('/api/upload-images', {
-            method: 'POST',
-            body: imgForm,
-          });
-          if (uploadRes.ok) {
-            const uploadJson = await uploadRes.json();
-            if (uploadJson.success && Array.isArray(uploadJson.urls) && uploadJson.urls.length > 0) {
-              serverImageUrls = uploadJson.urls;
-            }
-          }
-        } catch (uploadErr) {
-          console.warn('Lưu ảnh vào thư mục máy chủ gặp sự cố, sử dụng ảnh nén base64:', uploadErr);
-        }
+      // 1. Gửi tin đăng trực tiếp tới Backend NestJS API (Postgres là Single Source of Truth)
+      const res = await authFetch('/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Không thể gửi tin đăng lên hệ thống, vui lòng kiểm tra lại';
+        throw new Error(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
       }
 
-      // Xác định danh sách ảnh cuối cùng: ưu tiên URL tĩnh máy chủ, fallback Base64 Data URL nén nhẹ
-      const finalImageUrls = serverImageUrls.length > 0 ? serverImageUrls : previewUrls;
-      const imagesForListing = finalImageUrls.map((url, idx) => ({
-        imageUrl: url,
-        sortOrder: idx,
-      }));
+      const newListing = await res.json();
+      const listingId = String(newListing?.id);
 
-      // 2. Thử lưu trữ qua backend API nếu backend đang chạy
-      try {
-        const res = await authFetch('/listings', {
+      // 2. Upload ảnh thực tế qua API nếu có ảnh được chọn
+      if (selectedFiles.length > 0 && listingId) {
+        setUploadStatus(`Đang tải lên ${selectedFiles.length} hình ảnh thực tế`);
+        const formData = new FormData();
+        selectedFiles.forEach((file) => formData.append('files', file));
+        await authFetch(`/listings/${listingId}/images`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: formData,
+        }).catch((uploadErr) => {
+          console.warn('Lỗi tải ảnh qua API:', uploadErr);
         });
-
-        if (res.ok) {
-          const newListing = await res.json();
-          createdListingId = newListing?.id ? String(newListing.id) : null;
-
-          // Upload ảnh thực tế qua API nếu có ảnh được chọn
-          if (selectedFiles.length > 0 && createdListingId) {
-            const formData = new FormData();
-            selectedFiles.forEach((file) => formData.append('files', file));
-            await authFetch(`/listings/${newListing.id}/images`, {
-              method: 'POST',
-              body: formData,
-            }).catch(() => undefined);
-          }
-        }
-      } catch (networkErr) {
-        console.warn('Lưu trữ qua backend API gặp sự cố, chuyển sang lưu trữ nội bộ:', networkErr);
       }
 
-      // 3. Chuẩn hóa ID và Slug tin đăng theo quy chuẩn CLAUDE.md § 2.9
-      const generatedId = createdListingId || `qns-${Date.now()}`;
-      const cleanSlugTitle = titleValue
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      const generatedSlug = `${cleanSlugTitle}-id${generatedId}`;
-
-      const selectedLoc = locations.find((l) => l.id === Number(locationIdValue));
-      let currentUser: any = null;
+      // 3. Thông báo cho người dùng và cập nhật giao diện
       if (typeof window !== 'undefined') {
-        try {
-          const userRaw = localStorage.getItem('user');
-          if (userRaw) currentUser = JSON.parse(userRaw);
-        } catch {}
+        localStorage.setItem('qns_last_posted_id', listingId);
+        window.dispatchEvent(new CustomEvent('qns_listing_posted', { detail: newListing }));
       }
 
-      const localListingItem = {
-        id: generatedId,
-        title: titleValue,
-        slug: generatedSlug,
-        description: (form.get('description') as string) || null,
-        transactionType: 'rent',
-        propertyType,
-        price: String(priceValue),
-        depositAmount: parsedDepositAmount,
-        minLeaseMonths: form.get('minLeaseMonths') ? Number(form.get('minLeaseMonths')) : 6,
-        utilitiesIncluded: form.get('utilitiesIncluded') === 'on',
-        electricityPricePerKwh: form.get('electricityPricePerKwh') ? Number(form.get('electricityPricePerKwh')) : 3500,
-        waterPricePerM3: form.get('waterPricePerM3') ? Number(form.get('waterPricePerM3')) : 25000,
-        waterPriceFlat: form.get('waterPriceFlat') ? Number(form.get('waterPriceFlat')) : 100000,
-        amenities,
-        areaM2: String(areaM2Value),
-        bedrooms: form.get('bedrooms') ? Number(form.get('bedrooms')) : 1,
-        bathrooms: form.get('bathrooms') ? Number(form.get('bathrooms')) : 1,
-        legalStatus: 'hop_dong_chinh_chu',
-        addressDetail: addressDetail.trim() || (form.get('addressDetail') as string) || 'Hà Nội',
-        lat: mapCoords?.lat ?? null,
-        lng: mapCoords?.lng ?? null,
-        status: 'pending', // Khởi tạo ở trạng thái Chờ duyệt để admin hold và duyệt
-        createdAt: new Date().toISOString(),
-        publishedAt: null,
-        viewCount: 0,
-        images: imagesForListing,
-        location: selectedLoc
-          ? { id: selectedLoc.id, name: selectedLoc.name, slug: selectedLoc.slug, level: selectedLoc.level }
-          : { id: 1, name: 'Hà Nội', slug: 'ha-noi', level: 'province' },
-        project: null,
-        ownerId: String(currentUser?.id || '1'),
-        ownerEmail: (currentUser?.email || '').toLowerCase(),
-        owner: {
-          id: String(currentUser?.id || '1'),
-          fullName: currentUser?.fullName || 'Chủ nhà',
-          phone: currentUser?.phone || '0981 753 082',
-          email: currentUser?.email || null,
-          avatarUrl: currentUser?.avatarUrl || null,
-          createdAt: new Date().toISOString(),
-          isPhoneVerified: true,
-          isIdVerified: true,
-        },
-        nearbyUniversities: selectedUnis.map((u) => ({
-          distanceMeters: u.distanceMeters,
-          travelTimeMinutes: u.travelTimeMinutes,
-          university: {
-            id: u.universityId || 1,
-            name: u.name || 'Đại học',
-            abbreviation: u.abbreviation || null,
-            slug: u.universitySlug || 'dai-hoc',
-          },
-        })),
-      };
-
-      // 4. Đồng bộ lưu trữ vào máy chủ Next.js (file JSON)
-      try {
-        await fetch('/api/custom-listings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(localListingItem),
-        });
-      } catch (serverSaveErr) {
-        console.warn('Lưu trữ máy chủ Next.js gặp lỗi:', serverSaveErr);
-      }
-
-      // 5. Lưu trữ riêng biệt theo tài khoản người dùng đăng tin (không bị nhảy sang tài khoản khác)
-      saveAccountCustomListing(localListingItem, currentUser);
-
-      setCreatedSlug(generatedSlug);
+      setCreatedSlug(newListing.slug);
       setMessage('success');
       setSelectedFiles([]);
       setPreviewUrls([]);
       (e.target as HTMLFormElement).reset();
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (err: any) {
+      setError(err?.message || 'Đăng tin gặp sự cố, vui lòng thử lại sau');
     } finally {
       setLoading(false);
       setUploadStatus(null);
@@ -495,7 +382,7 @@ export default function DangTinPage() {
   return (
     <div className="container-max max-w-4xl px-4 py-8 sm:py-12">
       {/* Banner tiêu đề trang đăng tin */}
-      <div className="mb-7 rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50/70 via-white to-teal-50/40 p-5 sm:p-6 shadow-sm">
+      <div className="mb-7 rounded-2xl border border-brand-200/80 bg-gradient-to-br from-brand-50/70 via-white to-brand-50/40 p-5 sm:p-6 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Đăng tin cho thuê phòng
         </h1>
@@ -733,8 +620,8 @@ export default function DangTinPage() {
         </div>
 
         {uploadStatus && (
-          <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800 flex items-center gap-2">
-            <span className="inline-block w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0" />
+          <div className="rounded-xl bg-brand-50 border border-brand-200 p-3 text-xs text-brand-900 flex items-center gap-2">
+            <span className="inline-block w-3.5 h-3.5 border-2 border-brand border-t-transparent rounded-full animate-spin shrink-0" />
             <span>{uploadStatus}</span>
           </div>
         )}
@@ -746,14 +633,14 @@ export default function DangTinPage() {
         )}
 
         {message === 'success' && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-6 text-center shadow-sm">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+          <div className="rounded-2xl bg-brand-50 border border-brand-200 p-6 text-center shadow-sm">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-emerald-800">Đăng tin thành công</p>
-            <p className="mt-1 text-sm text-emerald-700">
+            <p className="text-lg font-bold text-brand-900">Đăng tin thành công</p>
+            <p className="mt-1 text-sm text-brand-800">
               Tin đăng đã được tiếp nhận và đang ở trạng thái Chờ duyệt — Quản trị viên sẽ kiểm tra và phê duyệt trước khi hiển thị công khai
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2.5 sm:gap-3">

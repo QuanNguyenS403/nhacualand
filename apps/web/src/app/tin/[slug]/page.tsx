@@ -1,98 +1,71 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
 import { fetchListingBySlug, fetchListings } from '@/lib/api';
-import { ALL_DEMO_LISTINGS, findDemoListing } from '@/lib/demo-data';
-import { getCustomListingBySlugServer } from '@/lib/custom-listings-server';
-import { findMapRoomBySlug, mapRoomToListing } from '@/lib/map-rooms-data';
+import legacyRedirects from '@/lib/legacy-slug-redirects.json';
 import { ListingDetailClientView } from './ListingDetailClientView';
 
 interface Props {
   params: { slug: string };
 }
 
-// React cache() tự động deduplicate request giữa generateMetadata và ListingDetailPage
 const getListingOrNull = cache(async (slug: string) => {
-  // 1. Thử lấy từ Backend NestJS API nếu đang chạy
   try {
-    const apiListing = await fetchListingBySlug(slug);
-    if (apiListing && apiListing.id) return apiListing;
-  } catch {
-    // Backend offline hoặc tin chưa có trong DB
-  }
-
-  // 2. Thử lấy từ kho lưu trữ tin tự đăng trên máy chủ Next.js
-  try {
-    const serverCustom = getCustomListingBySlugServer(slug);
-    if (serverCustom) return serverCustom;
-  } catch {
-    // Lỗi đọc server custom listing
-  }
-
-  // 3. Thử tìm kiếm trong danh mục demo & alias (chỉ lấy nếu khớp, không tự ý tráo sang tin khác)
-  const demo = findDemoListing(slug, false);
-  if (demo) return demo;
-
-  // 4. Thử tìm kiếm trong kho dữ liệu phòng trọ bản đồ & đánh giá
-  try {
-    const mapRoom = findMapRoomBySlug(slug);
-    if (mapRoom) {
-      return mapRoomToListing(mapRoom);
-    }
-  } catch {
-    // Lỗi tìm map room
-  }
-
-  // Trả về null để phía client tiếp tục tìm kiếm trong localStorage của người dùng
+    const listing = await fetchListingBySlug(slug);
+    if (listing && listing.id) return listing;
+  } catch {}
   return null;
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  try {
-    const listing = await getListingOrNull(params.slug);
-    if (listing) {
-      const cleanTitle = (listing.title ?? 'Phòng cho thuê')
-        .replace(/^\[MẪU\]\s*/i, '')
-        .replace(/\[MẪU\]/gi, '')
-        .trim();
-      const desc = listing.description?.slice(0, 160) ?? `${cleanTitle} tại ${listing.location?.name ?? 'Việt Nam'}`;
-      return {
-        title: `${cleanTitle} | QNS BROKER`,
+  const listing = await getListingOrNull(params.slug);
+  if (listing) {
+    const cleanTitle = (listing.title ?? 'Phòng cho thuê')
+      .replace(/^\[MẪU\]\s*/i, '')
+      .replace(/\[MẪU\]/gi, '')
+      .trim();
+    const desc = listing.description?.slice(0, 160) ?? `${cleanTitle} tại ${listing.location?.name ?? 'Việt Nam'}`;
+    return {
+      title: `${cleanTitle} | QNS BROKER`,
+      description: desc,
+      openGraph: {
+        title: cleanTitle,
         description: desc,
-        openGraph: {
-          title: cleanTitle,
-          description: desc,
-          images: listing.images?.[0] ? [listing.images[0].imageUrl] : [],
-        },
-      };
-    }
-  } catch {}
+        images: listing.images?.[0] ? [listing.images[0].imageUrl] : [],
+      },
+    };
+  }
 
   return {
-    title: 'Chi tiết phòng cho thuê | QNS BROKER',
-    description: 'Thông tin chi tiết phòng trọ, căn hộ, studio cho thuê minh bạch chi phí, Chủ nhà trực tiếp tư vấn và dẫn xem miễn phí',
+    title: 'Phòng không tồn tại | QNS BROKER',
+    description: 'Thông tin phòng cho thuê không tìm thấy hoặc đã ngừng hiển thị',
   };
 }
 
 export default async function ListingDetailPage({ params }: Props) {
-  const listing = await getListingOrNull(params.slug);
+  // 1. Kiểm tra ánh xạ slug cũ sang slug mới (301 redirect)
+  const redirectedSlug = (legacyRedirects as Record<string, string>)[params.slug];
+  if (redirectedSlug) {
+    redirect(`/tin/${redirectedSlug}`);
+  }
 
-  // Lấy tin đăng tương tự từ API hoặc fallback danh mục demo
+  // 2. Lấy dữ liệu thật duy nhất từ PostgreSQL qua API
+  const listing = await getListingOrNull(params.slug);
+  if (!listing) {
+    notFound();
+  }
+
+  // 3. Lấy tin tương tự từ API
   let similarListings: any[] = [];
   try {
-    if (listing?.propertyType) {
-      const similarRes = await fetchListings({
+    if (listing.propertyType) {
+      const res = await fetchListings({
         propertyType: listing.propertyType,
         pageSize: '4',
       });
-      similarListings = (similarRes.items || [])
-        .filter((item) => item.id !== listing.id && !item.slug.includes('-idtemp'))
-        .slice(0, 4);
+      similarListings = (res.items || []).filter((it) => it.id !== listing.id).slice(0, 4);
     }
   } catch {}
-
-  if (similarListings.length === 0) {
-    similarListings = ALL_DEMO_LISTINGS.filter((item) => !listing || item.id !== listing.id).slice(0, 4);
-  }
 
   return (
     <ListingDetailClientView

@@ -62,7 +62,7 @@ Nếu `skills/*.md` mâu thuẫn với `CLAUDE.md`, **ưu tiên `CLAUDE.md`** v�
 
 ## 8. Quy chuẩn Giao diện & Văn phong Nghiêm ngặt (Học từ /learn)
 - **Tuyệt đối không thêm dấu chấm vào cuối câu**: Áp dụng triệt để cho toàn bộ nội dung người dùng nhìn thấy (tiêu đề trang, meta description, thông báo lỗi, popup alert, modal, nhãn nút bấm)
-- **Tiêu đề Hero H1**: Luôn phân tách 2 dòng ngữ nghĩa rõ ràng ("Tìm chỗ thuê phù hợp," và "rõ chi phí ngay từ đầu"), với line-height `leading-[1.15] md:leading-[1.18]` và khoảng đệm `mt-0.5 sm:mt-0.5` vừa vặn thuận mắt, các dòng dịch sát nhau hài hòa, không dính chữ cái và không dãn xa
+- **Tiêu đề Hero H1**: Luôn phân tách 2 dòng ngữ nghĩa rõ ràng ("QNS BROKER -" và "rõ chi phí ngay từ đầu"), với line-height `leading-[1.15] md:leading-[1.18]` và khoảng đệm `mt-0.5 sm:mt-0.5` vừa vặn thuận mắt, các dòng dịch sát nhau hài hòa, không dính chữ cái và không dãn xa
 - **Thông tin liên hệ trung tâm**: Mọi thông tin Hotline, Email, Địa chỉ, Thời gian làm việc phải tham chiếu duy nhất từ `SITE_CONFIG` (`hotline: 0981 753 082`, `email: contact@qns.com`, `address: Thành phố Hà Nội`, `workingHours: 24/7`)
 - **Tìm kiếm thông minh**: Thanh tìm kiếm Hero phải luôn hỗ trợ cả tiếng Việt có dấu và không dấu (diacritics-insensitive) kèm highlight chính xác từ khóa
 - **Cơ chế Rà soát Tự động (Audit Harness)**: Khi nhận nhiệm vụ rà soát, AI agent phải tự động kích hoạt quy trình kiểm tra 6 cổng (Skill 06) và tự động khắc phục độc lập mọi lỗi sai phát hiện được

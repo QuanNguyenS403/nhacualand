@@ -45,14 +45,208 @@ const PROPERTY_TYPES = [
   { value: 'mat_bang', label: 'Mặt bằng kinh doanh' },
 ];
 
-const AMENITY_LIST = [
-  { key: 'petsAllowed' as const, label: 'Nuôi thú cưng' },
-  { key: 'electricVehicle' as const, label: 'Sạc xe điện' },
-  { key: 'mezzanine' as const, label: 'Có gác xép' },
-  { key: 'balcony' as const, label: 'Ban công' },
-  { key: 'elevator' as const, label: 'Thang máy' },
-  { key: 'freeTime' as const, label: 'Không chung chủ' },
-];
+export const AMENITY_LIST = [
+  // Hàng 1
+  {
+    key: 'balcony' as const,
+    label: 'Ban công',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M5 10v9M9 10v9M13 10v9M17 10v9M21 10v9M3 19h18" />
+      </svg>
+    ),
+  },
+  {
+    key: 'bunkBed' as const,
+    label: 'Giường tầng',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 4v16M21 4v16M3 9h18M3 16h18M7 9V4M7 16V9" />
+      </svg>
+    ),
+  },
+  {
+    key: 'discount' as const,
+    label: 'Giảm giá',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M3.5 12.5L12 4h7a1 1 0 011 1v7l-8.5 8.5a2.121 2.121 0 01-3 0l-5-5a2.121 2.121 0 010-3z" />
+        <path strokeLinecap="round" d="M12 11l4 4M12 15h.01M16 11h.01" />
+      </svg>
+    ),
+  },
+  // Hàng 2
+  {
+    key: 'elevator' as const,
+    label: 'Thang máy',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 3v18M14 3v18M7 8l1.5-1.5L10 8M7 16l1.5 1.5L10 16" />
+      </svg>
+    ),
+  },
+  {
+    key: 'fridge' as const,
+    label: 'Tủ lạnh',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <rect x="6" y="2" width="12" height="20" rx="2" />
+        <path strokeLinecap="round" d="M6 9h12M9 5v2M9 13v3" />
+      </svg>
+    ),
+  },
+  {
+    key: 'security247' as const,
+    label: 'Bảo vệ 24/7',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 4.5v5.5c0 5-3.5 9-8 10-4.5-1-8-5-8-10V7.5L12 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+      </svg>
+    ),
+  },
+  // Hàng 3
+  {
+    key: 'kitchen' as const,
+    label: 'Bếp',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 19h16M5 19v-5a2 2 0 012-2h10a2 2 0 012 2v5M8 12V9a2 2 0 012-2h4a2 2 0 012 2v3M9 6a3 3 0 016 0" />
+      </svg>
+    ),
+  },
+  {
+    key: 'dryingBalcony' as const,
+    label: 'Ban công phơi',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4a2 2 0 012 2c0 1.5-2 2-2 3M3 13l9-5 9 5M6 11.5V20h12v-8.5" />
+      </svg>
+    ),
+  },
+  {
+    key: 'mezzanine' as const,
+    label: 'Giường gác lửng',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 4v16M21 4v16M3 8h18M7 8v12M11 11v9M7 11h4M7 14h4M7 17h4" />
+      </svg>
+    ),
+  },
+  // Hàng 4
+  {
+    key: 'petsAllowed' as const,
+    label: 'Cho phép thú cưng',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14c-1.5 0-3 .5-3 2.5 0 2 1.5 3.5 3 3.5s3-1.5 3-3.5c0-2-1.5-2.5-3-2.5zM6.5 12a2 2 0 100-4 2 2 0 000 4zM17.5 12a2 2 0 100-4 2 2 0 000 4zM10 7a2 2 0 100-4 2 2 0 000 4zM14 7a2 2 0 100-4 2 2 0 000 4z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'washingMachine' as const,
+    label: 'Máy giặt',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <circle cx="12" cy="13" r="4" />
+        <circle cx="8" cy="6.5" r="1" fill="currentColor" />
+        <circle cx="11" cy="6.5" r="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    key: 'wifi' as const,
+    label: 'Wifi',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" />
+      </svg>
+    ),
+  },
+  // Hàng 5
+  {
+    key: 'window' as const,
+    label: 'Cửa sổ',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
+      </svg>
+    ),
+  },
+  {
+    key: 'electricVehicle' as const,
+    label: 'Xe điện',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 18a3 3 0 100-6 3 3 0 000 6zM19 18a3 3 0 100-6 3 3 0 000 6zM8 15h8M12 15l-3-6h5l2 6M13 3l-2 4h3l-2 4" />
+      </svg>
+    ),
+  },
+  {
+    key: 'foreigner' as const,
+    label: 'Người nước ngoài',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+      </svg>
+    ),
+  },
+  // Hàng 6
+  {
+    key: 'privateBathroom' as const,
+    label: 'Vệ sinh riêng',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 4h10v5H7zM5 9h14v2a5 5 0 01-5 5h-4a5 5 0 01-5-5V9zM10 16v4M14 16v4M8 20h8" />
+      </svg>
+    ),
+  },
+  {
+    key: 'dryer' as const,
+    label: 'Máy sấy',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <circle cx="12" cy="13" r="4" strokeDasharray="3 3" />
+        <path strokeLinecap="round" d="M10 13a2 2 0 014 0" />
+        <circle cx="8" cy="6.5" r="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    key: 'waterHeater' as const,
+    label: 'Máy nóng, lạnh',
+    icon: (
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h8a3 3 0 013 3v2M7 16v-4M9 14H5M16 16v-2M15 15h2M8 4v4M12 4v4" />
+      </svg>
+    ),
+  },
+] as const;
+
+const DEFAULT_AMENITIES = {
+  balcony: false,
+  bunkBed: false,
+  discount: false,
+  elevator: false,
+  fridge: false,
+  security247: false,
+  kitchen: false,
+  dryingBalcony: false,
+  mezzanine: false,
+  petsAllowed: false,
+  washingMachine: false,
+  wifi: false,
+  window: false,
+  electricVehicle: false,
+  foreigner: false,
+  privateBathroom: false,
+  dryer: false,
+  waterHeater: false,
+};
 
 export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloatingSearchBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,14 +260,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE_LIMIT);
 
-  const [amenities, setAmenities] = useState({
-    petsAllowed: false,
-    electricVehicle: false,
-    mezzanine: false,
-    balcony: false,
-    elevator: false,
-    freeTime: false,
-  });
+  const [amenities, setAmenities] = useState<typeof DEFAULT_AMENITIES>({ ...DEFAULT_AMENITIES });
 
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>('none');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -162,14 +349,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
   };
 
   const handleResetAmenities = () => {
-    const reset = {
-      petsAllowed: false,
-      electricVehicle: false,
-      mezzanine: false,
-      balcony: false,
-      elevator: false,
-      freeTime: false,
-    };
+    const reset = { ...DEFAULT_AMENITIES };
     setAmenities(reset);
     handleApplyFilter(undefined, undefined, undefined, undefined, undefined, reset);
   };
@@ -248,7 +428,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
             )}
           </div>
 
-          {/* Nút tìm kiếm icon kính lúp chuẩn Ảnh 1 — Chỉnh màu Teal (#0d9488) đồng bộ màu chủ đạo website */}
+          {/* Nút tìm kiếm icon kính lúp chuẩn Ảnh 1 — Chỉnh màu Vàng Gold đồng bộ màu chủ đạo website */}
           <button
             type="button"
             onClick={() => {
@@ -272,7 +452,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
             onClick={() => setActiveDropdown(activeDropdown === 'filter' ? 'none' : 'filter')}
             className={`flex-1 h-10 px-2.5 sm:px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none ${
               isFilterActive || activeDropdown === 'filter'
-                ? 'border-brand text-brand bg-teal-50/50 font-semibold shadow-xs'
+                ? 'border-brand text-brand bg-brand-50/50 font-semibold shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:border-slate-300'
             }`}
           >
@@ -290,7 +470,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
             onClick={() => setActiveDropdown(activeDropdown === 'amenities' ? 'none' : 'amenities')}
             className={`flex-1 h-10 px-2.5 sm:px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none ${
               isAmenitiesActive || activeDropdown === 'amenities'
-                ? 'border-brand text-brand bg-teal-50/50 font-semibold shadow-xs'
+                ? 'border-brand text-brand bg-brand-50/50 font-semibold shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:border-slate-300'
             }`}
           >
@@ -322,7 +502,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
             onClick={() => setActiveDropdown(activeDropdown === 'price' ? 'none' : 'price')}
             className={`flex-1 h-10 px-2.5 sm:px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none ${
               isPriceActive || activeDropdown === 'price'
-                ? 'border-brand text-brand bg-teal-50/50 font-semibold shadow-xs'
+                ? 'border-brand text-brand bg-brand-50/50 font-semibold shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:border-slate-300'
             }`}
           >
@@ -371,7 +551,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
               <div
                 key={term}
                 onClick={() => handleSelectHistoryItem(term)}
-                className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-teal-50/50 text-xs font-medium text-slate-700 cursor-pointer group transition-colors"
+                className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-brand-50/50 text-xs font-medium text-slate-700 cursor-pointer group transition-colors"
               >
                 <div className="flex items-center gap-2 truncate">
                   <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -473,21 +653,26 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
         </div>
       )}
 
-      {/* POPUP 3: TIỆN ÍCH (Nuôi thú cưng, Sạc xe điện, Gác xép, Ban công, Thang máy, Không chung chủ) */}
+      {/* POPUP 3: TIỆN NGHI (Vị trí và kích thước đồng bộ như Bộ lọc và Khoảng giá) */}
       {activeDropdown === 'amenities' && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-4 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-4 sm:p-4.5 animate-in fade-in slide-in-from-top-1 duration-150 max-h-[calc(100vh-140px)] overflow-y-auto">
+          {/* Header: Tiêu đề Tiện nghi & nút đóng ✕ */}
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-800">Tiện ích phòng</h3>
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">Tiện nghi</h3>
             <button
               type="button"
               onClick={() => setActiveDropdown('none')}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-md"
+              className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors"
+              title="Đóng"
             >
-              ✕
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* Grid 3 cột x 6 hàng = 18 tiện nghi chuẩn theo ảnh */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {AMENITY_LIST.map((item) => {
               const active = amenities[item.key];
               return (
@@ -495,39 +680,39 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
                   key={item.key}
                   type="button"
                   onClick={() => toggleAmenity(item.key)}
-                  className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 sm:py-2.5 rounded-2xl border text-[11px] sm:text-xs font-semibold text-left transition-all cursor-pointer select-none min-w-0 ${
                     active
-                      ? 'border-brand bg-teal-50 text-brand font-semibold shadow-xs'
-                      : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100 text-slate-700'
+                      ? 'border-[#5B487A] bg-[#F2EEF8] text-[#332247] shadow-2xs ring-1 ring-[#5B487A]/25'
+                      : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 hover:border-slate-300'
                   }`}
                 >
-                  <span
-                    className={`w-4 h-4 rounded-md flex items-center justify-center border text-[10px] ${
-                      active ? 'bg-brand border-brand text-white' : 'border-slate-300 bg-white'
-                    }`}
-                  >
-                    {active && '✓'}
+                  <span className={`shrink-0 transition-colors [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-4.5 sm:[&>svg]:h-4.5 ${active ? 'text-[#5B487A]' : 'text-slate-600'}`}>
+                    {item.icon}
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate leading-tight">{item.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+          {/* Footer Buttons: Xóa lựa chọn (trái) & Xác nhận (phải) */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={handleResetAmenities}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
             >
-              Đặt lại
+              Xóa lựa chọn
             </button>
             <button
               type="button"
-              onClick={() => setActiveDropdown('none')}
-              className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-700 text-white text-xs font-bold shadow-sm shadow-brand/20 transition-all cursor-pointer"
+              onClick={() => {
+                setActiveDropdown('none');
+                handleApplyFilter();
+              }}
+              className="px-6 sm:px-7 py-2 sm:py-2.5 rounded-2xl bg-[#4C3B65] hover:bg-[#3D2E53] text-white font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
             >
-              Áp dụng
+              Xác nhận
             </button>
           </div>
         </div>
@@ -626,7 +811,7 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
                   }}
                   className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-brand bg-teal-50 text-brand font-semibold shadow-xs'
+                      ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
                       : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                   }`}
                 >

@@ -139,19 +139,19 @@ export function OwnerContactBox({
 
         {/* Khối Đặt lịch xem phòng với Chủ Nhà hoặc Thông báo đã cho thuê */}
         {isRented ? (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 space-y-3 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-700 text-white text-xs font-bold shadow-xs">
+          <div className="rounded-2xl bg-brand-50 border border-brand-200 p-5 space-y-3 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-700 text-white text-xs font-bold shadow-xs">
               <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
               </svg>
               <span>Phòng đã cho thuê</span>
             </div>
-            <p className="text-xs text-emerald-900 font-medium leading-relaxed">
+            <p className="text-xs text-brand-900 font-medium leading-relaxed">
               Phòng này đã được cho thuê thành công — Hiện tại phòng không còn trống nên không thể tiếp nhận đặt lịch đi xem
             </p>
             <Link
               href="/thue"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-4 text-xs sm:text-sm transition-all shadow-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 px-4 text-xs sm:text-sm transition-all shadow-sm"
             >
               <span>Tìm các phòng còn trống khác</span>
             </Link>

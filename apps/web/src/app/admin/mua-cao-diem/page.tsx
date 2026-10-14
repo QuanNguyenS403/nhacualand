@@ -143,7 +143,7 @@ export default function AdminPricingSeasonsPage() {
         <div
           className={`rounded-2xl p-4 text-sm flex items-center justify-between shadow-sm animate-fade-in ${
             feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              ? 'bg-brand-50 text-brand-900 border border-brand-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
           }`}
         >
@@ -175,7 +175,7 @@ export default function AdminPricingSeasonsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="VD: Mùa tựu trường (Tháng 8 - Tháng 9)"
-                className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
 
@@ -189,7 +189,7 @@ export default function AdminPricingSeasonsPage() {
                   required
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
 
@@ -202,7 +202,7 @@ export default function AdminPricingSeasonsPage() {
                   required
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2.5 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function AdminPricingSeasonsPage() {
                 <label className="text-xs font-bold text-slate-700">
                   Hệ số nhân giá (Surge Multiplier):
                 </label>
-                <span className="text-base font-extrabold text-teal-700 bg-white px-2.5 py-0.5 rounded-lg border border-teal-200 shadow-xs">
+                <span className="text-base font-extrabold text-brand-900 bg-brand-50 px-2.5 py-0.5 rounded-lg border border-brand-300 shadow-xs">
                   {priceMultiplier}x
                 </span>
               </div>
@@ -224,7 +224,7 @@ export default function AdminPricingSeasonsPage() {
                 step="0.05"
                 value={priceMultiplier}
                 onChange={(e) => setPriceMultiplier(parseFloat(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand"
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold">
                 <span>1.0x (Giá gốc)</span>
@@ -244,7 +244,7 @@ export default function AdminPricingSeasonsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Giai đoạn tân sinh viên tìm trọ..."
-                className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 px-3.5 py-2 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
 
@@ -254,7 +254,7 @@ export default function AdminPricingSeasonsPage() {
                 id="activeToggle"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300"
+                className="h-4 w-4 rounded text-brand focus:ring-brand border-slate-300"
               />
               <label htmlFor="activeToggle" className="text-xs font-bold text-slate-800 cursor-pointer">
                 Kích hoạt ngay mùa cao điểm này trên sàn
@@ -265,7 +265,7 @@ export default function AdminPricingSeasonsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-brand hover:bg-brand-dark disabled:opacity-50 text-slate-950 text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 {saving ? 'Đang lưu cấu hình...' : 'Lưu Cấu Hình Mùa Cao Điểm'}
               </button>
@@ -276,7 +276,7 @@ export default function AdminPricingSeasonsPage() {
         {/* Cột phải: Live Price Preview */}
         <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2.5 text-teal-400 mb-3">
+            <div className="flex items-center gap-2.5 text-amber-400 mb-3">
               <span className="text-xs font-bold uppercase tracking-wider">
                 Xem trước giá thực tế (Live Preview)
               </span>
@@ -307,7 +307,7 @@ export default function AdminPricingSeasonsPage() {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-sm font-extrabold text-teal-300">
+                      <p className="text-sm font-extrabold text-amber-300">
                         {formatPrice(surgePrice)}
                       </p>
                       {diff > 0 && (
@@ -373,7 +373,7 @@ export default function AdminPricingSeasonsPage() {
                       {new Date(season.endDate).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md font-extrabold text-teal-800 bg-teal-50 border border-teal-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md font-extrabold text-brand-900 bg-brand-50 border border-brand-300">
                         {season.priceMultiplier}x
                       </span>
                     </td>
@@ -383,11 +383,11 @@ export default function AdminPricingSeasonsPage() {
                         onClick={() => handleToggleSeason(season)}
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
                           season.isActive
-                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                            ? 'bg-brand-100 text-brand-900 hover:bg-brand-200'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
-                        <span className={`h-2 w-2 rounded-full ${season.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                        <span className={`h-2 w-2 rounded-full ${season.isActive ? 'bg-brand' : 'bg-slate-400'}`} />
                         <span>{season.isActive ? 'Đang BẬT' : 'Đã TẮT'}</span>
                       </button>
                     </td>

@@ -34,22 +34,22 @@ interface SellerLead {
 const STATUS_LABELS: Record<string, { label: string; color: string; desc: string }> = {
   new: {
     label: 'Khách mới',
-    color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    color: 'bg-brand-100 text-brand-900 border-brand-200',
     desc: 'Chủ nhà đang tiếp nhận nhu cầu',
   },
   contacted: {
     label: 'Đang tư vấn',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    color: 'bg-amber-100 text-amber-900 border-amber-200',
     desc: 'Chủ nhà đã liên hệ và sàng lọc nhu cầu',
   },
   qualified: {
     label: 'Đang xếp lịch xem',
-    color: 'bg-purple-100 text-purple-800 border-purple-200',
+    color: 'bg-yellow-100 text-yellow-900 border-yellow-300',
     desc: 'Đang sắp xếp lịch hẹn dẫn khách xem phòng',
   },
   completed: {
     label: 'Đã thuê thành công',
-    color: 'bg-teal-100 text-teal-800 border-teal-200',
+    color: 'bg-brand-50 text-brand-900 border-brand-300',
     desc: 'Giao dịch thuê đã hoàn tất và bàn giao phòng',
   },
   spam: {

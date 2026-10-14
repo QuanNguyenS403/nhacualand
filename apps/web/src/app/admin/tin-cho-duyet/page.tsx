@@ -170,54 +170,14 @@ export default function AdminPendingListingsPage() {
         apiTotal = data.pagination?.total ?? 0;
         apiTotalPages = data.pagination?.totalPages ?? 1;
       }
+      setItems(apiItems);
+      setTotal(apiTotal);
+      setTotalPages(apiTotalPages);
     } catch {
-      // Chuyển sang nguồn dữ liệu an toàn
+      showToast('Không thể tải danh sách tin chờ duyệt từ máy chủ', 'error');
+    } finally {
+      setLoading(false);
     }
-
-    // Đọc thêm tin từ bộ nhớ cục bộ để đảm bảo admin kiểm soát trọn vẹn mọi tin đăng
-    let localListings: any[] = [];
-    if (typeof window !== 'undefined') {
-      try {
-        healCustomListingsInLocalStorage();
-        const raw = localStorage.getItem('qns_custom_listings');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            localListings = parsed.map((item) => ({
-              ...item,
-              images: sanitizeListingImages(item.images),
-            }));
-          }
-        }
-      } catch {}
-    }
-
-    // Lọc local listings theo statusFilter (mặc định trang duyệt tin ưu tiên tin pending)
-    if (statusFilter) {
-      localListings = localListings.filter((l) => (l.status || 'pending').toLowerCase() === statusFilter.toLowerCase());
-    } else {
-      localListings = localListings.filter((l) => (l.status || 'pending').toLowerCase() === 'pending');
-    }
-
-    if (searchKeyword.trim()) {
-      const kw = searchKeyword.trim().toLowerCase();
-      localListings = localListings.filter(
-        (l) => l.title?.toLowerCase().includes(kw) || l.addressDetail?.toLowerCase().includes(kw)
-      );
-    }
-
-    const existingIds = new Set(apiItems.map((item) => String(item.id)));
-    const mergedListings = [...apiItems];
-    for (const item of localListings) {
-      if (!existingIds.has(String(item.id))) {
-        mergedListings.push(item);
-      }
-    }
-
-    setItems(mergedListings);
-    setTotal(mergedListings.length);
-    setTotalPages(Math.max(1, Math.ceil(mergedListings.length / 10)));
-    setLoading(false);
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -230,29 +190,25 @@ export default function AdminPendingListingsPage() {
     if (!confirm('Xác nhận phê duyệt tin đăng phòng này lên sàn?')) return;
     setSubmittingAction(true);
     try {
-      await authFetch(`/admin/listings/${id}/approve`, {
+      const res = await authFetch(`/admin/listings/${id}/approve`, {
         method: 'POST',
-      }).catch(() => undefined);
+      });
 
-      if (typeof window !== 'undefined') {
-        const raw = localStorage.getItem('qns_custom_listings');
-        if (raw) {
-          const list = JSON.parse(raw);
-          const updated = list.map((item: any) =>
-            String(item.id) === String(id)
-              ? { ...item, status: 'active', publishedAt: new Date().toISOString() }
-              : item
-          );
-          localStorage.setItem('qns_custom_listings', JSON.stringify(updated));
-          window.dispatchEvent(new Event('qns_listings_updated'));
-        }
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Phê duyệt tin thất bại';
+        showToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg, 'error');
+        return;
       }
 
       showToast('Đã phê duyệt tin thành công');
       setSelectedListing(null);
       loadListings();
-    } catch {
-      showToast('Đã phê duyệt tin thành công');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Lỗi kết nối máy chủ', 'error');
     } finally {
       setSubmittingAction(false);
     }
@@ -298,24 +254,17 @@ export default function AdminPendingListingsPage() {
 
     setSubmittingAction(true);
     try {
-      await authFetch(`/admin/listings/${rejectingListing.id}/reject`, {
+      const res = await authFetch(`/admin/listings/${rejectingListing.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: finalReason, rejectionReason: finalReason }),
-      }).catch(() => undefined);
+      });
 
-      if (typeof window !== 'undefined') {
-        const raw = localStorage.getItem('qns_custom_listings');
-        if (raw) {
-          const list = JSON.parse(raw);
-          const updated = list.map((item: any) =>
-            String(item.id) === String(rejectingListing.id)
-              ? { ...item, status: 'rejected', rejectionReason: finalReason }
-              : item
-          );
-          localStorage.setItem('qns_custom_listings', JSON.stringify(updated));
-          window.dispatchEvent(new Event('qns_listings_updated'));
-        }
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Từ chối tin thất bại';
+        showToast(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg, 'error');
+        return;
       }
 
       showToast('Đã từ chối tin đăng');
@@ -323,8 +272,11 @@ export default function AdminPendingListingsPage() {
       setSelectedListing(null);
       setCustomReason('');
       loadListings();
-    } catch {
-      showToast('Đã từ chối tin đăng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Lỗi kết nối máy chủ', 'error');
     } finally {
       setSubmittingAction(false);
     }
@@ -337,7 +289,7 @@ export default function AdminPendingListingsPage() {
         <div
           className={`fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-in fade-in slide-in-from-bottom-5 duration-200 ${
             toastMessage.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              ? 'bg-brand-50 text-brand-900 border-brand-200'
               : 'bg-red-50 text-red-800 border-red-200'
           }`}
         >
@@ -362,7 +314,7 @@ export default function AdminPendingListingsPage() {
             }}
             className={`px-4 py-2 rounded-lg transition-all ${
               statusFilter === 'pending'
-                ? 'bg-white text-teal-700 shadow-sm'
+                ? 'bg-white text-brand shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -416,7 +368,7 @@ export default function AdminPendingListingsPage() {
             }}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
               categoryFilter === tab.key
-                ? 'bg-teal-600 text-white shadow-sm'
+                ? 'bg-brand text-white shadow-sm'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -441,12 +393,12 @@ export default function AdminPendingListingsPage() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="Tìm theo tiêu đề tin, số điện thoại hoặc họ tên người đăng..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand shadow-sm"
           />
         </div>
         <button
           type="submit"
-          className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
+          className="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
         >
           Tìm kiếm
         </button>
@@ -501,7 +453,7 @@ export default function AdminPendingListingsPage() {
                     Chưa có ảnh
                   </div>
                 )}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold bg-teal-600/90 text-white backdrop-blur-sm">
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold bg-brand/90 text-white backdrop-blur-sm">
                   Cho thuê
                 </div>
                 <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/60 text-white backdrop-blur-sm">
@@ -513,11 +465,11 @@ export default function AdminPendingListingsPage() {
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200">
                       {PROPERTY_TYPE_NAMES[listing.propertyType] ?? listing.propertyType}
                     </span>
                     {listing.utilitiesIncluded && (
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
                         Bao điện nước
                       </span>
                     )}
@@ -532,13 +484,13 @@ export default function AdminPendingListingsPage() {
 
                   <h2
                     onClick={() => setSelectedListing(listing)}
-                    className="text-base font-bold text-slate-900 hover:text-teal-600 transition-colors cursor-pointer line-clamp-2"
+                    className="text-base font-bold text-slate-900 hover:text-brand transition-colors cursor-pointer line-clamp-2"
                   >
                     {listing.title}
                   </h2>
 
                   <div className="mt-2 flex items-baseline gap-4 flex-wrap">
-                    <span className="text-lg font-extrabold text-teal-600">
+                    <span className="text-lg font-extrabold text-brand">
                       {formatPriceVND(listing.price)} / tháng
                     </span>
                     {listing.depositAmount && (
@@ -602,7 +554,7 @@ export default function AdminPendingListingsPage() {
                         </button>
                         <button
                           onClick={() => handleApprove(listing.id)}
-                          className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors"
+                          className="px-3.5 py-1.5 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-sm transition-colors"
                         >
                           Phê duyệt
                         </button>
@@ -648,7 +600,7 @@ export default function AdminPendingListingsPage() {
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider">
+                <span className="text-xs font-bold text-brand uppercase tracking-wider">
                   Chi tiết tin cho thuê #{selectedListing.id}
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 line-clamp-1">
@@ -695,7 +647,7 @@ export default function AdminPendingListingsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <div>
                   <span className="text-xs text-slate-400">Giá thuê / tháng:</span>
-                  <p className="text-base font-bold text-teal-600">
+                  <p className="text-base font-bold text-brand">
                     {formatPriceVND(selectedListing.price)}
                   </p>
                 </div>
@@ -720,12 +672,12 @@ export default function AdminPendingListingsPage() {
               </div>
 
               {/* Chi phí điện nước */}
-              <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">
+              <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100">
+                <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">
                   Biểu phí điện nước
                 </h4>
                 {selectedListing.utilitiesIncluded ? (
-                  <p className="text-sm font-semibold text-emerald-700">
+                  <p className="text-sm font-semibold text-amber-800">
                     Miễn phí hoàn toàn / Đã bao trọn tiền điện nước trong giá thuê
                   </p>
                 ) : (
@@ -787,7 +739,7 @@ export default function AdminPendingListingsPage() {
                           {item.university.abbreviation ? `[${item.university.abbreviation}] ` : ''}
                           {item.university.name}
                         </span>
-                        <span className="text-teal-700 font-bold">
+                        <span className="text-brand font-bold">
                           {item.distanceMeters ? `~${(item.distanceMeters / 1000).toFixed(1)} km` : 'Gần trường'}
                         </span>
                       </div>
@@ -818,16 +770,16 @@ export default function AdminPendingListingsPage() {
               </div>
 
               {/* Người đăng */}
-              <div className="p-4 bg-teal-50/60 border border-teal-100 rounded-xl flex items-center justify-between">
+              <div className="p-4 bg-brand-50/60 border border-brand-100 rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-teal-800 font-semibold">Chủ tin đăng:</span>
+                  <span className="text-xs text-brand-900 font-semibold">Chủ tin đăng:</span>
                   <p className="text-sm font-bold text-slate-900">
                     {selectedListing.owner.fullName ?? 'Chưa cập nhật tên'}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-teal-800 font-semibold">Số điện thoại liên hệ:</span>
-                  <p className="text-sm font-mono font-extrabold text-teal-800">
+                  <span className="text-xs text-brand-900 font-semibold">Số điện thoại liên hệ:</span>
+                  <p className="text-sm font-mono font-extrabold text-brand">
                     {selectedListing.owner.phone}
                   </p>
                 </div>
@@ -844,7 +796,7 @@ export default function AdminPendingListingsPage() {
                   className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 ${
                     selectedListing.verificationStatus === 'da_xac_thuc'
                       ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100'
-                      : 'bg-teal-50 text-teal-800 border border-teal-300 hover:bg-teal-100'
+                      : 'bg-brand-50 text-brand-900 border border-brand-300 hover:bg-brand-100'
                   }`}
                 >
                   {selectedListing.verificationStatus === 'da_xac_thuc' ? (
@@ -880,7 +832,7 @@ export default function AdminPendingListingsPage() {
                   </button>
                   <button
                     onClick={() => handleApprove(selectedListing.id)}
-                    className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-colors"
+                    className="px-5 py-2 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-xl shadow-sm transition-colors"
                   >
                     Phê duyệt ngay
                   </button>

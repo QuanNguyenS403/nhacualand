@@ -67,7 +67,7 @@ export function MobileStickyContactBar({
             {isRented ? (
               <Link
                 href="/thue"
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-brand-700 hover:bg-brand-800 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all"
               >
                 <span>Phòng đã cho thuê</span>
               </Link>

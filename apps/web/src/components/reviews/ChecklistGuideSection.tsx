@@ -65,7 +65,7 @@ export function ChecklistGuideSection() {
     <section className="my-10 rounded-3xl bg-slate-50 border border-slate-200/80 p-6 sm:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-900 text-xs font-bold uppercase tracking-wider mb-2">
             <span>Cẩm nang thực chiến</span>
             <span>•</span>
             <span>Bảo vệ quyền lợi khách thuê</span>
@@ -111,7 +111,7 @@ export function ChecklistGuideSection() {
             <div
               key={s.step}
               className={`rounded-2xl bg-white p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between ${
-                idx === 0 ? 'lg:col-span-2 bg-gradient-to-br from-white to-teal-50/40 border-teal-200/70' : ''
+                idx === 0 ? 'lg:col-span-2 bg-gradient-to-br from-white to-brand-50/40 border-brand-200/70' : ''
               }`}
             >
               <div>

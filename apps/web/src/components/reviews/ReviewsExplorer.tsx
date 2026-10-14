@@ -193,8 +193,8 @@ export function ReviewsExplorer({ initialReviews, totalCount }: ReviewsExplorerP
             onClick={() => setRatingFilter('good')}
             className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
               ratingFilter === 'good'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                ? 'bg-brand text-white'
+                : 'bg-brand-50 text-brand-900 hover:bg-brand-100'
             }`}
           >
             Trọ tốt được khen (4-5 sao)

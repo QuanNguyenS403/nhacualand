@@ -83,7 +83,7 @@ export function PropertyShareButtons({ title }: { title: string }) {
           className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-muted text-text-secondary hover:bg-slate-200 transition-colors"
         >
           {copied ? (
-            <svg className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <svg className="h-4 w-4 text-brand" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           ) : (
@@ -94,7 +94,7 @@ export function PropertyShareButtons({ title }: { title: string }) {
         </button>
         {copied && (
           <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-0.5 text-[10px] text-white shadow">
-            Đã chép link!
+            Đã chép link
           </span>
         )}
       </div>

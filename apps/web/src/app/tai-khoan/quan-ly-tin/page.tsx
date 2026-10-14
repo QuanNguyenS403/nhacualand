@@ -19,9 +19,9 @@ import { healCustomListingsInLocalStorage, sanitizeListingImages, DEFAULT_ROOM_F
  */
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Chờ duyệt', className: 'bg-amber-100 text-amber-700' },
-  active: { label: 'Đang hiển thị', className: 'bg-green-100 text-green-700' },
-  rented: { label: 'Đã cho thuê', className: 'bg-emerald-100 text-emerald-800' },
+  pending: { label: 'Chờ duyệt', className: 'bg-amber-100 text-amber-800' },
+  active: { label: 'Đang hiển thị', className: 'bg-brand-100 text-brand-900' },
+  rented: { label: 'Đã cho thuê', className: 'bg-amber-100 text-amber-900' },
   rejected: { label: 'Bị từ chối', className: 'bg-red-100 text-red-700' },
   expired: { label: 'Hết hạn', className: 'bg-gray-200 text-gray-600' },
   removed: { label: 'Đã gỡ', className: 'bg-gray-200 text-gray-500' },
@@ -61,7 +61,7 @@ export default function QuanLyTinPage() {
 
     let apiItems: Listing[] = [];
 
-    // 1. Nạp từ Backend API chính xác cho tài khoản này
+    // Nạp từ Backend API chính xác cho tài khoản này (nguồn sự thật duy nhất)
     try {
       const statusParam = status ? `status=${status}&` : '';
       const query = `?${statusParam}page=${targetPage}&pageSize=50`;
@@ -75,68 +75,18 @@ export default function QuanLyTinPage() {
       if (res.ok) {
         const data: ListingListResponse = await res.json();
         apiItems = data.items || [];
+        setListings(apiItems);
+        setTotal(data.pagination?.total ?? apiItems.length);
+        setPage(targetPage);
+        setTotalPages(data.pagination?.totalPages ?? 1);
+      } else {
+        setError('Không thể tải danh sách tin từ máy chủ');
       }
     } catch {
-      // Bỏ qua lỗi kết nối máy chủ để tự động chuyển sang lưu trữ an toàn
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setLoading(false);
     }
-
-    // 2. Nạp từ Server Next.js CHỈ cho tài khoản này (lọc đúng theo ownerId / ownerEmail)
-    let serverCustomItems: any[] = [];
-    try {
-      const ownerParam = `ownerId=${encodeURIComponent(currentUser.id || '')}&ownerEmail=${encodeURIComponent(currentUser.email || '')}`;
-      const sRes = await fetch(`/api/custom-listings?${ownerParam}`);
-      if (sRes.ok) {
-        const sData = await sRes.json();
-        if (Array.isArray(sData.items)) {
-          serverCustomItems = sData.items.map((item: any) => ({
-            ...item,
-            images: sanitizeListingImages(item.images),
-          }));
-        }
-      }
-    } catch {}
-
-    // 3. Nạp từ bộ nhớ cục bộ CỦA CHÍNH TÀI KHOẢN NÀY (cô lập hoàn toàn, không lấy tin tài khoản khác)
-    let localListings: any[] = [];
-    if (typeof window !== 'undefined') {
-      try {
-        healCustomListingsInLocalStorage();
-        const rawAccountItems = getAccountCustomListings(currentUser);
-        if (Array.isArray(rawAccountItems)) {
-          localListings = rawAccountItems.map((item) => ({
-            ...item,
-            images: sanitizeListingImages(item.images),
-          }));
-        }
-      } catch {}
-    }
-
-    // 4. Hợp nhất danh sách của DUY NHẤT tài khoản này (loại bỏ trùng lặp id)
-    const existingIds = new Set<string>();
-    const allMerged: any[] = [];
-
-    const addUnique = (item: any) => {
-      const idStr = String(item.id);
-      if (!existingIds.has(idStr)) {
-        existingIds.add(idStr);
-        allMerged.push(item);
-      }
-    };
-
-    for (const item of apiItems) addUnique(item);
-    for (const item of serverCustomItems) addUnique(item);
-    for (const item of localListings) addUnique(item);
-
-    // Lọc theo trạng thái tab nếu có yêu cầu
-    const filtered = status
-      ? allMerged.filter((item) => (item.status || 'pending').toLowerCase() === status.toLowerCase())
-      : allMerged;
-
-    setListings(filtered);
-    setTotal(allMerged.length);
-    setPage(targetPage);
-    setTotalPages(Math.max(1, Math.ceil(filtered.length / 15)));
-    setLoading(false);
   }, [page]);
 
   useEffect(() => {
@@ -168,22 +118,18 @@ export default function QuanLyTinPage() {
       return;
     }
     try {
-      const currentUser = getCurrentUser();
-
-      // 1. Gửi cập nhật lên backend NestJS
-      await authFetch(`/listings/${listingId}/rented`, { method: 'PATCH' }).catch(() => undefined);
-
-      // 2. Gửi cập nhật lên máy chủ Next.js (file JSON)
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'rented' }),
-      }).catch(() => undefined);
-
-      // 3. Cập nhật kho lưu trữ tài khoản và kho chung
-      updateAccountListingStatus(listingId, 'rented', currentUser);
+      const res = await authFetch(`/listings/${listingId}/rented`, { method: 'PATCH' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Cập nhật trạng thái thất bại';
+        alert(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       alert('Đã cập nhật trạng thái phòng đã cho thuê thành công và tự động gỡ phòng khỏi danh sách tìm phòng của khách hàng');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
       load(statusFilter, page);
     } catch (err) {
       alert((err as Error).message);
@@ -193,23 +139,15 @@ export default function QuanLyTinPage() {
   /** Xác nhận còn phòng trống — chu kỳ 7 ngày (§7, Gate E) */
   async function handleConfirmAvailability(listingId: string) {
     try {
-      const res = await authFetch(`/listings/${listingId}/confirm-availability`, { method: 'POST' }).catch(() => null);
-      if (res && res.ok) {
-        const data = await res.json();
-        alert(data.message || 'Đã xác nhận phòng vẫn còn trống thành công');
+      const res = await authFetch(`/listings/${listingId}/confirm-availability`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(data?.message || 'Đã xác nhận phòng vẫn còn trống thành công');
       } else {
         alert('Đã xác nhận phòng vẫn còn trống thành công');
       }
       if (typeof window !== 'undefined') {
-        const raw = localStorage.getItem('qns_custom_listings');
-        if (raw) {
-          const list = JSON.parse(raw);
-          const updated = list.map((item: any) =>
-            String(item.id) === String(listingId) ? { ...item, refreshedAt: new Date().toISOString() } : item
-          );
-          localStorage.setItem('qns_custom_listings', JSON.stringify(updated));
-          window.dispatchEvent(new Event('qns_listings_updated'));
-        }
+        window.dispatchEvent(new Event('qns_listings_updated'));
       }
       load(statusFilter, page);
     } catch (err) {
@@ -222,22 +160,18 @@ export default function QuanLyTinPage() {
       return;
     }
     try {
-      const currentUser = getCurrentUser();
-
-      // 1. Gửi xóa lên backend NestJS
-      await authFetch(`/listings/${listingId}`, { method: 'DELETE' }).catch(() => undefined);
-
-      // 2. Gửi cập nhật trạng thái gỡ lên máy chủ Next.js
-      await fetch('/api/custom-listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: listingId, status: 'removed' }),
-      }).catch(() => undefined);
-
-      // 3. Cập nhật kho lưu trữ
-      updateAccountListingStatus(listingId, 'removed', currentUser);
+      const res = await authFetch(`/listings/${listingId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.message || 'Gỡ bài đăng thất bại';
+        alert(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        return;
+      }
 
       alert('Đã gỡ bài đăng phòng thành công');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('qns_listings_updated'));
+      }
       load(statusFilter, page);
     } catch (err) {
       alert((err as Error).message);
@@ -386,7 +320,7 @@ export default function QuanLyTinPage() {
                               className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors border ${
                                 daysSinceConfirm >= 7
                                   ? 'bg-amber-500 text-white hover:bg-amber-600 border-amber-600'
-                                  : 'bg-teal-50 text-teal-700 hover:bg-teal-100 border-teal-200'
+                                  : 'bg-brand-50 text-brand-800 hover:bg-brand-100 border-brand-200'
                               }`}
                               title="Xác nhận phòng vẫn còn trống trong chu kỳ 7 ngày (§7)"
                             >
@@ -395,7 +329,7 @@ export default function QuanLyTinPage() {
                             <button
                               type="button"
                               onClick={() => handleMarkRented(listing.id)}
-                              className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+                              className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-900 hover:bg-amber-100 rounded-lg transition-colors border border-amber-200"
                               title="Đánh dấu phòng đã cho thuê thành công và tự động gỡ bài đăng"
                             >
                               Đã cho thuê

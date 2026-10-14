@@ -28,7 +28,7 @@ const REASON_MAP: Record<string, { label: string; color: string }> = {
   tin_gia: { label: 'Tin giả mạo', color: 'bg-rose-50 text-rose-700 border-rose-200' },
   lua_dao: { label: 'Lừa đảo / Chiếm đoạt', color: 'bg-red-50 text-red-700 border-red-200' },
   sai_thong_tin: { label: 'Sai lệch thông tin / Giá', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  da_ban_cho_thue: { label: 'Đã cho thuê', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  da_ban_cho_thue: { label: 'Đã cho thuê', color: 'bg-amber-50 text-amber-800 border-amber-200' },
   khac: { label: 'Vi phạm khác', color: 'bg-slate-50 text-slate-700 border-slate-200' },
 };
 
@@ -107,7 +107,7 @@ export default function AdminReportsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold text-sm shadow-xl flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-brand text-white font-semibold text-sm shadow-xl flex items-center gap-2">
           <span>{toast}</span>
         </div>
       )}

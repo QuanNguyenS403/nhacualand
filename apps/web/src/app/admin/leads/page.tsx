@@ -28,10 +28,10 @@ interface LeadItem {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  new: { label: 'Mới gửi', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-  contacted: { label: 'Đã liên hệ', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-  qualified: { label: 'Tiềm năng', color: 'bg-purple-100 text-purple-800 border-purple-300' },
-  completed: { label: 'Thành công', color: 'bg-teal-100 text-teal-800 border-teal-300' },
+  new: { label: 'Mới gửi', color: 'bg-brand-100 text-brand-900 border-brand-300' },
+  contacted: { label: 'Đã liên hệ', color: 'bg-amber-100 text-amber-900 border-amber-300' },
+  qualified: { label: 'Tiềm năng', color: 'bg-yellow-100 text-yellow-900 border-yellow-300' },
+  completed: { label: 'Thành công', color: 'bg-brand-50 text-brand-900 border-brand-300' },
   spam: { label: 'Spam / Hủy', color: 'bg-rose-100 text-rose-800 border-rose-300' },
   cancelled: { label: 'Đã hủy', color: 'bg-gray-100 text-gray-800 border-gray-300' },
 };
@@ -112,9 +112,8 @@ export default function AdminLeadsPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-200">
         <button
           type="button"
-          onClick={() => { setFilterStatus(''); setPage(1); }}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-            filterStatus === '' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+            filterStatus === '' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           Tất cả
@@ -125,7 +124,7 @@ export default function AdminLeadsPage() {
             type="button"
             onClick={() => { setFilterStatus(statusKey); setPage(1); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-              filterStatus === statusKey ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filterStatus === statusKey ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             {label}
@@ -163,7 +162,7 @@ export default function AdminLeadsPage() {
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="px-5 py-4">
                         <div className="font-semibold text-gray-900">{lead.fullName}</div>
-                        <div className="text-xs text-teal-600 font-mono mt-0.5">{lead.phone}</div>
+                        <div className="text-xs text-brand font-mono mt-0.5">{lead.phone}</div>
                         {lead.email && <div className="text-xs text-gray-400 mt-0.5">{lead.email}</div>}
                       </td>
                       <td className="px-5 py-4 max-w-xs">
@@ -172,7 +171,7 @@ export default function AdminLeadsPage() {
                             <Link
                               href={`/tin/${lead.listing.slug}`}
                               target="_blank"
-                              className="font-medium text-gray-800 hover:text-teal-600 line-clamp-2 transition-colors"
+                              className="font-medium text-gray-800 hover:text-brand line-clamp-2 transition-colors"
                             >
                               {lead.listing.title}
                             </Link>

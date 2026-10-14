@@ -10,8 +10,7 @@ import { OwnerContactBox } from './OwnerContactBox';
 import { LandlordAvatar } from '@/components/QnsLogo';
 import { MobileStickyContactBar } from './MobileStickyContactBar';
 import { getNearbyUniversities, getGoogleMapsEmbedUrl } from '@/lib/vietnam-universities';
-import { sanitizeListingImages, healCustomListingsInLocalStorage } from '@/lib/image-compressor';
-import { findMapRoomBySlug, mapRoomToListing } from '@/lib/map-rooms-data';
+import { sanitizeListingImages } from '@/lib/image-compressor';
 
 interface Props {
   initialListing: Listing | null;
@@ -47,73 +46,13 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
 
   useEffect(() => {
     setHydrated(true);
-    // Chữa lành các blob URLs cũ nếu có trong localStorage
-    healCustomListingsInLocalStorage();
-
-    try {
-      const raw = localStorage.getItem('qns_custom_listings');
-      if (raw) {
-        const localList: Listing[] = JSON.parse(raw);
-        if (Array.isArray(localList)) {
-          const normalizedSlug = slug.trim().toLowerCase();
-
-          // 1. Tìm chính xác theo slug
-          let matched = localList.find((item) => item.slug?.toLowerCase() === normalizedSlug);
-
-          // 2. Tìm theo ID trích xuất từ slug
-          if (!matched) {
-            const idMatch = normalizedSlug.match(/-id([a-zA-Z0-9_-]+)$/);
-            if (idMatch) {
-              const extractedId = idMatch[1].toLowerCase();
-              matched = localList.find((item) => {
-                const itemId = String(item.id).toLowerCase();
-                return itemId === extractedId || item.slug?.toLowerCase().endsWith(`-id${extractedId}`);
-              });
-            }
-          }
-
-          // 3. Tìm theo một phần slug
-          if (!matched) {
-            matched = localList.find((item) => {
-              const itemSlug = item.slug?.toLowerCase() || '';
-              return itemSlug.includes(normalizedSlug) || normalizedSlug.includes(itemSlug);
-            });
-          }
-
-          if (matched) {
-            // Chuẩn hóa hình ảnh để không bao giờ bị vỡ
-            const cleanedItem = {
-              ...matched,
-              images: sanitizeListingImages(matched.images),
-            };
-            setListing(cleanedItem);
-
-            // Đồng bộ lên server nếu server chưa có
-            fetch('/api/custom-listings', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(cleanedItem),
-            }).catch(() => undefined);
-          } else {
-            // 4. Nếu vẫn chưa thấy, kiểm tra trong kho phòng trọ bản đồ đánh giá
-            const mapRoom = findMapRoomBySlug(slug);
-            if (mapRoom) {
-              setListing(mapRoomToListing(mapRoom));
-              return;
-            }
-          }
-        }
-      } else {
-        // Nếu không có localStorage, kiểm tra trong map room
-        const mapRoom = findMapRoomBySlug(slug);
-        if (mapRoom) {
-          setListing(mapRoomToListing(mapRoom));
-        }
-      }
-    } catch (err) {
-      console.warn('Lỗi kiểm tra tin đăng cục bộ:', err);
+    if (initialListing) {
+      setListing({
+        ...initialListing,
+        images: sanitizeListingImages(initialListing.images),
+      });
     }
-  }, [slug]);
+  }, [initialListing]);
 
   // Nếu không tìm thấy tin cả trên máy chủ lẫn trình duyệt
   if (!listing && hydrated) {
@@ -261,19 +200,19 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
 
         {/* Banner cảnh báo nếu phòng đã cho thuê */}
         {(currentListing.status || '').toLowerCase() === 'rented' && (
-          <div className="mb-5 rounded-2xl border border-emerald-300 bg-emerald-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="mb-5 rounded-2xl border border-brand-300 bg-brand-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <span className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white font-bold text-base shadow-xs">
+              <span className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-700 text-white font-bold text-base shadow-xs">
                 ✓
               </span>
               <div>
-                <p className="font-bold text-emerald-950 text-sm sm:text-base">Phòng này đã được cho thuê thành công</p>
-                <p className="text-xs sm:text-sm text-emerald-800 mt-0.5">Hiện tại phòng không còn trống nên không thể tiếp nhận đặt lịch đi xem</p>
+                <p className="font-bold text-brand-950 text-sm sm:text-base">Phòng này đã được cho thuê thành công</p>
+                <p className="text-xs sm:text-sm text-brand-800 mt-0.5">Hiện tại phòng không còn trống nên không thể tiếp nhận đặt lịch đi xem</p>
               </div>
             </div>
             <Link
               href="/thue"
-              className="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-emerald-800 transition-colors shrink-0 shadow-xs"
+              className="inline-flex items-center justify-center rounded-xl bg-brand-700 px-4 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-brand-800 transition-colors shrink-0 shadow-xs"
             >
               Tìm phòng đang còn trống khác →
             </Link>
@@ -291,7 +230,7 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary leading-snug">{displayTitle}</h1>
                 {(currentListing.status || '').toLowerCase() === 'rented' && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-900 border border-brand-200">
                     Đã cho thuê
                   </span>
                 )}
@@ -365,7 +304,7 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
                     key={item}
                     className="inline-flex items-center gap-2 rounded-xl border border-surface-border bg-slate-50 px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
                   >
-                    <span className="h-2 w-2 rounded-full bg-teal-600 shrink-0" />
+                    <span className="h-2 w-2 rounded-full bg-brand shrink-0" />
                     <span>{item}</span>
                   </span>
                 ))}
@@ -452,7 +391,7 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
                           )}
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="inline-block rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+                          <span className="inline-block rounded-md bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-800 border border-brand-200">
                             {uni.distanceKm < 1 ? `~${uni.distanceMeters}m` : `~${uni.distanceKm} km`}
                           </span>
                           <p className="text-xs text-text-muted mt-0.5">~{uni.travelTimeMinutes} phút xe máy</p>

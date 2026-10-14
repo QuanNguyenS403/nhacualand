@@ -1,8 +1,6 @@
+import type { ListingMapPin } from '@qns/shared';
 import rawReviewsData from '../../data/nhaminhbach-reviews-899.json';
-import customListingsData from '../../data/custom-listings.json';
-import { ALL_DEMO_LISTINGS } from './demo-data';
 import { removeDiacritics } from './reviews-types';
-import type { Listing } from './api';
 
 export interface RoomReview {
   id: string;
@@ -15,42 +13,31 @@ export interface RoomReview {
   isWarning?: boolean;
 }
 
-export interface MapRoom {
-  id: string;
-  slug: string;
-  title: string;
+export interface MapRoom extends ListingMapPin {
   maskedAddress: string;
-  rawAddress: string;
-  lat: number;
-  lng: number;
-  price: number; // VNĐ
-  depositAmount: number;
-  areaM2: number;
-  propertyType: 'phong_tro' | 'chung_cu_mini' | 'can_ho' | 'nha_nguyen_can' | 'o_ghep';
-  district: string;
-  ward: string;
-  city: string;
+  rawAddress?: string;
   images: string[];
-  rating: number;
-  reviewCount: number;
-  reviews: RoomReview[];
-  amenities: {
-    wifi?: boolean;
-    airConditioner?: boolean;
-    waterHeater?: boolean;
-    mezzanine?: boolean;
-    elevator?: boolean;
-    balcony?: boolean;
-    petsAllowed?: boolean;
-    electricVehicle?: boolean;
-    freeTime?: boolean;
-    securityCamera?: boolean;
-    privateBathroom?: boolean;
-  };
+  rating?: number;
+  reviewCount?: number;
+  reviews?: RoomReview[];
   electricityPricePerKwh?: number;
   waterPrice?: string;
   isCustom?: boolean;
   isDemo?: boolean;
+  isOwnerListing?: boolean;
+  isOwnerPending?: boolean;
+}
+
+export interface CommunityReviewPin {
+  id: string;
+  shortId: string;
+  lat: number;
+  lng: number;
+  rating: number;
+  content: string;
+  addressRaw: string;
+  createdAt: string;
+  authorRole: string;
 }
 
 export interface MapFilterParams {
@@ -60,18 +47,11 @@ export interface MapFilterParams {
   giaThue?: string;
   minPrice?: number;
   maxPrice?: number;
-  amenities?: {
-    petsAllowed?: boolean;
-    electricVehicle?: boolean;
-    mezzanine?: boolean;
-    balcony?: boolean;
-    elevator?: boolean;
-    freeTime?: boolean;
-  };
+  amenities?: Record<string, boolean>;
 }
 
 /**
- * Ẩn số nhà chi tiết, chỉ hiển thị: ngõ bao nhiêu, phường nào, quận nào, thành phố nào
+ * Ẩn số nhà chi tiết, chỉ hiển thị: ngõ/ngách bao nhiêu, phường nào, quận nào, thành phố nào
  * Tuyệt đối không để lộ số nhà riêng tư theo yêu cầu bảo mật
  */
 export function maskListingAddress(
@@ -140,296 +120,58 @@ export function maskListingAddress(
   return clean;
 }
 
-const DEFAULT_ROOM_IMAGES = [
-  'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=75',
-  'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800&auto=format&fit=crop&q=70',
-  'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=70',
-  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=75',
-  'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=75',
-  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=75',
-];
+/**
+ * Chuyển ListingMapPin nhận từ API sang MapRoom chuẩn để hiển thị trên bản đồ
+ */
+export function pinToMapRoom(pin: ListingMapPin): MapRoom {
+  const images = pin.thumbnailUrl ? [pin.thumbnailUrl] : [];
+  return {
+    ...pin,
+    maskedAddress: maskListingAddress(pin.locationName, '', pin.district, 'Hà Nội'),
+    images,
+  };
+}
 
 /**
- * Trích xuất danh sách tất cả phòng trọ trên bản đồ kèm review thực tế
+ * Lấy danh sách điểm đánh giá cộng đồng (899 bài đánh giá) có tọa độ thật
+ * Tách biệt hoàn toàn khỏi danh sách phòng cho thuê, không bịa thông tin phòng
  */
-export function getAllMapRooms(): MapRoom[] {
-  const rooms: MapRoom[] = [];
-  const processedKeys = new Set<string>();
+let cachedCommunityPins: CommunityReviewPin[] | null = null;
+export function getCommunityReviewPins(): CommunityReviewPin[] {
+  if (cachedCommunityPins) return cachedCommunityPins;
 
-  // 1. Thêm các tin tự đăng từ máy chủ Next.js và localStorage (chỉ thêm tin active, bỏ qua phòng đã cho thuê)
-  const customList: any[] = Array.isArray(customListingsData) ? customListingsData : [];
-  customList.forEach((item, idx) => {
-    if (!item.lat || !item.lng) return;
-    const st = (item.status || 'active').toLowerCase();
-    if (st === 'rented' || st === 'removed' || st === 'rejected') return;
-    const masked = maskListingAddress(item.addressDetail, '', '', 'Hà Nội');
-    const key = `${Number(item.lat).toFixed(4)}_${Number(item.lng).toFixed(4)}`;
-    processedKeys.add(key);
+  const results: CommunityReviewPin[] = [];
+  const list = Array.isArray(rawReviewsData) ? rawReviewsData : [];
 
-    const priceNum = parseInt(String(item.price || '3500000'), 10) || 3500000;
-    const depositNum = parseInt(String(item.depositAmount || '2000000'), 10) || 2000000;
-    const areaNum = parseInt(String(item.areaM2 || '25'), 10) || 25;
-
-    rooms.push({
-      id: String(item.id || `custom-${idx}`),
-      slug: item.slug || `tin-dang-${item.id}`,
-      title: (item.title || 'Phòng cho thuê chất lượng cao').replace(/^\[MẪU\]\s*/i, '').replace(/\[MẪU\]/gi, '').trim(),
-      maskedAddress: masked,
-      rawAddress: item.addressDetail || '',
-      lat: Number(item.lat),
-      lng: Number(item.lng),
-      price: priceNum,
-      depositAmount: depositNum,
-      areaM2: areaNum,
-      propertyType: item.propertyType || 'phong_tro',
-      district: item.location?.name || 'Hà Nội',
-      ward: '',
-      city: 'Hà Nội',
-      images: Array.isArray(item.images) && item.images.length > 0
-        ? item.images.map((img: any) => typeof img === 'string' ? img : img.imageUrl).filter(Boolean)
-        : [DEFAULT_ROOM_IMAGES[idx % DEFAULT_ROOM_IMAGES.length]],
-      rating: 4.8,
-      reviewCount: 3,
-      reviews: [
-        {
-          id: `rev-custom-${idx}-1`,
-          authorName: 'Hoàng Minh (Cựu người thuê)',
-          authorRole: 'Cựu người thuê',
-          rating: 5,
-          content: 'Phòng sạch sẽ, ban công thoáng gió, chủ nhà hiền lành và tôn trọng giờ giấc cá nhân',
-          createdAt: '2026-09-20',
-          tags: ['thoang_mat', 'chu_nha_tot'],
-          isWarning: false,
-        },
-        {
-          id: `rev-custom-${idx}-2`,
-          authorName: 'Ngọc Lan',
-          authorRole: 'Cựu người thuê',
-          rating: 4.5,
-          content: 'Điện nước tính theo công tơ chuẩn, thanh toán minh bạch qua chuyển khoản',
-          createdAt: '2026-08-15',
-          tags: ['dien_nuoc_chuan'],
-          isWarning: false,
-        },
-      ],
-      amenities: {
-        wifi: true,
-        airConditioner: Boolean(item.amenities?.dieuHoa ?? true),
-        waterHeater: Boolean(item.amenities?.nongLanh ?? true),
-        mezzanine: Boolean(item.amenities?.gacXep),
-        elevator: Boolean(item.amenities?.thangMay),
-        balcony: Boolean(item.amenities?.banCong ?? true),
-        petsAllowed: Boolean(item.amenities?.thuCung),
-        electricVehicle: Boolean(item.amenities?.xeDien),
-        freeTime: Boolean(item.amenities?.gioTuDo ?? true),
-        securityCamera: true,
-        privateBathroom: true,
-      },
-      electricityPricePerKwh: item.electricityPricePerKwh || 3500,
-      waterPrice: item.waterPriceFlat ? `${item.waterPriceFlat.toLocaleString('vi-VN')} đ/người` : '25.000 đ/m³',
-      isCustom: true,
-    });
-  });
-
-  // 2. Thêm các tin demo có sẵn — Đồng bộ 100% với danh mục Listing thật
-  ALL_DEMO_LISTINGS.forEach((item, idx) => {
-    // Tọa độ ngầm định nếu demo chưa có tọa độ
-    const isHcm = item.addressDetail?.toLowerCase().includes('hcm') ||
-      item.addressDetail?.toLowerCase().includes('hồ chí minh') ||
-      item.location?.name?.toLowerCase().includes('hcm') ||
-      item.location?.name?.toLowerCase().includes('quận 7') ||
-      item.location?.name?.toLowerCase().includes('bình thạnh');
-
-    const defaultCity = isHcm ? 'TP. Hồ Chí Minh' : 'Hà Nội';
-    const demoLat = item.lat != null ? item.lat : (isHcm ? 10.732 : 21.0285);
-    const demoLng = item.lng != null ? item.lng : (isHcm ? 106.702 : 105.8542);
-    const key = `${demoLat.toFixed(4)}_${demoLng.toFixed(4)}`;
-    if (processedKeys.has(key)) return;
-    processedKeys.add(key);
-
-    const masked = maskListingAddress(item.addressDetail, '', item.location?.name, defaultCity);
-    const priceNum = parseInt(String(item.price || '3500000'), 10) || 3500000;
-    const depositNum = parseInt(String(item.depositAmount || item.price || '2000000'), 10) || priceNum;
-    const areaNum = parseInt(String(item.areaM2 || '24'), 10) || 24;
-
-    const desc = (item.description || '').toLowerCase();
-    const am = item.amenities || {};
-
-    rooms.push({
-      id: item.id,
-      slug: item.slug,
-      title: item.title.replace(/^\[MẪU\]\s*/i, '').replace(/\[MẪU\]/gi, '').trim(),
-      maskedAddress: masked,
-      rawAddress: item.addressDetail || '',
-      lat: demoLat,
-      lng: demoLng,
-      price: priceNum,
-      depositAmount: depositNum,
-      areaM2: areaNum,
-      propertyType: (item.propertyType as any) || 'phong_tro',
-      district: item.location?.name || defaultCity,
-      ward: '',
-      city: defaultCity,
-      images: item.images && item.images.length > 0
-        ? item.images.map((img) => img.imageUrl)
-        : [DEFAULT_ROOM_IMAGES[idx % DEFAULT_ROOM_IMAGES.length]],
-      rating: 4.8,
-      reviewCount: 4,
-      reviews: [
-        {
-          id: `rev-demo-${idx}-1`,
-          authorName: 'Khánh Linh',
-          authorRole: 'Cựu người thuê',
-          rating: 5,
-          content: 'Phòng mới tinh, khóa vân tay an toàn, gần trạm xe bus và chợ',
-          createdAt: '2026-09-12',
-          tags: ['an_ninh', 'tien_loi'],
-          isWarning: false,
-        },
-        {
-          id: `rev-demo-${idx}-2`,
-          authorName: 'Đức Anh',
-          authorRole: 'Cựu người thuê',
-          rating: 4.5,
-          content: 'Hợp đồng minh bạch, trả phòng chủ kiểm tra nhanh và hoàn cọc đầy đủ',
-          createdAt: '2026-08-01',
-          tags: ['hoan_coc_tot'],
-          isWarning: false,
-        },
-      ],
-      amenities: {
-        wifi: Boolean(am.wifi ?? true),
-        airConditioner: Boolean(am.airConditioner ?? am.dieuHoa ?? (desc.includes('máy lạnh') || desc.includes('điều hòa'))),
-        waterHeater: Boolean(am.waterHeater ?? am.nongLanh ?? desc.includes('nóng lạnh')),
-        mezzanine: Boolean(am.mezzanine ?? am.gacLung ?? desc.includes('gác lửng')),
-        elevator: Boolean(am.elevator ?? am.thangMay ?? desc.includes('thang máy')),
-        balcony: Boolean(am.balcony ?? am.banCong ?? desc.includes('ban công')),
-        petsAllowed: Boolean(am.petsAllowed ?? am.thuCung ?? desc.includes('thú cưng')),
-        electricVehicle: Boolean(am.electricVehicle ?? am.xeDien ?? desc.includes('xe điện')),
-        freeTime: Boolean(am.freeTime ?? am.gioTuDo ?? desc.includes('giờ giấc tự do')),
-        securityCamera: Boolean(am.securityCamera ?? true),
-        privateBathroom: true,
-      },
-      electricityPricePerKwh: item.electricityPricePerKwh || 3500,
-      waterPrice: item.waterPriceFlat
-        ? `${item.waterPriceFlat.toLocaleString('vi-VN')} đ/người`
-        : item.waterPricePerM3
-          ? `${item.waterPricePerM3.toLocaleString('vi-VN')} đ/m³`
-          : '25.000 đ/m³',
-      isDemo: true,
-    });
-  });
-
-  // 3. Khai thác dữ liệu 899 bài đánh giá thực tế đã có tọa độ
-  const rawList: any[] = Array.isArray(rawReviewsData) ? rawReviewsData : [];
-  rawList.forEach((rev, idx) => {
-    const lat = rev.extracted_data?.lat;
-    const lng = rev.extracted_data?.lng;
-    if (!lat || !lng) return;
-
-    // Giữ tọa độ hợp lệ khu vực Việt Nam
-    if (lat < 8.0 || lat > 23.5 || lng < 102.0 || lng > 110.0) return;
-
-    const key = `${lat.toFixed(4)}_${lng.toFixed(4)}`;
-    if (processedKeys.has(key)) return;
-    processedKeys.add(key);
-
-    const rawAddr =
-      rev.extracted_data?.address_raw ||
-      rev.extracted_data?.secondary_address ||
-      rev.buildings?.address_text ||
-      '';
-
-    const isHanoi = lat > 20.0 && lat < 22.0;
-    const defaultCity = isHanoi ? 'Hà Nội' : 'TP. Hồ Chí Minh';
-    const masked = maskListingAddress(rawAddr, '', '', defaultCity);
-
-    // Tính điểm đánh giá
-    const ratingNum = typeof rev.rating === 'number' && rev.rating > 0 ? rev.rating : 4.0;
-    const isWarning = ratingNum < 3.5 || rev.content?.toLowerCase().includes('lừa') || rev.content?.toLowerCase().includes('quỵt');
-
-    // Xác định mức giá thực tế hoặc ước tính
-    const priceNum = rev.price && rev.price >= 1000000 && rev.price <= 30000000
-      ? rev.price
-      : 2500000 + (idx % 9) * 400000;
-
-    // Xác định loại phòng dựa theo nội dung
-    const contentLower = (rev.content || '').toLowerCase();
-    let propType: MapRoom['propertyType'] = 'phong_tro';
-    if (contentLower.includes('chung cư mini') || contentLower.includes('ccmn')) {
-      propType = 'chung_cu_mini';
-    } else if (contentLower.includes('căn hộ') || contentLower.includes('chung cư')) {
-      propType = 'can_ho';
-    } else if (contentLower.includes('nguyên căn') || contentLower.includes('nhà riêng')) {
-      propType = 'nha_nguyen_can';
-    } else if (contentLower.includes('ở ghép') || contentLower.includes('share phòng')) {
-      propType = 'o_ghep';
+  for (const item of list) {
+    const lat = item.extracted_data?.lat;
+    const lng = item.extracted_data?.lng;
+    if (
+      typeof lat === 'number' &&
+      typeof lng === 'number' &&
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= 8.18 &&
+      lat <= 23.39 &&
+      lng >= 102.14 &&
+      lng <= 109.46
+    ) {
+      results.push({
+        id: item.id,
+        shortId: item.short_id || 'REV',
+        lat,
+        lng,
+        rating: Number(item.rating) || 5,
+        content: item.content || 'Đánh giá từ người thuê',
+        addressRaw: item.extracted_data?.address_raw || item.buildings?.address_text || '',
+        createdAt: item.created_at || '2026-09-01',
+        authorRole: item.author_role === 'former_tenant' ? 'Cựu người thuê' : 'Người đang thuê',
+      });
     }
+  }
 
-    const titlePrefix = propType === 'chung_cu_mini'
-      ? 'Chung cư mini'
-      : propType === 'can_ho'
-        ? 'Căn hộ dịch vụ'
-        : propType === 'nha_nguyen_can'
-          ? 'Nhà nguyên căn'
-          : propType === 'o_ghep'
-            ? 'Phòng ở ghép sinh viên'
-            : 'Phòng trọ sinh viên';
-
-    const shortAddressPart = masked.split(',')[0] || masked;
-
-    rooms.push({
-      id: `review-room-${rev.id || idx}`,
-      slug: `phong-tro-danh-gia-${rev.short_id || rev.id || idx}-id${idx}`,
-      title: `${titlePrefix} tại ${shortAddressPart}`,
-      maskedAddress: masked,
-      rawAddress: rawAddr,
-      lat,
-      lng,
-      price: priceNum,
-      depositAmount: priceNum,
-      areaM2: 20 + (idx % 6) * 5,
-      propertyType: propType,
-      district: isHanoi ? 'Hà Nội' : 'TP. Hồ Chí Minh',
-      ward: '',
-      city: defaultCity,
-      images: [
-        DEFAULT_ROOM_IMAGES[idx % DEFAULT_ROOM_IMAGES.length],
-        DEFAULT_ROOM_IMAGES[(idx + 1) % DEFAULT_ROOM_IMAGES.length],
-      ],
-      rating: ratingNum,
-      reviewCount: 1 + (idx % 5),
-      reviews: [
-        {
-          id: `rev-${rev.id || idx}`,
-          authorName: rev.author_role === 'cựu_người_thuê' ? 'Cựu người thuê' : 'Khách thuê thực tế',
-          authorRole: 'Cựu người thuê',
-          rating: ratingNum,
-          content: rev.content || 'Phòng cho thuê đã qua kiểm định thực tế từ cộng đồng người thuê',
-          createdAt: rev.created_at ? rev.created_at.slice(0, 10) : '2026-08-10',
-          tags: rev.categoryTags || [],
-          isWarning,
-        },
-      ],
-      amenities: {
-        wifi: true,
-        airConditioner: contentLower.includes('điều hòa') || contentLower.includes('máy lạnh') || idx % 2 === 0,
-        waterHeater: contentLower.includes('nóng lạnh') || idx % 2 === 0,
-        mezzanine: contentLower.includes('gác lửng') || contentLower.includes('gác xép') || idx % 3 === 0,
-        elevator: contentLower.includes('thang máy') || propType === 'chung_cu_mini',
-        balcony: contentLower.includes('ban công') || idx % 3 === 1,
-        petsAllowed: contentLower.includes('thú cưng') || contentLower.includes('chó') || idx % 4 === 0,
-        electricVehicle: contentLower.includes('xe điện') || contentLower.includes('sạc') || idx % 3 === 0,
-        freeTime: !contentLower.includes('khóa cửa') && !contentLower.includes('giới nghiêm'),
-        securityCamera: true,
-        privateBathroom: true,
-      },
-      electricityPricePerKwh: contentLower.includes('4k') ? 4000 : contentLower.includes('5k') ? 5000 : 3500,
-      waterPrice: '25.000 đ/m³',
-    });
-  });
-
-  return rooms;
+  cachedCommunityPins = results;
+  return results;
 }
 
 /**
@@ -444,11 +186,8 @@ export function filterMapRooms(rooms: MapRoom[], params: MapFilterParams): MapRo
     result = result.filter((r) => {
       const matchTitle = removeDiacritics(r.title.toLowerCase()).includes(qNorm);
       const matchMasked = removeDiacritics(r.maskedAddress.toLowerCase()).includes(qNorm);
-      const matchRaw = removeDiacritics(r.rawAddress.toLowerCase()).includes(qNorm);
-      const matchReview = r.reviews.some((rv) =>
-        removeDiacritics(rv.content.toLowerCase()).includes(qNorm)
-      );
-      return matchTitle || matchMasked || matchRaw || matchReview;
+      const matchRaw = r.rawAddress ? removeDiacritics(r.rawAddress.toLowerCase()).includes(qNorm) : false;
+      return matchTitle || matchMasked || matchRaw;
     });
   }
 
@@ -457,8 +196,8 @@ export function filterMapRooms(rooms: MapRoom[], params: MapFilterParams): MapRo
     const kvNorm = removeDiacritics(params.khuVuc.toLowerCase());
     result = result.filter((r) => {
       const addrNorm = removeDiacritics(r.maskedAddress.toLowerCase());
-      const rawNorm = removeDiacritics(r.rawAddress.toLowerCase());
-      return addrNorm.includes(kvNorm) || rawNorm.includes(kvNorm);
+      const distNorm = r.district ? removeDiacritics(r.district.toLowerCase()) : '';
+      return addrNorm.includes(kvNorm) || distNorm.includes(kvNorm);
     });
   }
 
@@ -469,12 +208,12 @@ export function filterMapRooms(rooms: MapRoom[], params: MapFilterParams): MapRo
       if (lpVal === 'phong_tro') return r.propertyType === 'phong_tro';
       if (lpVal === 'chung_cu_mini') return r.propertyType === 'chung_cu_mini';
       if (lpVal === 'chung_cu' || lpVal === 'can_ho') return r.propertyType === 'can_ho';
-      if (lpVal === 'mat_bang' || lpVal === 'nha_nguyen_can') return r.propertyType === 'nha_nguyen_can';
+      if (lpVal === 'mat_bang' || lpVal === 'nha_nguyen_can') return r.propertyType === 'nha_nguyen_can' || r.propertyType === 'mat_bang';
       return true;
     });
   }
 
-  // 4. Lọc theo Giá thuê (hỗ trợ cả thanh kéo khoảng giá kép minPrice/maxPrice và danh mục nhanh)
+  // 4. Lọc theo Giá thuê
   if (params.minPrice !== undefined || params.maxPrice !== undefined) {
     const minP = params.minPrice ?? 0;
     const maxP = params.maxPrice ?? 30000000;
@@ -497,23 +236,11 @@ export function filterMapRooms(rooms: MapRoom[], params: MapFilterParams): MapRo
     });
   }
 
-  // 5. Lọc theo Tiện ích thêm
-  if (params.amenities) {
-    const am = params.amenities;
-    if (am.petsAllowed) result = result.filter((r) => r.amenities.petsAllowed);
-    if (am.electricVehicle) result = result.filter((r) => r.amenities.electricVehicle);
-    if (am.mezzanine) result = result.filter((r) => r.amenities.mezzanine);
-    if (am.balcony) result = result.filter((r) => r.amenities.balcony);
-    if (am.elevator) result = result.filter((r) => r.amenities.elevator);
-    if (am.freeTime) result = result.filter((r) => r.amenities.freeTime);
-  }
-
   return result;
 }
 
 // ────────────────────────────────────────────────────────────
 // Quản lý Lịch sử tìm kiếm (Search History)
-// Ghi nhận khi người dùng nhập địa chỉ và cho phép xóa từng mục hoặc xóa toàn bộ
 // ────────────────────────────────────────────────────────────
 const SEARCH_HISTORY_STORAGE_KEY = 'qns_map_search_history';
 
@@ -522,7 +249,6 @@ export function getSearchHistory(): string[] {
   try {
     const raw = localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY);
     if (raw === null) {
-      // Chỉ khởi tạo từ khóa gợi ý mặc định ở lần truy cập đầu tiên duy nhất
       const initialHistory = ['Ngõ 177 Định Công', 'Quận Thanh Xuân', 'Phố Chùa Láng', 'Đường Cầu Giấy'];
       localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(initialHistory));
       return initialHistory;
@@ -541,7 +267,6 @@ export function addSearchHistory(term: string): string[] {
 
   try {
     const current = getSearchHistory();
-    // Đưa từ khóa vừa tìm lên đầu, xóa trùng lặp
     const filtered = current.filter((item) => item.toLowerCase() !== clean.toLowerCase());
     const updated = [clean, ...filtered].slice(0, 10);
     localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(updated));
@@ -566,103 +291,6 @@ export function removeSearchHistory(term: string): string[] {
 export function clearSearchHistory(): void {
   if (typeof window === 'undefined') return;
   try {
-    // Lưu mảng rỗng để ghi nhận trạng thái đã xóa, không tự ý reseed lại từ khóa mặc định
     localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify([]));
-  } catch {
-    // ignore
-  }
-}
-
-/**
- * Tìm phòng trọ trên bản đồ theo slug hoặc id để hiển thị trang chi tiết
- */
-export function findMapRoomBySlug(slug: string): MapRoom | null {
-  if (!slug) return null;
-  const cleanSlug = slug.trim().toLowerCase();
-  const rooms = getAllMapRooms();
-
-  // 1. Khớp chính xác slug
-  const exact = rooms.find((r) => r.slug.toLowerCase() === cleanSlug);
-  if (exact) return exact;
-
-  // 2. Khớp theo ID trích xuất từ slug
-  const idMatch = cleanSlug.match(/-id([a-zA-Z0-9_-]+)$/);
-  if (idMatch) {
-    const extractedId = idMatch[1].toLowerCase();
-    const byId = rooms.find((r) => {
-      const rid = r.id.toLowerCase();
-      return rid === extractedId || r.slug.toLowerCase().endsWith(`-id${extractedId}`);
-    });
-    if (byId) return byId;
-  }
-
-  // 3. Khớp mờ theo slug
-  return rooms.find((r) => r.slug.toLowerCase().includes(cleanSlug) || cleanSlug.includes(r.slug.toLowerCase())) || null;
-}
-
-/**
- * Chuyển đổi MapRoom thành định dạng Listing chuẩn cho trang chi tiết /tin/[slug]
- */
-export function mapRoomToListing(room: MapRoom): any {
-  return {
-    id: room.id,
-    title: room.title,
-    slug: room.slug,
-    description: `Phòng trọ minh bạch tại ${room.maskedAddress}. Dữ liệu đánh giá thực tế từ cựu người thuê: điểm đánh giá ${room.rating}/5 sao với ${room.reviews.length} nhận xét độc lập`,
-    transactionType: 'rent',
-    propertyType: room.propertyType,
-    price: String(room.price),
-    depositAmount: room.depositAmount,
-    minLeaseMonths: 6,
-    utilitiesIncluded: false,
-    electricityPricePerKwh: room.electricityPricePerKwh || 3500,
-    waterPricePerM3: 25000,
-    waterPriceFlat: 100000,
-    amenities: {
-      dieuHoa: Boolean(room.amenities.airConditioner),
-      nongLanh: Boolean(room.amenities.waterHeater),
-      gacXep: Boolean(room.amenities.mezzanine),
-      thangMay: Boolean(room.amenities.elevator),
-      banCong: Boolean(room.amenities.balcony),
-      thuCung: Boolean(room.amenities.petsAllowed),
-      xeDien: Boolean(room.amenities.electricVehicle),
-      gioTuDo: Boolean(room.amenities.freeTime),
-      khoaVanTay: true,
-      wifi: true,
-      cameraAnNinh: true,
-    },
-    areaM2: String(room.areaM2),
-    bedrooms: 1,
-    bathrooms: 1,
-    legalStatus: 'hop_dong_chinh_chu',
-    addressDetail: room.maskedAddress,
-    lat: room.lat,
-    lng: room.lng,
-    status: 'active',
-    createdAt: '2026-08-15T00:00:00.000Z',
-    publishedAt: '2026-08-15T00:00:00.000Z',
-    viewCount: 120,
-    images: room.images.map((url, idx) => ({
-      imageUrl: url,
-      sortOrder: idx,
-    })),
-    location: {
-      id: 1,
-      name: room.district || 'Hà Nội',
-      slug: 'ha-noi',
-      level: 'province',
-    },
-    project: null,
-    owner: {
-      id: 'owner-qns',
-      fullName: 'Chủ nhà',
-      phone: '0981753082',
-      email: 'contact@qns.com',
-      avatarUrl: null,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      isPhoneVerified: true,
-      isIdVerified: true,
-    },
-    nearbyUniversities: [],
-  };
+  } catch {}
 }

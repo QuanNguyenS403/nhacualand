@@ -1,143 +1,162 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
-  getAllMapRooms,
   filterMapRooms,
-  maskListingAddress,
+  pinToMapRoom,
+  getCommunityReviewPins,
   type MapRoom,
   type MapFilterParams,
-  type RoomReview,
+  type CommunityReviewPin,
 } from '@/lib/map-rooms-data';
+import { fetchMapPins, fetchListingBySlug, type ListingMapPin } from '@/lib/api';
 import { geocodeAddressPipeline } from '@/lib/vietnam-geocoding';
 import { MapRoomCanvas } from './MapRoomCanvas';
 import { MapFloatingSearchBar } from './MapFloatingSearchBar';
 import { MapRoomDetailDrawer } from './MapRoomDetailDrawer';
 
 export function MapReviewsExplorer() {
-  const [allRooms, setAllRooms] = useState<MapRoom[]>([]);
+  const [allPins, setAllPins] = useState<ListingMapPin[]>([]);
+  const [myPendingPin, setMyPendingPin] = useState<ListingMapPin | null>(null);
   const [filterParams, setFilterParams] = useState<MapFilterParams>({});
   const [selectedRoom, setSelectedRoom] = useState<MapRoom | null>(null);
   const [selectedClusterRooms, setSelectedClusterRooms] = useState<MapRoom[]>([]);
+  const [selectedReview, setSelectedReview] = useState<CommunityReviewPin | null>(null);
+  const [showReviewsLayer, setShowReviewsLayer] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // 1. Tải toàn bộ phòng trọ từ dữ liệu máy chủ + localStorage client (chỉ lấy phòng active, loại bỏ phòng đã cho thuê)
-  useEffect(() => {
-    function refreshMapRooms() {
-      const baseRooms = getAllMapRooms();
-      const inactiveKeys = new Set<string>();
-
-      // Đọc thêm tin vừa đăng từ localStorage phía client nếu có
-      try {
-        const localCustom = localStorage.getItem('qns_custom_listings');
-        if (localCustom) {
-          const parsed = JSON.parse(localCustom);
-          if (Array.isArray(parsed)) {
-            // Xác định các tin đã cho thuê (rented) hoặc đã gỡ (removed)
-            parsed.forEach((item: any) => {
-              const st = (item.status || 'pending').toLowerCase();
-              if (st === 'rented' || st === 'removed' || st === 'rejected') {
-                if (item.id) inactiveKeys.add(String(item.id).toLowerCase());
-                if (item.slug) inactiveKeys.add(String(item.slug).toLowerCase());
-              }
-            });
-
-            // Thêm các tin active mới
-            parsed.forEach((item: any, idx: number) => {
-              if (!item.lat || !item.lng) return;
-              const st = (item.status || 'pending').toLowerCase();
-              if (st !== 'active') return;
-
-              const exists = baseRooms.some((r) => r.id === String(item.id) || r.slug === item.slug);
-              if (!exists) {
-                const priceNum = parseInt(String(item.price || '3500000'), 10) || 3500000;
-                const depositNum = parseInt(String(item.depositAmount || '2000000'), 10) || 2000000;
-                baseRooms.unshift({
-                  id: String(item.id || `local-${idx}`),
-                  slug: item.slug || `tin-moi-${item.id}`,
-                  title: (item.title || 'Phòng cho thuê mới đăng').replace(/^\[MẪU\]\s*/i, '').replace(/\[MẪU\]/gi, '').trim(),
-                  maskedAddress: maskListingAddress(item.addressDetail, '', '', 'Hà Nội'),
-                  rawAddress: item.addressDetail || '',
-                  lat: Number(item.lat),
-                  lng: Number(item.lng),
-                  price: priceNum,
-                  depositAmount: depositNum,
-                  areaM2: parseInt(String(item.areaM2 || '25'), 10) || 25,
-                  propertyType: item.propertyType || 'phong_tro',
-                  district: item.location?.name || 'Hà Nội',
-                  ward: '',
-                  city: 'Hà Nội',
-                  images: Array.isArray(item.images) && item.images.length > 0
-                    ? item.images.map((img: any) => typeof img === 'string' ? img : img.imageUrl).filter(Boolean)
-                    : ['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=75'],
-                  rating: 5.0,
-                  reviewCount: 1,
-                  reviews: [
-                    {
-                      id: `rev-local-${idx}`,
-                      authorName: 'Khách thuê mới',
-                      authorRole: 'Khách thuê thực tế',
-                      rating: 5,
-                      content: 'Phòng mới đăng, thông tin đầy đủ, hỗ trợ dẫn xem nhanh chóng',
-                      createdAt: new Date().toISOString().slice(0, 10),
-                      isWarning: false,
-                    },
-                  ],
-                  amenities: {
-                    wifi: true,
-                    airConditioner: Boolean(item.amenities?.dieuHoa ?? true),
-                    waterHeater: Boolean(item.amenities?.nongLanh ?? true),
-                    mezzanine: Boolean(item.amenities?.gacXep),
-                    elevator: Boolean(item.amenities?.thangMay),
-                    balcony: Boolean(item.amenities?.banCong ?? true),
-                    petsAllowed: Boolean(item.amenities?.thuCung),
-                    electricVehicle: Boolean(item.amenities?.xeDien),
-                    freeTime: Boolean(item.amenities?.gioTuDo ?? true),
-                    securityCamera: true,
-                    privateBathroom: true,
-                  },
-                  electricityPricePerKwh: item.electricityPricePerKwh || 3500,
-                  waterPrice: item.waterPriceFlat ? `${item.waterPriceFlat.toLocaleString('vi-VN')} đ/người` : '25.000 đ/m³',
-                  isCustom: true,
-                });
-              }
-            });
-          }
-        }
-      } catch (e) {
-        console.warn('Lỗi đọc custom listings localStorage:', e);
-      }
-
-      // Lọc bỏ triệt để mọi phòng đã cho thuê khỏi danh sách hiển thị trên bản đồ
-      const cleanRooms = baseRooms.filter((room) => {
-        const idKey = room.id.toLowerCase();
-        const slugKey = room.slug.toLowerCase();
-        return !inactiveKeys.has(idKey) && !inactiveKeys.has(slugKey);
-      });
-
-      setAllRooms(cleanRooms);
-      setIsDataLoaded(true);
-    }
-
-    refreshMapRooms();
-    window.addEventListener('qns_listings_updated', refreshMapRooms);
-    return () => window.removeEventListener('qns_listings_updated', refreshMapRooms);
+  const communityReviews = useMemo(() => {
+    return getCommunityReviewPins();
   }, []);
 
-  // 2. Lọc phòng theo các tiêu chí từ thanh tìm kiếm
-  const filteredRooms = useMemo(() => {
-    return filterMapRooms(allRooms, filterParams);
-  }, [allRooms, filterParams]);
+  // 1. Nạp danh sách tin từ nguồn duy nhất: GET /listings/map qua fetchMapPins()
+  const loadMapPins = useCallback(async (isInitial = false) => {
+    try {
+      if (isInitial) setIsLoading(true);
+      setFetchError(null);
 
-  // 3. Xử lý khi người dùng tìm kiếm từ MapFloatingSearchBar
+      const pins = await fetchMapPins();
+      if (Array.isArray(pins)) {
+        setAllPins(pins);
+      }
+    } catch (err: any) {
+      if (isInitial) {
+        setFetchError('Không thể kết nối đến máy chủ bản đồ. Vui lòng thử lại sau.');
+      }
+    } finally {
+      if (isInitial) setIsLoading(false);
+    }
+  }, []);
+
+  // 2. Kiểm tra tin vừa đăng của chủ nhà (hiện ngay pin "Chờ duyệt" cho riêng họ)
+  const checkOwnerPendingListing = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const lastPostedId = localStorage.getItem('qns_last_posted_id');
+      if (!lastPostedId) return;
+
+      const listing = await fetchListingBySlug(lastPostedId).catch(() => null);
+      if (listing && listing.status === 'pending' && listing.lat != null && listing.lng != null) {
+        const pendingPin: ListingMapPin = {
+          id: String(listing.id),
+          slug: listing.slug,
+          title: listing.title,
+          price: parseInt(String(listing.price), 10) || 0,
+          depositAmount: listing.depositAmount ? parseInt(String(listing.depositAmount), 10) : undefined,
+          areaM2: parseInt(String(listing.areaM2), 10) || 20,
+          propertyType: (listing.propertyType as any) || 'phong_tro',
+          lat: listing.lat,
+          lng: listing.lng,
+          thumbnailUrl: listing.images?.[0]?.imageUrl || null,
+          locationName: listing.addressDetail || 'Hà Nội',
+          district: listing.location?.name,
+          status: 'pending',
+          isOwnerPending: true,
+        };
+
+        setMyPendingPin(pendingPin);
+        const mapRoom = pinToMapRoom(pendingPin);
+        setSelectedRoom(mapRoom);
+        setMapCenter({ lat: listing.lat, lng: listing.lng });
+      } else if (listing && listing.status === 'active') {
+        // Tin đã được admin duyệt sang active, xóa cờ tạm
+        localStorage.removeItem('qns_last_posted_id');
+        setMyPendingPin(null);
+      }
+    } catch {}
+  }, []);
+
+  // 3. Khởi tạo và thiết lập chu kỳ Polling đồng bộ thời gian thực (mỗi 8 giây)
+  useEffect(() => {
+    let isSubscribed = true;
+
+    async function init() {
+      await loadMapPins(true);
+      if (isSubscribed) {
+        await checkOwnerPendingListing();
+      }
+    }
+
+    init();
+
+    // Chu kỳ cập nhật ngầm: kiểm tra tin mới được admin duyệt trong vòng tối đa 8 giây
+    const pollInterval = setInterval(() => {
+      loadMapPins(false);
+      checkOwnerPendingListing();
+    }, 8000);
+
+    // Lắng nghe sự kiện phát ra từ luồng đăng tin / admin duyệt tin
+    const handleUpdateEvent = () => {
+      loadMapPins(false);
+      checkOwnerPendingListing();
+    };
+
+    window.addEventListener('qns_listings_updated', handleUpdateEvent);
+    window.addEventListener('storage', handleUpdateEvent);
+    window.addEventListener('focus', handleUpdateEvent);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(pollInterval);
+      window.removeEventListener('qns_listings_updated', handleUpdateEvent);
+      window.removeEventListener('storage', handleUpdateEvent);
+      window.removeEventListener('focus', handleUpdateEvent);
+    };
+  }, [loadMapPins, checkOwnerPendingListing]);
+
+  // 4. Tổng hợp danh sách MapRoom từ pins thật trong DB + pin chờ duyệt của chủ
+  const allMapRooms = useMemo(() => {
+    const list: MapRoom[] = [];
+    const seenIds = new Set<string>();
+
+    if (myPendingPin) {
+      list.push(pinToMapRoom(myPendingPin));
+      seenIds.add(myPendingPin.id);
+    }
+
+    for (const pin of allPins) {
+      if (!seenIds.has(pin.id)) {
+        seenIds.add(pin.id);
+        list.push(pinToMapRoom(pin));
+      }
+    }
+
+    return list;
+  }, [allPins, myPendingPin]);
+
+  // 5. Lọc phòng theo bộ lọc tìm kiếm
+  const filteredRooms = useMemo(() => {
+    return filterMapRooms(allMapRooms, filterParams);
+  }, [allMapRooms, filterParams]);
+
+  // 6. Xử lý khi người dùng tìm kiếm từ thanh MapFloatingSearchBar
   const handleSearch = useCallback(async (params: MapFilterParams) => {
     setFilterParams(params);
 
-    // Tính danh sách phòng khớp bộ lọc
-    const matched = filterMapRooms(allRooms, params);
+    const matched = filterMapRooms(allMapRooms, params);
 
-    // Nếu người dùng gõ địa chỉ cụ thể, thử geocode
     if (params.query && params.query.trim()) {
       try {
         const geoRes = await geocodeAddressPipeline(params.query.trim());
@@ -145,12 +164,9 @@ export function MapReviewsExplorer() {
           setMapCenter({ lat: geoRes.lat, lng: geoRes.lng });
           return;
         }
-      } catch {
-        // Tiếp tục fallback
-      }
+      } catch {}
     }
 
-    // Nếu người dùng chọn quận/huyện cụ thể từ dropdown
     if (params.khuVuc && params.khuVuc !== 'all' && params.khuVuc !== 'Khu vực') {
       try {
         const geoRes = await geocodeAddressPipeline(params.khuVuc);
@@ -158,69 +174,54 @@ export function MapReviewsExplorer() {
           setMapCenter({ lat: geoRes.lat, lng: geoRes.lng });
           return;
         }
-      } catch {
-        // Tiếp tục fallback
-      }
+      } catch {}
     }
 
-    // Fallback thông minh: nếu có phòng khớp với kết quả tìm kiếm, bay tới vị trí phòng đầu tiên
     if (matched.length > 0) {
       setMapCenter({ lat: matched[0].lat, lng: matched[0].lng });
     }
-  }, [allRooms]);
-
-  // 4. Xử lý thêm review mới trực tiếp vào phòng
-  const handleAddReview = useCallback((roomId: string, newReview: RoomReview) => {
-    setAllRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === roomId) {
-          const updatedReviews = [newReview, ...r.reviews];
-          const newAvg =
-            updatedReviews.reduce((sum, item) => sum + item.rating, 0) / updatedReviews.length;
-          return {
-            ...r,
-            rating: Number(newAvg.toFixed(1)),
-            reviewCount: updatedReviews.length,
-            reviews: updatedReviews,
-          };
-        }
-        return r;
-      })
-    );
-
-    // Cập nhật selectedRoom nếu đang mở
-    setSelectedRoom((prev) => {
-      if (prev && prev.id === roomId) {
-        const updatedReviews = [newReview, ...prev.reviews];
-        const newAvg =
-          updatedReviews.reduce((sum, item) => sum + item.rating, 0) / updatedReviews.length;
-        return {
-          ...prev,
-          rating: Number(newAvg.toFixed(1)),
-          reviewCount: updatedReviews.length,
-          reviews: updatedReviews,
-        };
-      }
-      return prev;
-    });
-  }, []);
+  }, [allMapRooms]);
 
   return (
     <div className="relative w-full h-full min-h-[580px] sm:min-h-[640px] overflow-hidden bg-slate-900">
-      {/* BẢN ĐỒ GOOGLE MAPS PHỦ TOÀN BỘ KHUNG NHÌN TRÀN MÀN HÌNH */}
+      {/* Thông báo lỗi nếu máy chủ API ngoại tuyến */}
+      {fetchError && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2.5 rounded-2xl bg-amber-500/90 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-3 border border-amber-300">
+          <span>{fetchError}</span>
+          <button
+            type="button"
+            onClick={() => loadMapPins(true)}
+            className="px-2.5 py-1 rounded-xl bg-slate-950 text-amber-300 text-xs font-semibold hover:bg-slate-900 transition-colors"
+          >
+            Thử lại
+          </button>
+        </div>
+      )}
+
+      {/* Bản đồ Google Maps phủ toàn bộ khung nhìn */}
       <div className="absolute inset-0 w-full h-full z-10">
         <MapRoomCanvas
           rooms={filteredRooms}
           selectedRoom={selectedRoom}
           onSelectRoom={(room, cluster) => {
+            setSelectedReview(null);
             setSelectedRoom(room);
             setSelectedClusterRooms(cluster || [room]);
           }}
           centerCoords={mapCenter}
+          communityReviews={communityReviews}
+          selectedReview={selectedReview}
+          onSelectReview={(rv) => {
+            setSelectedRoom(null);
+            setSelectedClusterRooms([]);
+            setSelectedReview(rv);
+          }}
+          showReviewsLayer={showReviewsLayer}
+          onToggleReviewsLayer={() => setShowReviewsLayer((prev) => !prev)}
         />
       </div>
 
-      {/* KHỐI NỔI ĐÈ LÊN PHÍA TRÊN GOOGLE MAPS (CHUẨN FORM COMPACT ẢNH 1) */}
+      {/* Thanh tìm kiếm nổi phía trên */}
       <div className="absolute top-3 sm:top-4 left-3 sm:left-4 md:left-6 z-30 pointer-events-none w-[calc(100%-24px)] sm:w-[440px] md:w-[450px]">
         <div className="pointer-events-auto">
           <MapFloatingSearchBar
@@ -230,16 +231,17 @@ export function MapReviewsExplorer() {
         </div>
       </div>
 
-      {/* DRAWER CHI TIẾT PHÒNG & TÍCH HỢP REVIEW (MỞ KHI CLICK VÀO PHÒNG TRÊN BẢN ĐỒ) */}
+      {/* Drawer chi tiết phòng hoặc chi tiết đánh giá cộng đồng */}
       <MapRoomDetailDrawer
         room={selectedRoom}
         clusterRooms={selectedClusterRooms}
         onSelectClusterRoom={(room) => setSelectedRoom(room)}
+        selectedReview={selectedReview}
         onClose={() => {
           setSelectedRoom(null);
           setSelectedClusterRooms([]);
+          setSelectedReview(null);
         }}
-        onAddReview={handleAddReview}
       />
     </div>
   );

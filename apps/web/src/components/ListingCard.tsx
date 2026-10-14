@@ -83,11 +83,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
 
           {/* Badge khoảng cách tìm kiếm theo địa chỉ nếu có */}
           {listing.distanceText ? (
-            <div className="mt-2.5 inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/70">
+            <div className="mt-2.5 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
               <span>{listing.distanceText}</span>
             </div>
           ) : listing.distanceMeters != null ? (
-            <div className="mt-2.5 inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/70">
+            <div className="mt-2.5 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
               <span>
                 {listing.distanceMeters < 1000
                   ? `Cách địa chỉ ~${listing.distanceMeters}m`

@@ -279,7 +279,7 @@ export function SearchFilterBar({
               }
             }}
             className={`h-12 w-full rounded-xl border bg-white pl-10 pr-9 text-sm sm:text-[14.5px] text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 ${
-              keyword ? 'border-brand/40 bg-teal-50/10' : 'border-slate-200'
+              keyword ? 'border-brand/40 bg-brand-50/20' : 'border-slate-200'
             }`}
           />
           {keyword && (
@@ -303,7 +303,7 @@ export function SearchFilterBar({
             onChange={(e) => setLocationWard(e.target.value)}
             className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
               locationWard
-                ? 'border-brand/50 text-brand font-medium bg-teal-50/20'
+                ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
                 : 'border-slate-200 text-slate-700'
             }`}
           >
@@ -333,7 +333,7 @@ export function SearchFilterBar({
             aria-label="Gần trường ĐH / CĐ"
             className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
               universitySlug
-                ? 'border-brand/50 text-brand font-medium bg-teal-50/20'
+                ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
                 : 'border-slate-200 text-slate-700'
             }`}
           >
@@ -378,7 +378,7 @@ export function SearchFilterBar({
             onChange={(e) => setPropertyType(e.target.value)}
             className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
               propertyType
-                ? 'border-brand/50 text-brand font-medium bg-teal-50/20'
+                ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
                 : 'border-slate-200 text-slate-700'
             }`}
           >
@@ -402,7 +402,7 @@ export function SearchFilterBar({
             onClick={() => setIsPriceOpen(!isPriceOpen)}
             className={`h-12 w-full flex items-center justify-between rounded-xl border bg-white pl-3.5 pr-3 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer ${
               isPriceActive
-                ? 'border-brand/50 text-brand font-medium bg-teal-50/20'
+                ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
                 : 'border-slate-200 text-slate-700'
             }`}
           >
@@ -506,7 +506,7 @@ export function SearchFilterBar({
                       }}
                       className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-brand bg-teal-50 text-brand font-semibold'
+                          ? 'border-brand bg-brand-50 text-brand font-semibold'
                           : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
@@ -534,7 +534,7 @@ export function SearchFilterBar({
                     setIsPriceOpen(false);
                     handleFilter();
                   }}
-                  className="text-xs font-bold text-white bg-brand hover:bg-teal-700 px-4 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
+                  className="text-xs font-bold text-white bg-brand hover:bg-brand-700 px-4 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
                 >
                   Áp dụng
                 </button>
@@ -548,7 +548,7 @@ export function SearchFilterBar({
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex h-12 w-full lg:w-auto items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-brand px-6 text-sm sm:text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-teal-700 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex h-12 w-full lg:w-auto items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-brand px-6 text-sm sm:text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-700 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             {isPending ? (
               <>
@@ -584,7 +584,7 @@ export function SearchFilterBar({
             onClick={() => setPetAllowed(!petAllowed)}
             className={`inline-flex items-center gap-1.5 h-9 rounded-full px-3.5 text-xs sm:text-sm font-medium transition-all duration-150 border cursor-pointer ${
               petAllowed
-                ? 'border-brand bg-teal-50 text-brand font-semibold shadow-xs'
+                ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
                 : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
             }`}
           >
@@ -602,7 +602,7 @@ export function SearchFilterBar({
             onClick={() => setElectricVehicle(!electricVehicle)}
             className={`inline-flex items-center gap-1.5 h-9 rounded-full px-3.5 text-xs sm:text-sm font-medium transition-all duration-150 border cursor-pointer ${
               electricVehicle
-                ? 'border-brand bg-teal-50 text-brand font-semibold shadow-xs'
+                ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
                 : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
             }`}
           >

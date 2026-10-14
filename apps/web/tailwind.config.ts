@@ -2,12 +2,11 @@ import type { Config } from 'tailwindcss';
 
 /**
  * Design system tokens — nguồn sự thật duy nhất cho toàn site.
- * Hướng thiết kế: PropTech hiện đại — Teal / Xanh ngọc.
- *   • Màu chủ đạo: Teal (#0d9488) — đủ tương phản WCAG AA với nền trắng (ratio 4.62:1)
- *   • Không dùng màu vàng Mogi (#fdce09) — tránh bị nhầm là bản sao
+ * Hướng thiết kế: PropTech sang trọng & cao cấp — Vàng Gold hoàng gia.
+ *   • Màu chủ đạo: Vàng Gold (#b88014) — sang trọng, đủ tương phản WCAG AA với nền trắng
  *   • Font: Inter (Google Fonts) — heading semibold, body regular
  *   • Góc bo: rounded-xl mặc định cho card (12px), rounded-2xl cho modal/form lớn
- *   • Shadow: soft layered shadows thay vì shadow cứng mặc định Tailwind
+ *   • Shadow: soft layered shadows với ánh vàng ấm áp thay vì shadow cứng mặc định Tailwind
  */
 const config: Config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
@@ -18,16 +17,16 @@ const config: Config = {
       },
       colors: {
         brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          DEFAULT: '#0d9488', // teal-600 — màu chủ đạo, WCAG AA (4.62:1 on white)
-          700: '#0f766e', // dark state (hover)
-          800: '#115e59',
-          900: '#134e4a',
+          50: '#fdfbf2',
+          100: '#faecc5',
+          200: '#f5dc93',
+          300: '#ecc75b',
+          400: '#e2b32f',
+          500: '#c89218',
+          DEFAULT: '#b88014', // vàng gold chủ đạo, WCAG AA
+          700: '#94640b', // dark gold state (hover)
+          800: '#734d08',
+          900: '#543705',
         },
         surface: {
           DEFAULT: '#ffffff',
@@ -42,7 +41,7 @@ const config: Config = {
           inverse: '#ffffff',
         },
         // Giữ tương thích ngược — component cũ dùng text-brand-dark vẫn hoạt động
-        'brand-dark': '#0f766e',
+        'brand-dark': '#94640b',
       },
       fontFamily: {
         // Inter từ Google Fonts (nạp qua next/font trong layout.tsx)
@@ -65,13 +64,13 @@ const config: Config = {
       },
       boxShadow: {
         'card': '0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07)',
-        'card-hover': '0 10px 25px -5px rgb(13 148 136 / 0.15), 0 4px 10px -6px rgb(13 148 136 / 0.1)',
+        'card-hover': '0 10px 25px -5px rgb(184 128 20 / 0.18), 0 4px 10px -6px rgb(184 128 20 / 0.12)',
         'elevated': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
         'modal': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
       },
       backgroundImage: {
-        'hero-gradient': 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 40%, #f8fafc 100%)',
-        'brand-gradient': 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+        'hero-gradient': 'linear-gradient(135deg, #fdfbf5 0%, #faecc5 40%, #f8fafc 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #c89218 0%, #94640b 100%)',
         'card-overlay': 'linear-gradient(to top, rgb(0 0 0 / 0.6) 0%, transparent 50%)',
       },
       keyframes: {

@@ -616,7 +616,7 @@ export function GoogleMapAddressPicker({
           </button>
         </div>
         {geoNotice && (
-          <p className="mt-1.5 text-[11px] font-medium text-emerald-700">
+          <p className="mt-1.5 text-[11px] font-medium text-brand-800">
             <span>{geoNotice}</span>
           </p>
         )}
@@ -648,7 +648,7 @@ export function GoogleMapAddressPicker({
               </button>
             </div>
             {lat != null && lng != null && (
-              <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+              <span className="rounded bg-brand-100 px-2 py-0.5 text-[10px] font-bold text-brand-900">
                 Tọa độ: {lat.toFixed(5)}, {lng.toFixed(5)}
               </span>
             )}
@@ -677,7 +677,7 @@ export function GoogleMapAddressPicker({
           {/* Huy hiệu hướng dẫn chấm vị trí nổi trên đầu bản đồ */}
           <div className="absolute top-2.5 left-2.5 right-2.5 sm:right-auto z-20 pointer-events-none">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
               <span>Chạm hoặc click lên bản đồ để chấm vị trí phòng — Địa chỉ sẽ tự động đồng bộ ngay lập tức</span>
             </div>
           </div>
@@ -790,7 +790,7 @@ export function GoogleMapAddressPicker({
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                    <span className="inline-block rounded-md bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-800 border border-brand-200">
                       {uni.distanceKm < 1 ? `~${uni.distanceMeters}m` : `~${uni.distanceKm} km`}
                     </span>
                     <p className="text-[10px] text-text-muted mt-0.5">~{uni.travelTimeMinutes} phút xe máy</p>

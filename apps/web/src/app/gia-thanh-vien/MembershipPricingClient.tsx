@@ -8,7 +8,7 @@ export function MembershipPricingClient() {
     <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Tiêu đề & Giới thiệu */}
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200/80 mb-3">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-50 text-brand-800 border border-brand-200/80 mb-3">
           Mô hình môi giới chuyên biệt cho thuê
         </span>
         <h1 className="text-3xl font-extrabold text-slate-900 sm:text-4xl tracking-tight leading-tight">
@@ -20,24 +20,24 @@ export function MembershipPricingClient() {
       </div>
 
       {/* Banner thông báo chuyển đổi mô hình (DEV-11 / GAP-07) */}
-      <div className="mb-10 rounded-2xl bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 p-1 shadow-lg animate-fade-in">
+      <div className="mb-10 rounded-2xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 p-1 shadow-lg animate-fade-in">
         <div className="rounded-[14px] bg-slate-900/90 backdrop-blur px-6 py-5 sm:flex sm:items-center sm:justify-between text-white">
           <div className="flex items-start sm:items-center gap-3.5 mb-4 sm:mb-0">
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-white">Thông báo chuyển đổi mô hình dịch vụ</h3>
-                <span className="bg-teal-500 text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full">
+                <span className="bg-brand text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full">
                   Áp dụng từ 24/09/2026
                 </span>
               </div>
-              <p className="text-xs text-teal-100 mt-1 max-w-3xl leading-relaxed">
+              <p className="text-xs text-amber-100 mt-1 max-w-3xl leading-relaxed">
                 Hệ thống chính thức chuyển đổi sang mô hình môi giới phòng cho thuê trực tiếp do Chủ nhà điều phối độc quyền. Ngừng bán toàn bộ các gói thành viên đăng tin tự do. Chủ trọ đăng tin hoàn toàn miễn phí, chỉ chi trả 40% phí thành công khi có người thuê dọn vào ở
               </p>
             </div>
           </div>
           <Link
             href="/dang-tin"
-            className="inline-flex shrink-0 items-center text-xs font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+            className="inline-flex shrink-0 items-center text-xs font-bold bg-brand hover:bg-brand-400 text-slate-950 px-4 py-2.5 rounded-xl transition-colors shadow-sm"
           >
             Đăng tin miễn phí ngay
           </Link>
@@ -50,7 +50,7 @@ export function MembershipPricingClient() {
         <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-800 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
                 Người thuê phòng
               </span>
             </div>
@@ -60,19 +60,19 @@ export function MembershipPricingClient() {
             </p>
             <ul className="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-5">
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Phí tư vấn & dẫn xem phòng: <strong>0 đồng</strong></span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Chuyên viên trực tiếp dẫn xem, khảo sát thực tế</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Kiểm tra danh tính, quyền cho thuê của chủ trước khi cọc</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Ký hợp đồng trực tiếp với chủ nhà, minh bạch chi phí</span>
               </li>
             </ul>
@@ -88,13 +88,13 @@ export function MembershipPricingClient() {
         </div>
 
         {/* Cột 2: Chủ nhà (Nổi bật) */}
-        <div className="rounded-3xl border-2 border-teal-500 bg-white p-7 shadow-xl shadow-teal-500/10 ring-1 ring-teal-500 flex flex-col justify-between relative">
-          <div className="absolute -top-3.5 right-6 bg-teal-600 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
+        <div className="rounded-3xl border-2 border-brand bg-white p-7 shadow-xl shadow-brand/10 ring-1 ring-brand flex flex-col justify-between relative">
+          <div className="absolute -top-3.5 right-6 bg-brand text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
             Thu phí một lần khi thành công
           </div>
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-800 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
                 Chủ phòng & Nhà trọ
               </span>
             </div>
@@ -104,19 +104,19 @@ export function MembershipPricingClient() {
             </p>
             <ul className="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-5">
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Đăng tin & quảng bá phòng: <strong>0 đồng</strong></span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Tiếp nhận, sàng lọc nhu cầu và dẫn khách xem tận nơi</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Hỗ trợ soạn hợp đồng thuê và lập biên bản bàn giao</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Chỉ thanh toán phí khi đủ 4 điều kiện thành công thực tế</span>
               </li>
             </ul>
@@ -124,7 +124,7 @@ export function MembershipPricingClient() {
           <div className="mt-8 pt-4">
             <Link
               href="/dang-tin"
-              className="w-full block text-center py-3 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-colors shadow-sm"
+              className="w-full block text-center py-3 px-4 rounded-xl text-xs font-bold bg-brand hover:bg-brand-dark text-white transition-colors shadow-sm"
             >
               Gửi phòng cho thuê miễn phí
             </Link>
@@ -145,19 +145,19 @@ export function MembershipPricingClient() {
             </p>
             <ul className="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-5">
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Kênh Zalo tiếp nhận: <strong>{SITE_CONFIG.zalo}</strong></span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Email hỗ trợ: <strong>{SITE_CONFIG.email}</strong></span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Thời gian tiếp nhận yêu cầu: <strong>{SITE_CONFIG.workingHours}</strong></span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
                 <span>Địa bàn hoạt động: <strong>Thành phố Hà Nội</strong></span>
               </li>
             </ul>

@@ -128,7 +128,7 @@ export function SelectedRoomsModal({
                         className="h-12 w-16 rounded-lg object-cover bg-slate-100 shrink-0"
                       />
                     ) : (
-                      <div className="h-12 w-16 rounded-lg bg-teal-50 flex items-center justify-center text-brand font-bold text-xs shrink-0">
+                      <div className="h-12 w-16 rounded-lg bg-brand-50 flex items-center justify-center text-brand font-bold text-xs shrink-0">
                         QNS
                       </div>
                     )}

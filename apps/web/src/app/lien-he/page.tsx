@@ -41,7 +41,7 @@ export default function ContactPage() {
                     href={`https://zalo.me/${SITE_CONFIG.zalo.replace(/\s+/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-2 rounded-xl bg-brand-50 border border-brand-200 px-4 py-2.5 text-xs font-bold text-brand-900 hover:bg-brand-100 transition-colors shadow-2xs"
                   >
                     <span className="font-black text-xs">Zalo</span>
                     <span>Chat Zalo {SITE_CONFIG.agentName}</span>
