@@ -135,7 +135,7 @@ export function SearchFilterBar({
       const match = availablePropertyTypes.find((p) => p.value === propertyType);
       if (match && match.value && match.label) return match.label;
     }
-    return 'Tìm phòng';
+    return 'Bộ lọc tìm kiếm';
   })();
 
   const sectionSubtitle = (() => {
@@ -543,7 +543,7 @@ export function SearchFilterBar({
           )}
         </div>
 
-        {/* CTA: Nút Tìm phòng đồng bộ chiều cao và nằm cùng hàng trên desktop */}
+        {/* CTA: Nút Bộ lọc tìm kiếm đồng bộ chiều cao và nằm cùng hàng trên desktop */}
         <div className="col-span-2 lg:col-span-1 lg:shrink-0">
           <button
             type="submit"
@@ -563,7 +563,7 @@ export function SearchFilterBar({
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <span>Tìm phòng</span>
+                <span>Bộ lọc tìm kiếm</span>
               </>
             )}
           </button>

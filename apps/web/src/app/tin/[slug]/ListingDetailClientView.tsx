@@ -238,9 +238,9 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
               </div>
             </div>
 
-            {/* Khối Thông tin chính & Biểu phí */}
+            {/* Khối Thông tin dịch vụ */}
             <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card">
-              <h2 className="mb-4 sm:mb-5 font-bold text-text-primary text-lg sm:text-xl">Thông tin chính & Biểu phí</h2>
+              <h2 className="mb-4 sm:mb-5 font-bold text-text-primary text-lg sm:text-xl">Thông tin dịch vụ</h2>
               <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-2 md:grid-cols-4">
                 <InfoRow
                   label="Tình trạng phòng"

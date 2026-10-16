@@ -27,9 +27,9 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-white/90">
-              Nền tảng cho thuê chuyên biệt — <strong className="text-white">Rõ chi phí, đúng người cho thuê</strong>
+              Nền tảng công nghệ cho thuê chuyên biệt — <strong className="text-white">Minh bạch chi phí, đúng người cho thuê</strong>
               <br />
-              Minh bạch biểu phí trọn gói, kết nối trực tiếp bên có quyền cho thuê
+              Minh bạch chi phí, kết nối trực tiếp bên có quyền cho thuê
             </p>
 
             {/* 4 biểu tượng mạng xã hội trưng bày */}

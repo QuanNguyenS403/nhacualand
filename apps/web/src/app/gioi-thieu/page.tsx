@@ -158,7 +158,7 @@ export default function GioiThieuPage() {
                 Thấu hiểu
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Lắng nghe và thấu hiểu nhu cầu của cả người thuê và chủ nhà
+                Lắng nghe và thấu hiểu nhu cầu của cả Người thuê và Người cho thuê
               </p>
             </div>
 
@@ -202,10 +202,10 @@ export default function GioiThieuPage() {
         <div className="container-max max-w-6xl px-4 sm:px-6">
           <div className="rounded-2xl sm:rounded-3xl border border-brand-200/80 bg-gradient-to-b from-brand-50/70 via-brand-50/30 to-white p-6 sm:p-8 md:p-9 text-center shadow-xs">
             <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight leading-snug">
-              Sẵn sàng tìm căn phòng phù hợp?
+              Bắt đầu trải nghiệm ngay!
             </h2>
             <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 max-w-[640px] mx-auto leading-relaxed">
-              Khám phá các phòng đang có trên NHACUALAND và kết nối với chủ nhà phù hợp với nhu cầu của bạn
+              Khám phá các bất động sản đang cho thuê trên nhacualand và trải nghiệm ngay công nghệ tìm phòng tân tiến nhất
             </p>
             <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5">
               <Link
