@@ -14,6 +14,21 @@
 const fs = require('fs');
 const path = require('path');
 
+try {
+  const envContent = fs.readFileSync(path.resolve(__dirname, '../.env'), 'utf-8');
+  envContent.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        const k = trimmed.slice(0, idx).trim();
+        const v = trimmed.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+        if (!process.env[k]) process.env[k] = v;
+      }
+    }
+  });
+} catch {}
+
 let PrismaClient;
 try {
   PrismaClient = require('@prisma/client').PrismaClient;

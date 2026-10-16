@@ -55,10 +55,22 @@ async function main() {
     create: { level: 'province', name: 'Hà Nội', slug: 'ha-noi' },
   });
 
-  await prisma.location.upsert({
+  const cauGiay = await prisma.location.upsert({
     where: { slug: 'ha-noi-cau-giay' },
     update: {},
     create: { level: 'district', name: 'Cầu Giấy', slug: 'ha-noi-cau-giay', parentId: hanoi.id },
+  });
+
+  const dongDa = await prisma.location.upsert({
+    where: { slug: 'ha-noi-dong-da' },
+    update: {},
+    create: { level: 'district', name: 'Đống Đa', slug: 'ha-noi-dong-da', parentId: hanoi.id },
+  });
+
+  const haiBaTrung = await prisma.location.upsert({
+    where: { slug: 'ha-noi-hai-ba-trung' },
+    update: {},
+    create: { level: 'district', name: 'Hai Bà Trưng', slug: 'ha-noi-hai-ba-trung', parentId: hanoi.id },
   });
 
   const danang = await prisma.location.upsert({
@@ -274,11 +286,19 @@ async function main() {
   const uniTonDucThang = await prisma.university.findUniqueOrThrow({ where: { slug: 'dh-ton-duc-thang' } });
   const uniUeh = await prisma.university.findUniqueOrThrow({ where: { slug: 'dh-kinh-te-tphcm' } });
   const uniBachKhoaHcm = await prisma.university.findUniqueOrThrow({ where: { slug: 'dh-bach-khoa-tphcm' } });
+  const uniVnuHn = await prisma.university.findUniqueOrThrow({ where: { slug: 'dhqg-ha-noi' } });
+  const uniFtuHn = await prisma.university.findUniqueOrThrow({ where: { slug: 'dh-ngoai-thuong-hn' } });
+  const uniHust = await prisma.university.findUniqueOrThrow({ where: { slug: 'dh-bach-khoa-ha-noi' } });
 
   // ---------- 4. Tin đăng MẪU Cho Thuê (chỉ để kiểm tra giao diện) ----------
   // Xoá tin demo cũ nếu có (kèm toàn bộ bản ghi phụ thuộc)
   const demoListings = await prisma.listing.findMany({
-    where: { title: { startsWith: '[MẪU]' } },
+    where: {
+      OR: [
+        { title: { startsWith: '[MẪU]' } },
+        { slug: { startsWith: 'mau-' } },
+      ],
+    },
     select: { id: true },
   });
   const demoIds = demoListings.map((l) => l.id);
@@ -409,7 +429,135 @@ async function main() {
     },
   });
 
-  console.log('✅ Đã tạo 2 tin đăng MẪU Cho Thuê (phòng trọ SV + studio) kèm liên kết trường ĐH.');
+  console.log('✅ Đã tạo 2 tin đăng MẪU TP.HCM (phòng trọ SV + studio) kèm liên kết trường ĐH.');
+
+  // ---------- 4.2 Tin đăng MẪU tại Hà Nội (Cầu Giấy, Đống Đa, Hai Bà Trưng) ----------
+  await prisma.listing.create({
+    data: {
+      ownerId: broker.id,
+      locationId: cauGiay.id,
+      transactionType: TransactionType.rent,
+      propertyType: 'phong_tro',
+      title: 'Phòng trọ khép kín mới xây Cầu Giấy gần ĐH Quốc Gia & ĐH Sư Phạm Hà Nội',
+      slug: 'mau-phong-tro-khep-kin-cau-giay-gan-dhqg-id3',
+      description: 'Phòng trọ khép kín cao cấp ngõ Xuân Thủy, Cầu Giấy. Giờ giấc tự do, khóa vân tay, có ban công thoáng mát, điều hòa Inverter, nóng lạnh, giường tủ gỗ.',
+      price: 3_800_000,
+      depositAmount: 3_800_000,
+      minLeaseMonths: 6,
+      utilitiesIncluded: false,
+      electricityPricePerKwh: 3800,
+      waterPricePerM3: 30000,
+      waterPriceFlat: 100000,
+      amenities: { wifi: true, airConditioner: true, waterHeater: true, balcony: true, freeTime: true, parkingSpace: true, securityCamera: true },
+      areaM2: 25,
+      bedrooms: 1,
+      bathrooms: 1,
+      legalStatus: 'hop_dong_6_thang',
+      addressDetail: 'Ngõ 175 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
+      lat: 21.0368,
+      lng: 105.7862,
+      status: ListingStatus.active,
+      verificationStatus: 'da_xac_thuc' as any,
+      verifiedAt: new Date(),
+      verifiedByUserId: admin.id,
+      publishedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      images: {
+        create: [
+          { imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80', sortOrder: 0 },
+          { imageUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80', sortOrder: 1 },
+        ],
+      },
+      nearbyUniversities: {
+        create: [{ universityId: uniVnuHn.id, distanceMeters: 350, travelTimeMinutes: 4 }],
+      },
+    },
+  });
+
+  await prisma.listing.create({
+    data: {
+      ownerId: broker.id,
+      locationId: dongDa.id,
+      transactionType: TransactionType.rent,
+      propertyType: 'chung_cu_mini',
+      title: 'Chung cư mini full đồ Chùa Láng gần ĐH Ngoại Thương & HV Ngoại Giao',
+      slug: 'mau-chung-cu-mini-chua-lang-gan-ftu-id4',
+      description: 'Căn hộ mini 1 phòng ngủ tách bếp ngõ Chùa Láng. Tòa nhà thang máy, máy giặt riêng từng phòng, sofa bàn trà, tủ lạnh 2 cánh, ban công cực thoáng.',
+      price: 5_500_000,
+      depositAmount: 5_500_000,
+      minLeaseMonths: 12,
+      utilitiesIncluded: false,
+      electricityPricePerKwh: 3800,
+      waterPricePerM3: 30000,
+      waterPriceFlat: 120000,
+      amenities: { wifi: true, airConditioner: true, elevator: true, washingMachine: true, kitchen: true, balcony: true, refrigerator: true },
+      areaM2: 35,
+      bedrooms: 1,
+      bathrooms: 1,
+      legalStatus: 'hop_dong_1_nam',
+      addressDetail: 'Ngõ 84 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội',
+      lat: 21.0242,
+      lng: 105.8038,
+      status: ListingStatus.active,
+      verificationStatus: 'da_xac_thuc' as any,
+      verifiedAt: new Date(),
+      verifiedByUserId: admin.id,
+      publishedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      images: {
+        create: [
+          { imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80', sortOrder: 0 },
+          { imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80', sortOrder: 1 },
+        ],
+      },
+      nearbyUniversities: {
+        create: [{ universityId: uniFtuHn.id, distanceMeters: 400, travelTimeMinutes: 5 }],
+      },
+    },
+  });
+
+  await prisma.listing.create({
+    data: {
+      ownerId: broker.id,
+      locationId: haiBaTrung.id,
+      transactionType: TransactionType.rent,
+      propertyType: 'studio',
+      title: 'Studio khép kín máy giặt riêng gần ĐH Bách Khoa & Kinh Tế Quốc Dân',
+      slug: 'mau-studio-khep-kin-gan-bach-khoa-id5',
+      description: 'Studio khép kín hiện đại phố Đại Cồ Việt, đi bộ sang Bách Khoa và Xây Dựng 3 phút. Đầy đủ tiện nghi, an ninh tuyệt đối camera 24/7.',
+      price: 4_600_000,
+      depositAmount: 4_600_000,
+      minLeaseMonths: 12,
+      utilitiesIncluded: false,
+      electricityPricePerKwh: 3800,
+      waterPricePerM3: 30000,
+      waterPriceFlat: 100000,
+      amenities: { wifi: true, airConditioner: true, waterHeater: true, mezzanine: true, privateBathroom: true, securityCamera: true },
+      areaM2: 28,
+      bedrooms: 1,
+      bathrooms: 1,
+      legalStatus: 'hop_dong_1_nam',
+      addressDetail: 'Đại Cồ Việt, Lê Đại Hành, Hai Bà Trưng, Hà Nội',
+      lat: 21.0062,
+      lng: 105.8445,
+      status: ListingStatus.active,
+      verificationStatus: 'da_xac_thuc' as any,
+      verifiedAt: new Date(),
+      verifiedByUserId: admin.id,
+      publishedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      images: {
+        create: [
+          { imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80', sortOrder: 0 },
+        ],
+      },
+      nearbyUniversities: {
+        create: [{ universityId: uniHust.id, distanceMeters: 300, travelTimeMinutes: 3 }],
+      },
+    },
+  });
+
+  console.log('✅ Đã tạo 5 tin đăng MẪU Cho Thuê (Hà Nội + TP.HCM) kèm liên kết trường ĐH.');
 
   // ---------- 5. Gói thành viên & Mùa cao điểm (Surge Pricing) ----------
   const plans = [
