@@ -65,9 +65,9 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
   }
 
-  const port = process.env.API_PORT ?? 4000;
+  const port = Number(process.env.PORT || process.env.API_PORT || 4000);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log('\n=============================================================');
   console.log(`🌐 GIAO DIỆN WEBSITE:   ${siteUrl}`);

@@ -41,14 +41,91 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.qns.vn' },
       { protocol: 'https', hostname: 'nhacualand.com' },
       { protocol: 'https', hostname: '*.nhacualand.com' },
+      { protocol: 'https', hostname: '*.onrender.com' },
     ],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+    const internalApi = process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000';
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl || apiUrl.startsWith('/') || apiUrl === 'same-origin' || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')) {
+      apiUrl = internalApi;
+    } else if (!apiUrl.startsWith('http')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+
     return [
       {
         source: '/uploads/:path*',
         destination: `${apiUrl}/uploads/:path*`,
+      },
+      // Proxy toàn bộ API sang NestJS backend khi chạy gộp chung 1 service
+      {
+        source: '/auth/:path*',
+        destination: `${apiUrl}/auth/:path*`,
+      },
+      {
+        source: '/listings/:path*',
+        destination: `${apiUrl}/listings/:path*`,
+      },
+      {
+        source: '/leads/:path*',
+        destination: `${apiUrl}/leads/:path*`,
+      },
+      {
+        source: '/locations/:path*',
+        destination: `${apiUrl}/locations/:path*`,
+      },
+      {
+        source: '/universities/:path*',
+        destination: `${apiUrl}/universities/:path*`,
+      },
+      {
+        source: '/tasks/:path*',
+        destination: `${apiUrl}/tasks/:path*`,
+      },
+      {
+        source: '/membership/:path*',
+        destination: `${apiUrl}/membership/:path*`,
+      },
+      {
+        source: '/viewings/:path*',
+        destination: `${apiUrl}/viewings/:path*`,
+      },
+      {
+        source: '/deals/:path*',
+        destination: `${apiUrl}/deals/:path*`,
+      },
+      {
+        source: '/commissions/:path*',
+        destination: `${apiUrl}/commissions/:path*`,
+      },
+      {
+        source: '/health',
+        destination: `${apiUrl}/health`,
+      },
+      {
+        source: '/admin/dashboard',
+        destination: `${apiUrl}/admin/dashboard`,
+      },
+      {
+        source: '/admin/listings/:path*',
+        destination: `${apiUrl}/admin/listings/:path*`,
+      },
+      {
+        source: '/admin/reports',
+        destination: `${apiUrl}/admin/reports`,
+      },
+      {
+        source: '/admin/users',
+        destination: `${apiUrl}/admin/users`,
+      },
+      {
+        source: '/admin/audit-logs',
+        destination: `${apiUrl}/admin/audit-logs`,
+      },
+      {
+        source: '/admin/tasks/:path*',
+        destination: `${apiUrl}/admin/tasks/:path*`,
       },
     ];
   },

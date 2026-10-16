@@ -16,10 +16,5 @@ export const SITE_CONFIG = {
   supportEmail: 'contact@nhacualand.com',
   workingHours: '24/7',
   address: 'Thành phố Hà Nội',
-  servicePolicy: 'Tư vấn và xem phòng miễn phí. Hợp đồng thuê ký trực tiếp với bên có quyền cho thuê. Chủ thanh toán phí dịch vụ khi thuê thành công theo thỏa thuận',
-  bankAccount: {
-    bankName: 'Vietcombank (VCB)',
-    accountNumber: '1900886899',
-    accountName: 'CONG TY TNHH NHACUALAND VIET NAM',
-  },
+  servicePolicy: 'Tư vấn và xem phòng miễn phí. Hợp đồng thuê ký trực tiếp với bên có quyền cho thuê',
 } as const;

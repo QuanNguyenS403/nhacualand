@@ -14,9 +14,8 @@
  *      + canonicalizeEmail: GIỮ NGUYÊN dot cho domain Workspace tổ chức (KT-02)
  *      + canonicalizePhone: chuẩn hóa về chuẩn E.164 (+84...)
  *      + GoogleLoginDto: không còn trường phone tự khai
- * 3. GAP-06 / PAY-01:
- *      + PaymentsController.getVietQrForCommission() -> Ném NotFoundException 404
- *      + PaymentsController.handleBankEmailWebhook() -> Ném NotFoundException 404
+ * 3. GAP-06:
+ *      + Loại bỏ hoàn toàn thanh toán trực tuyến và ngân hàng khỏi hệ thống
  */
 
 const path = require('path');
@@ -31,8 +30,6 @@ const { BadRequestException, NotFoundException } = require('@nestjs/common');
 const { JwtService } = require('@nestjs/jwt');
 const { AuthService } = require('../../../apps/api/dist/modules/auth/auth.service');
 const { OtpService } = require('../../../apps/api/dist/modules/auth/otp.service');
-const { PaymentsController } = require('../../../apps/api/dist/modules/payments/payments.controller');
-const { PaymentsService } = require('../../../apps/api/dist/modules/payments/payments.service');
 const { canonicalizeEmail, canonicalizePhone } = require('../../../apps/api/dist/modules/auth/utils/identity-canonical');
 
 // Mock User Store
@@ -310,58 +307,19 @@ async function runTests() {
   });
 
   // -------------------------------------------------------------
-  // NHÓM 3: GAP-06 / PAY-01 (Vô hiệu hóa payment online)
+  // NHÓM 3: GAP-06 (Loại bỏ hoàn toàn thanh toán trực tuyến & ngân hàng)
   // -------------------------------------------------------------
-  console.log('\n--- NHÓM 3: KIỂM TRA GỠ BỎ THANH TOÁN TRỰC TUYẾN (GAP-06 / PAY-01) ---');
+  console.log('\n--- NHÓM 3: KIỂM TRA LOẠI BỎ THANH TOÁN TRỰC TUYẾN & NGÂN HÀNG (GAP-06) ---');
 
-  const paymentsService = new PaymentsService(mockPrisma);
-  const paymentsController = new PaymentsController(paymentsService);
-
-  await testAsync('PAY-01a: GET /payments/commissions/:id/vietqr PHẢI trả 404 NotFoundException', async () => {
-    let errorThrown = null;
+  await testAsync('PAY-01: Hệ thống xác nhận gỡ bỏ hoàn toàn module payments khỏi API', async () => {
+    let hasPayments = false;
     try {
-      await paymentsController.getVietQrForCommission(123n);
-    } catch (err) {
-      errorThrown = err;
+      require('../../../apps/api/dist/modules/payments/payments.module');
+      hasPayments = true;
+    } catch {
+      hasPayments = false;
     }
-    assert(errorThrown instanceof NotFoundException, 'Phải ném NotFoundException');
-    assert.strictEqual(errorThrown.getStatus(), 404, 'Status code phải là 404');
-  });
-
-  await testAsync('PAY-01b: POST /payments/webhook/bank PHẢI trả 404 NotFoundException', async () => {
-    let errorThrown = null;
-    try {
-      await paymentsController.handleBankEmailWebhook({
-        secretToken: 'test-secret',
-        subject: 'Biến động số dư',
-        bodyText: 'Chuyển khoản 2700000 VND',
-        receivedAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      errorThrown = err;
-    }
-    assert(errorThrown instanceof NotFoundException, 'Phải ném NotFoundException');
-    assert.strictEqual(errorThrown.getStatus(), 404, 'Status code phải là 404');
-  });
-
-  await testAsync('PAY-01c: PaymentsService.getVietQrForCommission ném 404 nhất quán', async () => {
-    let errorThrown = null;
-    try {
-      await paymentsService.getVietQrForCommission(999n);
-    } catch (err) {
-      errorThrown = err;
-    }
-    assert(errorThrown instanceof NotFoundException, 'Phải ném NotFoundException từ service');
-  });
-
-  await testAsync('PAY-01d: PaymentsService.handleBankEmailWebhook ném 404 nhất quán', async () => {
-    let errorThrown = null;
-    try {
-      await paymentsService.handleBankEmailWebhook({});
-    } catch (err) {
-      errorThrown = err;
-    }
-    assert(errorThrown instanceof NotFoundException, 'Phải ném NotFoundException từ service');
+    assert.strictEqual(hasPayments, false, 'Module payments không còn tồn tại trong backend');
   });
 
   // TỔNG KẾT

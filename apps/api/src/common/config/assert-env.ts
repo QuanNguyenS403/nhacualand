@@ -97,28 +97,38 @@ export function assertRequiredSecrets(): void {
   }
 
   // BẢO MẬT & VẬN HÀNH (P0-06): Trong môi trường production, BẮT BUỘC có nhà cung cấp SMS thật và API key hợp lệ
-  const SUPPORTED_SMS_PROVIDERS = ['esms', 'twilio', 'speedsms', 'telegram'];
+  const SUPPORTED_SMS_PROVIDERS = ['esms', 'twilio', 'speedsms'];
   if (isProduction) {
     const provider = process.env.SMS_PROVIDER;
     if (!provider || provider === 'mock') {
-      throw new Error(
-        `[CẤU HÌNH PRODUCTION KHÔNG HỢP LỆ] SMS_PROVIDER đang đặt là "${provider ?? 'chưa có'}" (chế độ mock).\n` +
-          `→ Trong môi trường production (NODE_ENV=production), KHÔNG được phép dùng mock SMS vì người dùng thật không thể nhận được OTP.\n` +
-          `Vui lòng cấu hình tài khoản SMS thật (${SUPPORTED_SMS_PROVIDERS.join(', ')}) trong .env trước khi khởi động.`,
-      );
-    }
-    if (!SUPPORTED_SMS_PROVIDERS.includes(provider)) {
+      if (process.env.ALLOW_MOCK_SMS === 'true') {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `⚠️ [PRODUCTION CHẾ ĐỘ THỬ NGHIỆM] SMS_PROVIDER đang dùng mock với ALLOW_MOCK_SMS=true. OTP sẽ in ra log server.`
+        );
+      } else {
+        throw new Error(
+          `[CẤU HÌNH PRODUCTION KHÔNG HỢP LỆ] SMS_PROVIDER đang đặt là "${provider ?? 'chưa có'}" (chế độ mock).\n` +
+            `→ Trong môi trường production, vui lòng cấu hình tài khoản SMS thật (${SUPPORTED_SMS_PROVIDERS.join(', ')}) trong .env trước khi khởi động,\n` +
+            `hoặc thiết lập ALLOW_MOCK_SMS=true nếu đang chạy thử nghiệm trước khi kết nối mạng viễn thông.`,
+        );
+      }
+    } else if (!SUPPORTED_SMS_PROVIDERS.includes(provider)) {
       throw new Error(
         `[CẤU HÌNH PRODUCTION KHÔNG HỢP LỆ] SMS_PROVIDER="${provider}" không được hỗ trợ.\n` +
           `→ Các nhà mạng SMS được hỗ trợ chính thức: ${SUPPORTED_SMS_PROVIDERS.join(', ')}. ` +
           `Ứng dụng sẽ dừng khởi động để tránh người dùng bị kẹt không nhận được OTP.`,
       );
-    }
-    if (provider === 'esms') {
+    } else if (provider === 'esms') {
       if (!process.env.SMS_API_KEY || !process.env.SMS_SECRET_KEY) {
-        throw new Error(
-          `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="esms" yêu cầu cả SMS_API_KEY và SMS_SECRET_KEY trong .env`,
-        );
+        if (process.env.ALLOW_MOCK_SMS === 'true') {
+          // eslint-disable-next-line no-console
+          console.warn('⚠️ [SMS THIẾU KEY] SMS_PROVIDER="esms" nhưng chưa cấu hình SMS_API_KEY/SMS_SECRET_KEY, tự động dùng mock OTP vì ALLOW_MOCK_SMS=true');
+        } else {
+          throw new Error(
+            `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="esms" yêu cầu cả SMS_API_KEY và SMS_SECRET_KEY trong .env`,
+          );
+        }
       }
     } else if (provider === 'twilio') {
       if (
@@ -126,21 +136,25 @@ export function assertRequiredSecrets(): void {
         !process.env.TWILIO_AUTH_TOKEN ||
         !process.env.TWILIO_PHONE_NUMBER
       ) {
-        throw new Error(
-          `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="twilio" yêu cầu đầy đủ TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN và TWILIO_PHONE_NUMBER trong .env`,
-        );
+        if (process.env.ALLOW_MOCK_SMS === 'true') {
+          // eslint-disable-next-line no-console
+          console.warn('⚠️ [SMS THIẾU KEY] SMS_PROVIDER="twilio" nhưng chưa đủ credentials, tự động dùng mock OTP vì ALLOW_MOCK_SMS=true');
+        } else {
+          throw new Error(
+            `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="twilio" yêu cầu đầy đủ TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN và TWILIO_PHONE_NUMBER trong .env`,
+          );
+        }
       }
     } else if (provider === 'speedsms') {
       if (!process.env.SMS_API_KEY) {
-        throw new Error(
-          `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="speedsms" yêu cầu SMS_API_KEY trong .env`,
-        );
-      }
-    } else if (provider === 'telegram') {
-      if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) {
-        throw new Error(
-          `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="telegram" yêu cầu cả TELEGRAM_BOT_TOKEN và TELEGRAM_CHAT_ID trong .env`,
-        );
+        if (process.env.ALLOW_MOCK_SMS === 'true') {
+          // eslint-disable-next-line no-console
+          console.warn('⚠️ [SMS THIẾU KEY] SMS_PROVIDER="speedsms" nhưng chưa cấu hình SMS_API_KEY, tự động dùng mock OTP vì ALLOW_MOCK_SMS=true');
+        } else {
+          throw new Error(
+            `[CẤU HÌNH SMS THIẾU] SMS_PROVIDER="speedsms" yêu cầu SMS_API_KEY trong .env`,
+          );
+        }
       }
     }
   }

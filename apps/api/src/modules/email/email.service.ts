@@ -391,28 +391,6 @@ Content: ${textSummary}
     return this.sendEmail(targetEmail, subject, html, summary);
   }
 
-  /**
-   * Bắn thông báo Telegram khi có sự kiện quan trọng (nếu đã cấu hình)
-   */
-  private async notifyTelegram(message: string): Promise<void> {
-    const botToken = this.config?.get<string>('TELEGRAM_BOT_TOKEN') ?? process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = this.config?.get<string>('TELEGRAM_CHAT_ID') ?? process.env.TELEGRAM_CHAT_ID;
-    if (!botToken || !chatId) return;
-
-    try {
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'HTML',
-        }),
-      });
-    } catch {
-      // Non-blocking telegram alert failure
-    }
-  }
 
   /**
    * (h) Thông báo cho Quản trị viên/Chủ website: Khách hàng gửi phản hồi góp ý
@@ -460,13 +438,6 @@ Content: ${textSummary}
       </div>
     `;
 
-    await this.notifyTelegram(
-      `💬 <b>[PHẢN HỒI MỚI - NHACUALAND]</b>\n` +
-      `👤 Người gửi: <b>${safeName}</b> (${safeEmail})\n` +
-      `⭐ Đánh giá: ${ratingStars}\n` +
-      `📝 Nội dung: <i>${safeContent.slice(0, 300)}</i>\n` +
-      `⏰ Thời gian: ${nowStr}`
-    );
 
     return this.sendEmail(adminEmail, subject, html, summary);
   }
@@ -519,14 +490,6 @@ Content: ${textSummary}
       </div>
     `;
 
-    await this.notifyTelegram(
-      `🎧 <b>[YÊU CẦU TƯ VẤN - NHACUALAND]</b>\n` +
-      `📞 Khách hàng: <b>${safePhone}</b>\n` +
-      `❓ Lý do: <b>${safeReason}</b>\n` +
-      `🏠 Phòng quan tâm: ${roomsInfo}\n` +
-      `📝 Mô tả: <i>${safeDesc.slice(0, 300)}</i>\n` +
-      `⏰ Thời gian: ${nowStr}`
-    );
 
     return this.sendEmail(adminEmail, subject, html, summary);
   }
@@ -587,20 +550,7 @@ Content: ${textSummary}
       </div>
     `;
 
-    const tgPromise = this.notifyTelegram(
-      `🏠 <b>[ĐẶT LỊCH XEM PHÒNG - NHACUALAND]</b>\n` +
-      `👤 Khách hàng: <b>${safeName}</b> (<a href="tel:${safePhone}">${safePhone}</a>)\n` +
-      `📧 Email: ${safeEmail}\n` +
-      `🏢 Phòng: <b>${safeTitle}</b>\n` +
-      `📅 Ngày xem: ${safeDate} (${safeTime})\n` +
-      `📝 Ghi chú: <i>${safeNote.slice(0, 300)}</i>\n` +
-      `⏰ Tiếp nhận: ${nowStr}`
-    ).catch(() => {});
-
-    const mailPromise = this.sendEmail(adminEmail, subject, html, summary);
-
-    const [, mailRes] = await Promise.all([tgPromise, mailPromise]);
-    return mailRes;
+    return this.sendEmail(adminEmail, subject, html, summary);
   }
 
   /**

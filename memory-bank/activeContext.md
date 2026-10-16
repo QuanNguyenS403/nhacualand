@@ -1,6 +1,22 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (14/10/2026 — RÀ SOÁT & CHUẨN HOÁ QUẢN LÝ TIN ĐĂNG, PHÒNG ĐÃ LƯU & QUẢN TRỊ HỆ THỐNG KÈM XÁC THỰC P0):**
+**Việc vừa hoàn thành (16/10/2026 — LOẠI BỎ HOÀN TOÀN NGÂN HÀNG & THANH TOÁN TRỰC TUYẾN KHỎI WEBSITE):**
+- Đã gỡ bỏ 100% phần ngân hàng và thanh toán trực tuyến do website chuyển đổi sang mô hình kết nối môi giới phòng trọ trực tiếp, hoàn toàn miễn phí cho khách thuê:
+  1. **Backend API (`apps/api`)**:
+     - Xóa bỏ hoàn toàn module `apps/api/src/modules/payments/` (`payments.controller.ts`, `payments.service.ts`, `payments.module.ts`, thư mục `dto/`).
+     - Gỡ bỏ `PaymentsModule` khỏi `apps/api/src/app.module.ts`.
+     - Clean build NestJS sạch 100% không còn tham chiếu tới Payments.
+  2. **Frontend Web (`apps/web`)**:
+     - Loại bỏ trường `bankAccount` khỏi `SITE_CONFIG` trong `apps/web/src/lib/constants.ts`.
+     - Xóa bỏ widget tính lãi suất vay ngân hàng `LoanCalculatorWidget.tsx`.
+     - Cập nhật Điều khoản dịch vụ (`/dieu-khoan`) và Điều khoản Chủ nhà (`OwnerBrokerTermsGate.tsx`) khẳng định mô hình 100% miễn phí dịch vụ, không thanh toán trực tuyến, không liên kết ngân hàng.
+     - Typecheck `tsc --noEmit` đạt 0 lỗi (Exit code 0).
+  3. **Hạ tầng & Scripts & Biến môi trường**:
+     - Xóa bỏ toàn bộ biến môi trường ngân hàng (`BANK_*`, `VIETQR_*`) trong `.env`, `.env.example` và `render.yaml`.
+     - Xóa bỏ tài liệu và script webhook ngân hàng: `HUONG-DAN-THANH-TOAN-VIETCOMBANK-0D.md`, `packages/database/scripts/vietcombank-email-webhook.gs`.
+     - Cập nhật script nghiệm thu `packages/database/scripts/test-w00-p0.js` xác nhận gỡ bỏ sạch sẽ module Payments (10/10 tests PASS 100%).
+
+**Việc trước đó (14/10/2026 — RÀ SOÁT & CHUẨN HOÁ QUẢN LÝ TIN ĐĂNG, PHÒNG ĐÃ LƯU & QUẢN TRỊ HỆ THỐNG KÈM XÁC THỰC P0):**
 - Hoàn thành xuất sắc toàn diện prompt chuẩn hoá 3 trang: "Quản lý tin đăng", "Phòng đã lưu" và "Quản trị hệ thống" kèm bảo mật P0:
   1. **Bảo mật P0**: Loại bỏ 100% mật khẩu hardcode và mock token (`admin_token_*`, `user_token_*`, `g_token_*`); Xóa bỏ hoàn toàn kho lưu trữ `localStorage.qns_registered_users`; Xóa 4 file/module legacy cũ (`users-server.ts`, `password-reset-server.ts`, `custom-listings-server.ts`, `/api/auth/*`); Khóa mã HTTP `410 Gone` đối với `/api/custom-listings/*`; Chuyển hướng tự động `/qnsbroker/admin` sang `/admin`.
   2. **Backend API & IDOR**: Sửa lỗi đệ quy vô hạn trong `BigIntInterceptor` bằng `WeakSet` và `isPlainObject`; Xóa `ownerId` khỏi DTO Map Listings (chống IDOR); Cài đặt State Machine `canTransition` trong `@qns/shared`; Bổ sung các endpoint `GET /listings/mine/counts`, `GET /listings/saved/ids`, `PUT /listings/:id/save`, `DELETE /listings/:id/save`, `POST /listings/:id/resubmit`, `GET /admin/audit-logs`.

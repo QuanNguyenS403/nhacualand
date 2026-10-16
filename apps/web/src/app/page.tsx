@@ -314,6 +314,85 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ── Giới thiệu nền tảng & Ứng dụng NHACUALAND (Công khai, không yêu cầu đăng nhập) ── */}
+      <section className="border-t border-surface-border bg-white py-10 sm:py-12">
+        <div className="container-max max-w-5xl">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-brand-50/30 p-6 sm:p-10 shadow-sm space-y-6">
+            <div className="space-y-2 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
+                THÔNG TIN ỨNG DỤNG & NỀN TẢNG
+              </div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                Về Nền Tảng Công Nghệ NHACUALAND
+              </h2>
+              <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-3xl">
+                NHACUALAND là nền tảng trực tuyến kết nối khách thuê và bên cho thuê bất động sản minh bạch chi phí tại Hà Nội. Toàn bộ người dùng có thể tự do tìm kiếm, so sánh giá phòng và xem thông tin chi tiết mà không cần phải đăng nhập
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand font-bold text-lg">
+                  🔍
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                  Tìm kiếm công khai & Miễn phí
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tự do xem hàng ngàn tin đăng phòng trọ sinh viên, studio, căn hộ, mặt bằng với biểu phí điện nước, cọc phòng minh bạch 100% không cần đăng nhập
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 font-bold text-lg">
+                  ⚡
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                  Đăng nhập 1 chạm an toàn
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tùy chọn đăng nhập nhanh và an toàn bằng tài khoản Google để lưu danh sách phòng ưng ý, nhận cập nhật phòng trống hoặc quản lý tin đăng
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 font-bold text-lg">
+                  🛡️
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                  Bảo vệ quyền riêng tư tuyệt đối
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tuân thủ nghiêm ngặt Chính sách dữ liệu người dùng Google API. Tuyệt đối không chia sẻ, không bán dữ liệu người dùng cho bên thứ ba
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-200/70 text-xs sm:text-sm">
+              <div className="flex flex-wrap items-center gap-4 text-slate-600">
+                <span>Tìm hiểu thêm về cam kết bảo vệ dữ liệu:</span>
+                <Link href="/chinh-sach" className="text-brand font-bold underline hover:text-brand-700">
+                  Chính sách bảo mật
+                </Link>
+                <span>•</span>
+                <Link href="/dieu-khoan" className="text-brand font-bold underline hover:text-brand-700">
+                  Điều khoản dịch vụ
+                </Link>
+              </div>
+              <Link
+                href="/gioi-thieu"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-brand"
+              >
+                <span>Xem chi tiết giới thiệu</span>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

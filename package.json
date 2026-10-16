@@ -15,6 +15,7 @@
     "dev:web": "npm run dev --workspace=@batdongsan/web",
     "dev:api": "npm run dev --workspace=@batdongsan/api",
     "build": "turbo run build",
+    "start": "node scripts/start-all.js",
     "lint": "node packages/database/scripts/static-lint-check.js",
     "audit:data": "node scripts/audit-data.js",
     "test:e2e": "node scripts/e2e-map-sync-test.js",

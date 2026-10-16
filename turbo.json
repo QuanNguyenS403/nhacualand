@@ -13,7 +13,7 @@
       "outputs": ["dist/**"]
     },
     "@batdongsan/web#build": {
-      "dependsOn": ["@batdongsan/database#build", "@batdongsan/api#build"],
+      "dependsOn": [],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "build": {

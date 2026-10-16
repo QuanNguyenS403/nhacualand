@@ -21,7 +21,6 @@ import { OutboxModule } from './modules/outbox/outbox.module';
 import { ViewingsModule } from './modules/viewings/viewings.module';
 import { DealsModule } from './modules/deals/deals.module';
 import { CommissionsModule } from './modules/commissions/commissions.module';
-import { PaymentsModule } from './modules/payments/payments.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -59,7 +58,6 @@ import { AppController } from './app.controller';
     ViewingsModule,
     DealsModule,
     CommissionsModule,
-    PaymentsModule,
   ],
 })
 export class AppModule {}

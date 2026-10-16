@@ -157,7 +157,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               Mọi khoản tiền đặt cọc và tiền thuê phòng do Khách thuê và Chủ nhà giao dịch, ký nhận trực tiếp tại địa điểm thuê bằng hợp đồng và biên bản bàn giao thực tế
             </p>
             <p>
-              Phí dịch vụ môi giới được thanh toán trực tiếp hoặc chuyển khoản cho Chủ nhà sau khi giao dịch chốt thuê hoàn tất
+              Phí dịch vụ môi giới được thỏa thuận và thanh toán trực tiếp với đại diện môi giới sau khi giao dịch chốt thuê hoàn tất
             </p>
           </section>
 

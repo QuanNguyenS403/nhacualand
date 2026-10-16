@@ -1,0 +1,99 @@
+# ====================================================================
+# Render Blueprint Specification (render.yaml)
+# Hướng dẫn: Đẩy repo lên GitHub, vào Render Dashboard chọn "New +" > "Blueprint"
+# Hoặc tạo Web Service thủ công như trong ảnh hướng dẫn
+# ====================================================================
+
+version: "1"
+
+databases:
+  - name: nhacualand-postgres
+    databaseName: batdongsan
+    user: batdongsan
+    region: singapore
+    plan: starter
+    ipAllowList: []
+
+services:
+  # ------------------------------------------------------------------
+  # DỊCH VỤ DUY NHẤT: GỘP CẢ BACKEND API VÀ FRONTEND WEB (qns_broker)
+  # ------------------------------------------------------------------
+  - type: web
+    name: qns-broker
+    runtime: node
+    region: singapore
+    plan: starter
+    branch: main
+    buildCommand: bash scripts/render-build.sh
+    startCommand: node scripts/start-all.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nhacualand-postgres
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateCryptoKey: true
+      - key: JWT_REFRESH_SECRET
+        generateCryptoKey: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGINS
+        value: "https://nhacualand.com,https://www.nhacualand.com,https://qns-broker.onrender.com,http://localhost:3000"
+      - key: SMS_PROVIDER
+        value: mock
+      - key: ALLOW_MOCK_SMS
+        value: "true"
+      - key: SMS_API_KEY
+        sync: false
+      - key: SMS_SECRET_KEY
+        sync: false
+      - key: ADMIN_PHONE
+        value: "0981753082"
+      - key: ADMIN_BOOTSTRAP_SECRET
+        value: ae45fa53647fdc8811164f26ad6ebda9275b379a0a092a739351c80f11fd357e
+      - key: ADMIN_BOOTSTRAP_PHONE
+        value: "0981753082"
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        value: Quannguyenkay6@
+      - key: ADMIN_BOOTSTRAP_FULLNAME
+        value: "Nguyễn Đức Quân"
+      - key: ADMIN_MFA_ENFORCED
+        value: "false"
+      - key: ADMIN_MFA_SECRET
+        value: QnsAdminMfa2026!
+      - key: ADMIN_NOTIFICATION_EMAIL
+        value: ducquan16102006@gmail.com
+      - key: MAIL_DRIVER
+        value: smtp
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_SECURE
+        value: "true"
+      - key: SMTP_USER
+        value: ducquan16102006@gmail.com
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        value: "NHACUALAND <ducquan16102006@gmail.com>"
+      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        value: https://nhacualand.com/auth/google/callback
+      - key: STORAGE_DRIVER
+        value: local
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://nhacualand.com
+      - key: NEXT_PUBLIC_API_URL
+        value: ""

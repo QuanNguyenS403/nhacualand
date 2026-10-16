@@ -15,7 +15,7 @@ const TOC_ITEMS = [
   { id: 'dieu-4', title: '4. Quyền & Nghĩa vụ của Khách thuê' },
   { id: 'dieu-5', title: '5. Quyền & Nghĩa vụ của Chủ nhà' },
   { id: 'dieu-6', title: '6. Quy định Đăng tin & Kiểm duyệt' },
-  { id: 'dieu-7', title: '7. Biểu phí Dịch vụ & Thanh toán' },
+  { id: 'dieu-7', title: '7. Miễn phí Dịch vụ & Không thanh toán trực tuyến' },
   { id: 'dieu-8', title: '8. Giới hạn Trách nhiệm & Miễn trừ' },
   { id: 'dieu-9', title: '9. Quyền sở hữu Trí tuệ & Dữ liệu' },
   { id: 'dieu-10', title: '10. Xử lý Vi phạm & Tạm khóa' },
@@ -130,10 +130,13 @@ export default function DieuKhoanPage() {
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2.5">
                 <p>
-                  Người dùng chịu trách nhiệm cung cấp số điện thoại chính chủ để tiếp nhận mã xác thực OTP khi tạo lập và đăng nhập tài khoản
+                  Người dùng có thể đăng ký tài khoản qua số điện thoại chính chủ hoặc sử dụng phương thức Đăng nhập bằng Google (Google Sign-In) 1 chạm bảo mật cao mà không cần tạo mật khẩu riêng
                 </p>
                 <p>
-                  Bạn có trách nhiệm tự bảo vệ thông tin mật khẩu, không cung cấp mã xác thực cho bất kỳ ai và thông báo ngay cho NHACUALAND khi phát hiện hành vi truy cập trái phép
+                  Khi lựa chọn đăng nhập bằng tài khoản Google, người dùng đồng ý cho phép NHACUALAND tiếp nhận các thông tin cơ bản (họ tên, email, ảnh đại diện) tuân thủ nghiêm ngặt Chính sách bảo mật và Chính sách dữ liệu người dùng của dịch vụ Google API
+                </p>
+                <p>
+                  Bạn có trách nhiệm tự bảo vệ thông tin tài khoản, không cung cấp mã xác thực cho bất kỳ ai và thông báo ngay cho ban quản trị NHACUALAND khi phát hiện hành vi truy cập trái phép
                 </p>
               </div>
             </article>
@@ -186,14 +189,14 @@ export default function DieuKhoanPage() {
             <article id="dieu-7" className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-card space-y-3 scroll-mt-28">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand/10 text-brand text-xs font-bold">7</span>
-                <span>Biểu phí Dịch vụ và Thanh toán</span>
+                <span>Nguyên tắc Không thanh toán trực tuyến & Miễn phí dịch vụ</span>
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2">
                 <p>
-                  Khách thuê phòng được sử dụng nền tảng tra cứu và được hỗ trợ đặt lịch dẫn xem phòng hoàn toàn miễn phí (0 đồng phí dịch vụ)
+                  Khách thuê phòng được sử dụng toàn bộ nền tảng tra cứu, tìm phòng và đặt lịch dẫn xem phòng hoàn toàn miễn phí (0 đồng phí dịch vụ)
                 </p>
                 <p>
-                  Biểu phí áp dụng đối với chủ nhà hoặc các gói hội viên chuyên nghiệp được quy định công khai và minh bạch theo từng thời kỳ niêm yết
+                  Website NHACUALAND tuyệt đối không tích hợp thanh toán trực tuyến, không thu tiền cọc và không giữ hộ tiền qua ngân hàng — người thuê ký hợp đồng và làm việc trực tiếp với bên có quyền cho thuê
                 </p>
               </div>
             </article>

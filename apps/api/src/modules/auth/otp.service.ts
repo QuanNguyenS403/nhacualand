@@ -334,12 +334,13 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
     }
 
     const provider = process.env.SMS_PROVIDER ?? 'mock';
+    const allowMock = process.env.ALLOW_MOCK_SMS === 'true';
 
     if (provider === 'mock') {
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === 'production' && !allowMock) {
         throw new HttpException('Chế độ SMS mock không được phép chạy ở môi trường production', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      this.logger.log(`[DEV/TEST MOCK SMS] Gửi OTP tới ${phone}: ${code}`);
+      this.logger.log(`[MOCK SMS] Gửi OTP tới ${phone}: ${code}`);
       return;
     }
 
@@ -349,6 +350,11 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
         const apiKey = process.env.SMS_API_KEY;
         const secretKey = process.env.SMS_SECRET_KEY;
         if (!apiKey || !secretKey) {
+          if (allowMock) {
+            this.logger.warn(`⚠️ [SMS FALLBACK] Thiếu SMS_API_KEY hoặc SMS_SECRET_KEY cho eSMS, sử dụng MOCK OTP vì ALLOW_MOCK_SMS=true`);
+            this.logger.log(`[MOCK SMS] Gửi OTP tới ${phone}: ${code}`);
+            return;
+          }
           throw new Error('Thiếu SMS_API_KEY hoặc SMS_SECRET_KEY cho eSMS');
         }
 
@@ -432,32 +438,6 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
         return;
       }
 
-      if (provider === 'telegram') {
-        const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const chatId = process.env.TELEGRAM_CHAT_ID;
-        if (!botToken || !chatId) {
-          throw new Error('Thiếu TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHAT_ID cho provider telegram');
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: `[NHACUALAND] Mã xác thực OTP cho số ${phone} là: ${code} (hiệu lực 5 phút)`,
-          }),
-          signal: controller.signal,
-        }).finally(() => clearTimeout(timeoutId));
-
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`Telegram API trả mã HTTP lỗi: ${res.status} - ${errText}`);
-        }
-        return;
-      }
 
       throw new Error(`SMS_PROVIDER="${provider}" không được hỗ trợ`);
     } catch (err: any) {
