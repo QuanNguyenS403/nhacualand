@@ -46,9 +46,9 @@ services:
       - key: CORS_ORIGINS
         value: "https://nhacualand.com,https://www.nhacualand.com,https://qns-broker.onrender.com,http://localhost:3000"
       - key: SMS_PROVIDER
-        value: mock
+        value: esms
       - key: ALLOW_MOCK_SMS
-        value: "true"
+        value: "false"
       - key: SMS_API_KEY
         sync: false
       - key: SMS_SECRET_KEY
