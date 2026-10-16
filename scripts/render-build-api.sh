@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-echo "=== [Render API] Kích hoạt pnpm ==="
-corepack enable
-corepack prepare pnpm@9.15.9 --activate
+# Tắt xác thực chữ ký corepack phòng trường hợp corepack được gọi ngầm
+export COREPACK_INTEGRITY_KEYS=0
+
+echo "=== [Render API] Cài đặt pnpm toàn cục bằng npm ==="
+npm install -g pnpm@9.15.9
 
 echo "=== [Render API] Cài đặt dependencies monorepo ==="
 pnpm install --frozen-lockfile
@@ -13,7 +15,7 @@ pnpm db:generate
 
 echo "=== [Render API] Chạy Migration Database ==="
 if [ -n "$DATABASE_URL" ]; then
-  pnpm db:migrate:deploy || echo "Migration deploy đã cập nhật hoặc bỏ qua."
+  pnpm db:migrate:deploy || echo "Migration deploy đã cập nhật hoặc bỏ qua"
 fi
 
 echo "=== [Render API] Build NestJS Backend ==="

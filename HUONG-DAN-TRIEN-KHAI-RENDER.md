@@ -61,11 +61,15 @@ Khi tạo hoặc sửa Web Service `qns_broker` trên Render:
 3. **Branch**: `main`
 4. **Region**: `Singapore (Southeast Asia)`
 5. **Root Directory**: *(Để trống)*
-6. **Build Command**: Nhập trực tiếp chuỗi lệnh sau vào ô:
-   ```bash
-   corepack enable && pnpm install --frozen-lockfile && pnpm db:generate && pnpm build
-   ```
-   *(Lệnh này chạy độc lập, tự cài pnpm, sinh database client và build cả hệ thống)*
+6. **Build Command**: Nhập một trong 2 cách sau vào ô (khuyên dùng cách 1):
+   - Cách 1 (Khuyên dùng - nhanh gọn nhất):
+     ```bash
+     bash scripts/render-build.sh
+     ```
+   - Cách 2 (Nhập trực tiếp - dùng npm cài pnpm để loại trừ triệt để lỗi corepack keyid):
+     ```bash
+     npm install -g pnpm@9.15.9 && pnpm install --frozen-lockfile && pnpm db:generate && pnpm build
+     ```
 7. **Start Command**: Nhập trực tiếp lệnh sau vào ô (xóa chữ `yarn start`):
    ```bash
    node scripts/start-all.js
