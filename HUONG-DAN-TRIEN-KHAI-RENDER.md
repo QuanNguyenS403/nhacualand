@@ -27,10 +27,6 @@ Toàn bộ các biến dưới đây cấu hình hệ thống hoạt động th�
 | `JWT_ACCESS_EXPIRES_IN` | `15m` | Thời hạn phiên truy cập (15 phút) |
 | `JWT_REFRESH_EXPIRES_IN` | `7d` | Thời hạn phiên làm mới (7 ngày) |
 | `CORS_ORIGINS` | `https://nhacualand.com,https://www.nhacualand.com,https://qns-broker.onrender.com,http://localhost:3000` | Danh sách tên miền được phép truy cập |
-| `SMS_PROVIDER` | `esms` | Gửi tin nhắn OTP thật tới điện thoại khách hàng qua mạng viễn thông |
-| `ALLOW_MOCK_SMS` | `false` | Khóa hoàn toàn chế độ mock, bắt buộc gửi SMS thật cho khách hàng |
-| `SMS_API_KEY` | Điền API Key eSMS thật | Khóa API tài khoản eSMS viễn thông |
-| `SMS_SECRET_KEY` | Điền Secret Key eSMS thật | Khóa bí mật tài khoản eSMS viễn thông |
 | `ADMIN_PHONE` | `0981753082` | Số hotline và tài khoản quản trị hệ thống của Quân |
 | `ADMIN_NOTIFICATION_EMAIL` | `ducquan16102006@gmail.com` | Email nhận thông báo đặt lịch xem phòng thật của khách |
 | `ADMIN_BOOTSTRAP_SECRET` | `ae45fa53647fdc8811164f26ad6ebda9275b379a0a092a739351c80f11fd357e` | Khóa bảo mật khởi tạo tài khoản SuperAdmin |
@@ -80,7 +76,6 @@ Khi tạo hoặc sửa Web Service `qns_broker` trên Render:
    - Copy toàn bộ nội dung file [`.env.render`](file:///D:/QNS%20Cho%20Thu%C3%AA/.env.render) và dán vào khung nhập liệu
    - Thay giá trị `DATABASE_URL` bằng **Internal Database URL** từ PostgreSQL Render của bạn
    - Điền mật khẩu ứng dụng Gmail 16 ký tự vào `SMTP_PASS`
-   - Điền key eSMS thật vào `SMS_API_KEY` và `SMS_SECRET_KEY`
 
 ---
 
