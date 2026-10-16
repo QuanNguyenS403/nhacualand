@@ -81,6 +81,7 @@ export function OwnerContactBox({
   const ownerDisplayName =
     !rawOwner ||
     lowerOwner.includes('môi giới') ||
+    lowerOwner.includes('nhacualand') ||
     lowerOwner.includes('qns broker') ||
     lowerOwner.includes('dẫn xem') ||
     lowerOwner.includes('đức quân')

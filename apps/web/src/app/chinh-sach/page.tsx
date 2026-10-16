@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { SITE_CONFIG } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Chính sách bảo mật — QNS BROKER',
+  title: 'Chính sách bảo mật — NHACUALAND',
   description:
-    'Cam kết bảo vệ quyền riêng tư, an toàn dữ liệu cá nhân và cơ chế bảo mật thông tin liên hệ trên nền tảng QNS BROKER',
+    'Cam kết bảo vệ quyền riêng tư, an toàn dữ liệu cá nhân và cơ chế bảo mật thông tin liên hệ trên nền tảng NHACUALAND',
 };
 
 const TOC_ITEMS = [
@@ -36,7 +36,7 @@ export default function ChinhSachPage() {
           </h1>
 
           <p className="text-base md:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed">
-            Cam kết bảo vệ thông tin cá nhân và dữ liệu người dùng trên QNS BROKER
+            Cam kết bảo vệ thông tin cá nhân và dữ liệu người dùng trên NHACUALAND
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs sm:text-sm text-white/85">
@@ -85,7 +85,7 @@ export default function ChinhSachPage() {
               Cảnh báo bảo mật tài khoản
             </p>
             <p className="text-amber-900">
-              QNS BROKER không bao giờ yêu cầu cung cấp mã xác thực OTP hoặc mật khẩu tài khoản qua bất kỳ cuộc gọi hay tin nhắn nào — tuyệt đối không chia sẻ mã OTP với người khác
+              NHACUALAND không bao giờ yêu cầu cung cấp mã xác thực OTP hoặc mật khẩu tài khoản qua bất kỳ cuộc gọi hay tin nhắn nào — tuyệt đối không chia sẻ mã OTP với người khác
             </p>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function ChinhSachPage() {
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2">
                 <p>
-                  QNS BROKER cam kết không chia sẻ dữ liệu người dùng cho bất kỳ bên quảng cáo nào — việc chia sẻ thông tin chỉ diễn ra trong các trường hợp giới hạn sau:
+                  NHACUALAND cam kết không chia sẻ dữ liệu người dùng cho bất kỳ bên quảng cáo nào — việc chia sẻ thông tin chỉ diễn ra trong các trường hợp giới hạn sau:
                 </p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Kết nối thông tin giữa khách thuê và bên cho thuê khi có sự đồng ý của hai bên để tiến hành lập hợp đồng thuê</li>

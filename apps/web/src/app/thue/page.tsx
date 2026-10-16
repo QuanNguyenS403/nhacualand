@@ -20,7 +20,7 @@ import {
 } from '@/lib/demo-data';
 
 export const metadata: Metadata = {
-  title: 'Cho thuê Chung cư & Chung cư mini giá tốt — QNS BROKER',
+  title: 'Cho thuê Chung cư & Chung cư mini giá tốt — NHACUALAND',
   description:
     'Danh sách tin cho thuê chung cư và chung cư mini minh bạch chi phí mới nhất, phân tách rõ ràng chuyên mục Chung cư và Chung cư mini riêng biệt, tư vấn và trực tiếp dẫn xem tận nơi miễn phí',
 };

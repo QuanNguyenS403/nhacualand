@@ -5,7 +5,7 @@ import type { MetadataRoute } from 'next';
  * Bao gồm các trang landing danh mục cho thuê cốt lõi và các tin đăng đang active.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://qnsbroker.com';
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nhacualand.com';
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
   const staticRoutes: MetadataRoute.Sitemap = [

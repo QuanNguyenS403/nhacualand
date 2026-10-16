@@ -156,13 +156,13 @@ export function Header() {
       }`}
     >
       <div className="container-max relative flex h-14 sm:h-16 items-center justify-between gap-3 sm:gap-4">
-        {/* Logo QNS */}
+        {/* Logo NHACUALAND */}
         <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 group">
           <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-white p-0.5 sm:p-1 shadow-sm ring-1 ring-white/30 group-hover:scale-105 transition-transform">
             <QnsLogo variant="emblem" theme="brand" size={26} />
           </div>
           <span className="text-lg sm:text-xl font-bold tracking-tight text-white">
-            QNS <span className="font-normal opacity-90">BROKER</span>
+            NHACUA<span className="font-normal opacity-90">LAND</span>
           </span>
         </Link>
 

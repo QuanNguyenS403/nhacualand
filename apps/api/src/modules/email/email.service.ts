@@ -90,9 +90,9 @@ export class EmailService {
   }
 
   private async sendEmail(to: string, subject: string, html: string, textSummary: string): Promise<boolean> {
-    const rawFrom = this.config?.get<string>('SMTP_FROM') ?? process.env.SMTP_FROM ?? 'QNS BROKER <no-reply@qnsbroker.com>';
+    const rawFrom = this.config?.get<string>('SMTP_FROM') ?? process.env.SMTP_FROM ?? 'NHACUALAND <no-reply@nhacualand.com>';
     let from = rawFrom.trim();
-    // Tự động chuẩn hóa nếu SMTP_FROM bị thiếu địa chỉ email (ví dụ chỉ có tên "QNS BROKER")
+    // Tự động chuẩn hóa nếu SMTP_FROM bị thiếu địa chỉ email (ví dụ chỉ có tên "NHACUALAND")
     if (from && !from.includes('@')) {
       const userEmail = (this.config?.get<string>('SMTP_USER') ?? process.env.SMTP_USER)?.trim() || 'ducquan16102006@gmail.com';
       from = `"${from}" <${userEmail}>`;
@@ -435,13 +435,13 @@ Content: ${textSummary}
       timeZone: 'Asia/Ho_Chi_Minh',
     }).format(new Date());
 
-    const subject = `[QNS BROKER - PHẢN HỒI MỚI] Góp ý từ khách hàng ${safeName}${feedback.rating ? ` [${feedback.rating}⭐]` : ''}`;
+    const subject = `[NHACUALAND - PHẢN HỒI MỚI] Góp ý từ khách hàng ${safeName}${feedback.rating ? ` [${feedback.rating}⭐]` : ''}`;
     const summary = `Khách hàng ${safeName} (${safeEmail}) vừa gửi phản hồi mới trên website. Đánh giá: ${ratingStars}. Nội dung: "${feedback.content}". Thời gian: ${nowStr}.`;
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <div style="background: linear-gradient(135deg, #0d9488, #0f766e); padding: 24px 28px; color: #ffffff;">
           <h2 style="margin: 0; font-size: 20px; font-weight: 700;">💬 Phản Hồi / Góp Ý Mới Từ Khách Hàng</h2>
-          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Hệ thống website QNS BROKER ghi nhận phản hồi mới</p>
+          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Hệ thống website NHACUALAND ghi nhận phản hồi mới</p>
         </div>
         <div style="padding: 24px 28px; background: #ffffff;">
           <div style="margin-bottom: 20px; padding: 14px 18px; background: #f0fdfa; border-left: 4px solid #0d9488; border-radius: 8px;">
@@ -461,7 +461,7 @@ Content: ${textSummary}
     `;
 
     await this.notifyTelegram(
-      `💬 <b>[PHẢN HỒI MỚI - QNS BROKER]</b>\n` +
+      `💬 <b>[PHẢN HỒI MỚI - NHACUALAND]</b>\n` +
       `👤 Người gửi: <b>${safeName}</b> (${safeEmail})\n` +
       `⭐ Đánh giá: ${ratingStars}\n` +
       `📝 Nội dung: <i>${safeContent.slice(0, 300)}</i>\n` +
@@ -494,13 +494,13 @@ Content: ${textSummary}
       timeZone: 'Asia/Ho_Chi_Minh',
     }).format(new Date());
 
-    const subject = `[QNS BROKER - YÊU CẦU TƯ VẤN] Khách hàng ${safePhone}: ${safeReason}`;
+    const subject = `[NHACUALAND - YÊU CẦU TƯ VẤN] Khách hàng ${safePhone}: ${safeReason}`;
     const summary = `Khách hàng SĐT ${safePhone} vừa gửi yêu cầu tư vấn trên website. Lý do: "${consultation.reason}". Chi tiết: "${consultation.description || 'Không có'}". Phòng quan tâm: ${roomsInfo}. Thời gian: ${nowStr}.`;
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <div style="background: linear-gradient(135deg, #0d9488, #0f766e); padding: 24px 28px; color: #ffffff;">
           <h2 style="margin: 0; font-size: 20px; font-weight: 700;">🎧 Yêu Cầu Tư Vấn Mới Từ Khách Hàng</h2>
-          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Website QNS BROKER — Liên hệ hỗ trợ khách thuê</p>
+          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Website NHACUALAND — Liên hệ hỗ trợ khách thuê</p>
         </div>
         <div style="padding: 24px 28px; background: #ffffff;">
           <div style="margin-bottom: 20px; padding: 16px 20px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;">
@@ -520,7 +520,7 @@ Content: ${textSummary}
     `;
 
     await this.notifyTelegram(
-      `🎧 <b>[YÊU CẦU TƯ VẤN - QNS BROKER]</b>\n` +
+      `🎧 <b>[YÊU CẦU TƯ VẤN - NHACUALAND]</b>\n` +
       `📞 Khách hàng: <b>${safePhone}</b>\n` +
       `❓ Lý do: <b>${safeReason}</b>\n` +
       `🏠 Phòng quan tâm: ${roomsInfo}\n` +
@@ -559,13 +559,13 @@ Content: ${textSummary}
       timeZone: 'Asia/Ho_Chi_Minh',
     }).format(new Date());
 
-    const subject = `[QNS BROKER - ĐẶT LỊCH XEM PHÒNG] ${safeName} (${safePhone}) đặt lịch xem ${safeTitle}`;
+    const subject = `[NHACUALAND - ĐẶT LỊCH XEM PHÒNG] ${safeName} (${safePhone}) đặt lịch xem ${safeTitle}`;
     const summary = `Khách hàng ${safeName} (SĐT: ${safePhone}, Email: ${safeEmail}) vừa đặt lịch xem phòng "${safeTitle}" vào ngày ${safeDate} (${safeTime}). Ghi chú: ${appointment.note || 'Không có'}. Thời gian tiếp nhận: ${nowStr}.`;
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <div style="background: linear-gradient(135deg, #0d9488, #0f766e); padding: 24px 28px; color: #ffffff;">
           <h2 style="margin: 0; font-size: 20px; font-weight: 700;">🏠 Yêu Cầu Đặt Lịch Xem Phòng Mới</h2>
-          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Website QNS BROKER — Khách hàng quan tâm phòng trọ / căn hộ</p>
+          <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">Website NHACUALAND — Khách hàng quan tâm phòng trọ / căn hộ</p>
         </div>
         <div style="padding: 24px 28px; background: #ffffff;">
           <div style="margin-bottom: 20px; padding: 16px 20px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px;">
@@ -588,7 +588,7 @@ Content: ${textSummary}
     `;
 
     const tgPromise = this.notifyTelegram(
-      `🏠 <b>[ĐẶT LỊCH XEM PHÒNG - QNS BROKER]</b>\n` +
+      `🏠 <b>[ĐẶT LỊCH XEM PHÒNG - NHACUALAND]</b>\n` +
       `👤 Khách hàng: <b>${safeName}</b> (<a href="tel:${safePhone}">${safePhone}</a>)\n` +
       `📧 Email: ${safeEmail}\n` +
       `🏢 Phòng: <b>${safeTitle}</b>\n` +
@@ -604,7 +604,7 @@ Content: ${textSummary}
   }
 
   /**
-   * (k) Thông báo cho Khách hàng: Xác nhận đã đặt lịch xem phòng thành công trên QNS BROKER
+   * (k) Thông báo cho Khách hàng: Xác nhận đã đặt lịch xem phòng thành công trên NHACUALAND
    */
   async sendViewingAppointmentConfirmationToCustomer(appointment: {
     fullName: string;
@@ -627,17 +627,17 @@ Content: ${textSummary}
     const safeTime = escapeHtml(appointment.appointmentTime || 'Linh hoạt');
     const safeNote = escapeHtml(appointment.note || 'Không có');
 
-    const subject = `[QNS BROKER] Xác nhận đặt lịch xem phòng thành công: ${safeTitle}`;
+    const subject = `[NHACUALAND] Xác nhận đặt lịch xem phòng thành công: ${safeTitle}`;
     const summary = `Chào ${appointment.fullName}, yêu cầu đặt lịch xem phòng "${appointment.listingTitle || ''}" của bạn đã được tiếp nhận thành công. Nhân viên phụ trách Đức Quân (0981 753 082) sẽ sớm liên hệ xác nhận và trực tiếp dẫn bạn xem phòng thực tế`;
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <div style="background: linear-gradient(135deg, #0d9488, #0f766e); padding: 26px 30px; color: #ffffff;">
           <h2 style="margin: 0; font-size: 21px; font-weight: 700;">Xác Nhận Đặt Lịch Xem Phòng Thành Công</h2>
-          <p style="margin: 6px 0 0; font-size: 13.5px; opacity: 0.95;">Cảm ơn bạn đã tin tưởng dịch vụ kết nối thuê phòng tại QNS BROKER</p>
+          <p style="margin: 6px 0 0; font-size: 13.5px; opacity: 0.95;">Cảm ơn bạn đã tin tưởng dịch vụ kết nối thuê phòng tại NHACUALAND</p>
         </div>
         <div style="padding: 26px 30px; background: #ffffff;">
           <p style="font-size: 15px; margin-top: 0;">Chào bạn <strong>${safeName}</strong>,</p>
-          <p style="font-size: 14px; color: #475569;">Yêu cầu đặt lịch xem phòng của bạn trên hệ thống <strong>QNS BROKER</strong> đã được tiếp nhận thành công với các thông tin chi tiết như sau:</p>
+          <p style="font-size: 14px; color: #475569;">Yêu cầu đặt lịch xem phòng của bạn trên hệ thống <strong>NHACUALAND</strong> đã được tiếp nhận thành công với các thông tin chi tiết như sau:</p>
           
           <div style="margin: 20px 0; padding: 18px 20px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px;">
             <p style="margin: 0 0 10px; font-size: 15px;"><strong>Phòng đăng ký xem:</strong> <span style="color: #0f766e; font-weight: 700;">${safeTitle}</span></p>
@@ -659,8 +659,8 @@ Content: ${textSummary}
 
           <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0 16px;" />
           <p style="font-size: 12px; color: #94a3b8; margin: 0; text-align: center;">
-            QNS BROKER — Nền tảng kết nối tìm phòng trọ, studio & căn hộ minh bạch chi phí<br/>
-            Hotline: 0981 753 082 • Email: contact@qns.com • Hà Nội
+            NHACUALAND — Nền tảng kết nối tìm phòng trọ, studio & căn hộ minh bạch chi phí<br/>
+            Hotline: 0981 753 082 • Email: contact@nhacualand.com • Hà Nội
           </p>
         </div>
       </div>

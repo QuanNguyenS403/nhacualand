@@ -37,7 +37,7 @@ export function GoogleMapAddressPicker({
   onCoordinatesChange,
   onUniversitiesChange,
 }: GoogleMapAddressPickerProps) {
-  // Mặc định tọa độ trung tâm Hai Bà Trưng, Hà Nội (khu vực trụ sở QNS BROKER) nếu chưa chọn
+  // Mặc định tọa độ trung tâm Hai Bà Trưng, Hà Nội (khu vực trụ sở NHACUALAND) nếu chưa chọn
   const DEFAULT_LAT = 20.9982;
   const DEFAULT_LNG = 105.8778;
 

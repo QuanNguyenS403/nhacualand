@@ -23,7 +23,7 @@ export function Footer() {
                 <QnsLogo variant="emblem" theme="brand" size={24} />
               </div>
               <span className="text-base sm:text-lg font-bold tracking-tight text-white">
-                QNS <span className="font-normal text-white/80">BROKER</span>
+                NHACUA <span className="font-normal text-white/80">LAND</span>
               </span>
             </Link>
             <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-white/90">
@@ -127,7 +127,7 @@ export function Footer() {
       <div className="border-t border-white/15">
         <div className="container-max flex flex-col items-center justify-between gap-2 py-3 sm:py-3.5 sm:flex-row">
           <p className="text-xs text-white/70" suppressHydrationWarning>
-            © {new Date().getFullYear()} QNS BROKER
+            © {new Date().getFullYear()} NHACUALAND
           </p>
           <div className="flex items-center gap-5 text-xs text-white/80">
             <Link href="/dieu-khoan" className="hover:text-white transition-colors">

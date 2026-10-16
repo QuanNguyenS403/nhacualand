@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { SITE_CONFIG } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Điều khoản sử dụng — QNS BROKER',
+  title: 'Điều khoản sử dụng — NHACUALAND',
   description:
-    'Quy định chi tiết về quyền, nghĩa vụ và trách nhiệm pháp lý của các bên khi sử dụng nền tảng cho thuê QNS BROKER',
+    'Quy định chi tiết về quyền, nghĩa vụ và trách nhiệm pháp lý của các bên khi sử dụng nền tảng cho thuê NHACUALAND',
 };
 
 const TOC_ITEMS = [
@@ -38,7 +38,7 @@ export default function DieuKhoanPage() {
           </h1>
 
           <p className="text-base md:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed">
-            Quy định quyền và nghĩa vụ khi sử dụng dịch vụ trên nền tảng QNS BROKER
+            Quy định quyền và nghĩa vụ khi sử dụng dịch vụ trên nền tảng NHACUALAND
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs sm:text-sm text-white/85">
@@ -63,7 +63,7 @@ export default function DieuKhoanPage() {
               Cảnh báo an toàn quan trọng
             </p>
             <p className="text-amber-900">
-              QNS BROKER KHÔNG bao giờ yêu cầu quý khách truy cập liên kết lạ, cung cấp mã OTP ngân hàng hoặc chuyển tiền vào tài khoản cá nhân không được xác thực — quý khách vui lòng cảnh giác trước mọi thủ đoạn giả mạo
+              NHACUALAND KHÔNG bao giờ yêu cầu quý khách truy cập liên kết lạ, cung cấp mã OTP ngân hàng hoặc chuyển tiền vào tài khoản cá nhân không được xác thực — quý khách vui lòng cảnh giác trước mọi thủ đoạn giả mạo
             </p>
           </div>
         </div>
@@ -100,10 +100,10 @@ export default function DieuKhoanPage() {
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2.5">
                 <p>
-                  Điều khoản sử dụng này là thỏa thuận pháp lý giữa người dùng với nền tảng QNS BROKER (sau đây gọi là &ldquo;Nền tảng&rdquo;), điều chỉnh việc truy cập, tra cứu thông tin, đăng tin cho thuê và sử dụng dịch vụ môi giới kết nối phòng cho thuê
+                  Điều khoản sử dụng này là thỏa thuận pháp lý giữa người dùng với nền tảng NHACUALAND (sau đây gọi là &ldquo;Nền tảng&rdquo;), điều chỉnh việc truy cập, tra cứu thông tin, đăng tin cho thuê và sử dụng dịch vụ môi giới kết nối phòng cho thuê
                 </p>
                 <p>
-                  Bằng việc truy cập website, đăng ký tài khoản hoặc sử dụng bất kỳ tính năng nào của QNS BROKER, bạn xác nhận đã đọc kỹ, hiểu rõ và đồng ý bị ràng buộc bởi toàn bộ các quy định trong văn bản này
+                  Bằng việc truy cập website, đăng ký tài khoản hoặc sử dụng bất kỳ tính năng nào của NHACUALAND, bạn xác nhận đã đọc kỹ, hiểu rõ và đồng ý bị ràng buộc bởi toàn bộ các quy định trong văn bản này
                 </p>
               </div>
             </article>
@@ -115,7 +115,7 @@ export default function DieuKhoanPage() {
                 <span>Định nghĩa và Giải thích thuật ngữ</span>
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2">
-                <p><strong>Nền tảng QNS BROKER:</strong> Hệ sinh thái website và công nghệ hỗ trợ tìm kiếm, xác thực và kết nối giao dịch cho thuê phòng trọ, chung cư mini, chung cư và mặt bằng kinh doanh</p>
+                <p><strong>Nền tảng NHACUALAND:</strong> Hệ sinh thái website và công nghệ hỗ trợ tìm kiếm, xác thực và kết nối giao dịch cho thuê phòng trọ, chung cư mini, chung cư và mặt bằng kinh doanh</p>
                 <p><strong>Khách thuê:</strong> Cá nhân, sinh viên, người đi làm có nhu cầu tìm kiếm và thuê phòng thông qua hệ thống</p>
                 <p><strong>Chủ nhà / Bên cho thuê:</strong> Chủ sở hữu hợp pháp hoặc bên có quyền quản lý, vận hành và ký kết hợp đồng cho thuê phòng, căn hộ hoặc mặt bằng</p>
                 <p><strong>Tin đăng:</strong> Nội dung mô tả phòng, hình ảnh, biểu phí điện nước, vị trí và tiện ích được tạo và công khai trên hệ thống</p>
@@ -133,7 +133,7 @@ export default function DieuKhoanPage() {
                   Người dùng chịu trách nhiệm cung cấp số điện thoại chính chủ để tiếp nhận mã xác thực OTP khi tạo lập và đăng nhập tài khoản
                 </p>
                 <p>
-                  Bạn có trách nhiệm tự bảo vệ thông tin mật khẩu, không cung cấp mã xác thực cho bất kỳ ai và thông báo ngay cho QNS BROKER khi phát hiện hành vi truy cập trái phép
+                  Bạn có trách nhiệm tự bảo vệ thông tin mật khẩu, không cung cấp mã xác thực cho bất kỳ ai và thông báo ngay cho NHACUALAND khi phát hiện hành vi truy cập trái phép
                 </p>
               </div>
             </article>
@@ -206,7 +206,7 @@ export default function DieuKhoanPage() {
               </h2>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2.5">
                 <p>
-                  QNS BROKER đóng vai trò là nền tảng kết nối thông tin môi giới, không trực tiếp thu hộ tiền thuê, không giữ tiền đặt cọc và không thay thế hợp đồng dân sự giữa chủ nhà và khách thuê
+                  NHACUALAND đóng vai trò là nền tảng kết nối thông tin môi giới, không trực tiếp thu hộ tiền thuê, không giữ tiền đặt cọc và không thay thế hợp đồng dân sự giữa chủ nhà và khách thuê
                 </p>
                 <p>
                   Các bên tự chịu trách nhiệm pháp lý đối với nội dung thỏa thuận và các giao dịch chuyển tiền trực tiếp với nhau
@@ -221,7 +221,7 @@ export default function DieuKhoanPage() {
                 <span>Quyền sở hữu Trí tuệ và Dữ liệu</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Mọi thương hiệu, biểu tượng logo, giao diện thiết kế, mã nguồn và hệ thống dữ liệu thuộc quyền sở hữu độc quyền của QNS BROKER — nghiêm cấm sao chép, trích xuất dữ liệu tự động hoặc tái sử dụng cho mục đích thương mại trái phép
+                Mọi thương hiệu, biểu tượng logo, giao diện thiết kế, mã nguồn và hệ thống dữ liệu thuộc quyền sở hữu độc quyền của NHACUALAND — nghiêm cấm sao chép, trích xuất dữ liệu tự động hoặc tái sử dụng cho mục đích thương mại trái phép
               </p>
             </article>
 
@@ -254,7 +254,7 @@ export default function DieuKhoanPage() {
                 <span>Sửa đổi Điều khoản và Điều khoản thi hành</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                QNS BROKER có quyền cập nhật và điều chỉnh nội dung điều khoản bất kỳ lúc nào để phù hợp với hoạt động vận hành và quy định pháp luật hiện hành — văn bản sửa đổi sẽ có hiệu lực ngay khi được công bố công khai trên website
+                NHACUALAND có quyền cập nhật và điều chỉnh nội dung điều khoản bất kỳ lúc nào để phù hợp với hoạt động vận hành và quy định pháp luật hiện hành — văn bản sửa đổi sẽ có hiệu lực ngay khi được công bố công khai trên website
               </p>
             </article>
 
@@ -265,7 +265,7 @@ export default function DieuKhoanPage() {
                   Bạn cần hỗ trợ hoặc có thắc mắc về điều khoản?
                 </h3>
                 <p className="text-xs sm:text-sm text-white/90 leading-relaxed">
-                  Đội ngũ chuyên viên QNS BROKER luôn sẵn sàng giải đáp và hỗ trợ bạn trong suốt quá trình thuê phòng
+                  Đội ngũ chuyên viên NHACUALAND luôn sẵn sàng giải đáp và hỗ trợ bạn trong suốt quá trình thuê phòng
                 </p>
               </div>
 

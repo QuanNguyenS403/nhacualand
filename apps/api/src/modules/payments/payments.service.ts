@@ -375,7 +375,7 @@ export class PaymentsService {
     // Thông báo tức thì qua Telegram bot nếu đã cấu hình
     const formattedAmount = new Intl.NumberFormat('vi-VN').format(Number(allocateAmount));
     await this.notifyTelegram(
-      `💰 [QNS BROKER - TỰ ĐỘNG GẠCH NỢ]\n` +
+      `💰 [NHACUALAND - TỰ ĐỘNG GẠCH NỢ]\n` +
       `✅ Đã nhận: +${formattedAmount} VNĐ từ Vietcombank\n` +
       `📌 Nội dung: ${rawDescription}\n` +
       `🔖 Mã hoa hồng: ${targetCommission.paymentReferenceCode}\n` +

@@ -75,10 +75,10 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
           </span>
         </div>
         <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
-          Chính sách & Điều khoản Dịch vụ Môi giới Cho thuê QNS BROKER
+          Chính sách & Điều khoản Dịch vụ Môi giới Cho thuê NHACUALAND
         </h2>
         <p className="mt-2 text-xs md:text-sm text-slate-600 leading-relaxed">
-          Nhằm đảm bảo sự minh bạch, quyền lợi hợp pháp và tính xác thực giữa Chủ nhà, Người thuê và QNS BROKER, quý khách vui lòng đọc lướt từ trên xuống dưới và xác nhận đồng ý điều khoản trước khi bắt đầu đăng tin cho thuê đầu tiên
+          Nhằm đảm bảo sự minh bạch, quyền lợi hợp pháp và tính xác thực giữa Chủ nhà, Người thuê và NHACUALAND, quý khách vui lòng đọc lướt từ trên xuống dưới và xác nhận đồng ý điều khoản trước khi bắt đầu đăng tin cho thuê đầu tiên
         </p>
       </div>
 
@@ -114,7 +114,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <span>Mô hình môi giới chuyên biệt & Đầu mối phục vụ thực tế</span>
             </h3>
             <p>
-              Hệ thống QNS BROKER hoạt động theo mô hình môi giới chuyên biệt cho thuê phòng trọ, chung cư mini, chung cư và mặt bằng kinh doanh
+              Hệ thống NHACUALAND hoạt động theo mô hình môi giới chuyên biệt cho thuê phòng trọ, chung cư mini, chung cư và mặt bằng kinh doanh
             </p>
             <p>
               Chủ nhà trực tiếp tiếp nhận tin đăng, liên hệ để xác minh thông tin, khảo sát thực tế và điều phối dẫn khách thuê tới xem phòng trực tiếp tại địa chỉ cho thuê
@@ -151,7 +151,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <span>Nguyên tắc tài chính trực tiếp — Không thu cọc & không thanh toán trực tuyến</span>
             </h3>
             <p>
-              Website QNS BROKER tuyệt đối không tích hợp thanh toán trực tuyến, không thu tiền cọc phòng và không giữ hộ tiền của các bên nhằm loại bỏ hoàn toàn rủi ro gian lận mạng
+              Website NHACUALAND tuyệt đối không tích hợp thanh toán trực tuyến, không thu tiền cọc phòng và không giữ hộ tiền của các bên nhằm loại bỏ hoàn toàn rủi ro gian lận mạng
             </p>
             <p>
               Mọi khoản tiền đặt cọc và tiền thuê phòng do Khách thuê và Chủ nhà giao dịch, ký nhận trực tiếp tại địa điểm thuê bằng hợp đồng và biên bản bàn giao thực tế
@@ -172,7 +172,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <li>Công khai minh bạch các chi phí dịch vụ đi kèm (giá điện, nước, internet, gửi xe)</li>
               <li>Cam kết có toàn quyền cho thuê hoặc là chủ sở hữu hợp pháp đối với phòng hoặc mặt bằng đăng tải</li>
               <li>Phối hợp tạo điều kiện thuận lợi để chuyên viên hẹn giờ và dẫn khách thuê tới xem phòng</li>
-              <li>Thông báo ngay cho QNS BROKER khi phòng đã được cho thuê từ nguồn khác để hệ thống gỡ hoặc ẩn tin đăng, tránh làm phiền đôi bên</li>
+              <li>Thông báo ngay cho NHACUALAND khi phòng đã được cho thuê từ nguồn khác để hệ thống gỡ hoặc ẩn tin đăng, tránh làm phiền đôi bên</li>
             </ul>
           </section>
 
@@ -183,7 +183,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               <span>Bảo mật thông tin & Xử lý hỗ trợ</span>
             </h3>
             <p>
-              QNS BROKER cam kết bảo mật thông tin liên hệ và hình ảnh của quý khách theo quy định pháp luật — số điện thoại cá nhân không hiển thị công khai tùy tiện để tránh tin nhắn rác hoặc cuộc gọi làm phiền
+              NHACUALAND cam kết bảo mật thông tin liên hệ và hình ảnh của quý khách theo quy định pháp luật — số điện thoại cá nhân không hiển thị công khai tùy tiện để tránh tin nhắn rác hoặc cuộc gọi làm phiền
             </p>
           </section>
         </div>
@@ -208,7 +208,7 @@ export function OwnerBrokerTermsGate({ onAccepted }: OwnerBrokerTermsGateProps) 
               className="mt-0.5 h-5 w-5 rounded-md border-slate-300 text-brand focus:ring-brand focus:ring-offset-0 cursor-pointer transition-all"
             />
             <span className="text-xs md:text-sm font-semibold text-slate-800 leading-snug">
-              Tôi là chủ sở hữu hoặc người có quyền cho thuê hợp pháp, đã đọc kỹ, hiểu rõ và đồng ý toàn bộ Điều khoản và Chính sách dịch vụ môi giới cho thuê của QNS BROKER
+              Tôi là chủ sở hữu hoặc người có quyền cho thuê hợp pháp, đã đọc kỹ, hiểu rõ và đồng ý toàn bộ Điều khoản và Chính sách dịch vụ môi giới cho thuê của NHACUALAND
             </span>
           </label>
 

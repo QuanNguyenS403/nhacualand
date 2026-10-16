@@ -1,9 +1,9 @@
 export const SITE_CONFIG = {
-  name: 'QNS BROKER',
-  brandName: 'QNS BROKER',
-  logoUrl: '/logo-qns.svg',
-  domain: 'qnsbroker.com',
-  url: 'https://qnsbroker.com',
+  name: 'NHACUALAND',
+  brandName: 'NHACUALAND',
+  logoUrl: '/logo-nhacualand.svg',
+  domain: 'nhacualand.com',
+  url: 'https://nhacualand.com',
   slogan: 'Rõ chi phí, đúng người cho thuê',
   description:
     'Nền tảng tìm chỗ thuê minh bạch chi phí, giúp người thuê kết nối trực tiếp với bên có quyền cho thuê, từ phòng trọ đến căn hộ',
@@ -12,14 +12,14 @@ export const SITE_CONFIG = {
   agentName: 'Chủ nhà',
   agentRole: 'Người tư vấn và trực tiếp dẫn xem',
   zalo: '0981 753 082',
-  email: 'contact@qns.com',
-  supportEmail: 'contact@qns.com',
+  email: 'contact@nhacualand.com',
+  supportEmail: 'contact@nhacualand.com',
   workingHours: '24/7',
   address: 'Thành phố Hà Nội',
   servicePolicy: 'Tư vấn và xem phòng miễn phí. Hợp đồng thuê ký trực tiếp với bên có quyền cho thuê. Chủ thanh toán phí dịch vụ khi thuê thành công theo thỏa thuận',
   bankAccount: {
     bankName: 'Vietcombank (VCB)',
     accountNumber: '1900886899',
-    accountName: 'CONG TY TNHH QNS VIET NAM',
+    accountName: 'CONG TY TNHH NHACUALAND VIET NAM',
   },
 } as const;

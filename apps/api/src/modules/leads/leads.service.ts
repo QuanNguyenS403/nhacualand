@@ -543,7 +543,7 @@ export class LeadsService {
   async createFeedback(dto: CreateFeedbackDto, ip?: string) {
     this.logger.log(`Tiếp nhận phản hồi từ khách hàng: ${dto.name || 'Khách vãng lai'} (Rating: ${dto.rating ?? 'N/A'})`);
 
-    // Gửi email tự động tới chủ website (contact@qns.com)
+    // Gửi email tự động tới chủ website (contact@nhacualand.com)
     await this.emailService.sendFeedbackNotification({
       rating: dto.rating,
       content: dto.content,
@@ -564,7 +564,7 @@ export class LeadsService {
   async createConsultation(dto: CreateConsultationDto, ip?: string) {
     this.logger.log(`Tiếp nhận yêu cầu tư vấn mới từ SĐT: ${dto.phone} (Lý do: ${dto.reason})`);
 
-    // Gửi email tự động tới chủ website (contact@qns.com)
+    // Gửi email tự động tới chủ website (contact@nhacualand.com)
     await this.emailService.sendConsultationNotification({
       phone: dto.phone,
       reason: dto.reason,

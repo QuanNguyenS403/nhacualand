@@ -1,5 +1,5 @@
 /**
- * Tiện ích điều hướng toàn website QNS BROKER
+ * Tiện ích điều hướng toàn website NHACUALAND
  *
  * Kích hoạt hệ thống loading mượt mà 0.5 giây và hỗ trợ các component
  * chủ động phát tín hiệu điều hướng toàn cục

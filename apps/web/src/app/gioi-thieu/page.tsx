@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Về chúng tôi — QNS BROKER',
+  title: 'Về chúng tôi — NHACUALAND',
   description:
     'Nền tảng công nghệ hàng đầu Việt Nam kết nối sinh viên, người đi làm với chủ nhà uy tín, minh bạch và an toàn',
 };
@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 export default function GioiThieuPage() {
   return (
     <div className="min-h-screen bg-surface-muted">
-      {/* ── Top Hero Banner (Màu chủ đạo QNS BROKER) ── */}
+      {/* ── Top Hero Banner (Màu chủ đạo NHACUALAND) ── */}
       <section className="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-700 py-8 sm:py-10 md:py-12 px-4 text-center text-white">
         <div className="container-max max-w-5xl mx-auto">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-extrabold tracking-tight text-white leading-tight">
-            Về QNS BROKER
+            Về NHACUALAND
           </h1>
           <p className="mt-2.5 sm:mt-3 max-w-[680px] mx-auto text-xs sm:text-sm md:text-base text-brand-100/90 leading-relaxed font-normal">
             Nền tảng công nghệ hàng đầu Việt Nam kết nối sinh viên, người đi làm với chủ nhà uy tín. Chúng tôi sứ mệnh làm cho việc tìm phòng trọ trở nên dễ dàng, an toàn và tiện lợi hơn bao giờ hết
@@ -128,7 +128,7 @@ export default function GioiThieuPage() {
             Giá trị cốt lõi
           </h2>
           <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 max-w-[660px] mx-auto leading-relaxed">
-            Những giá trị định hình văn hóa và hướng dẫn mọi hoạt động của QNS BROKER
+            Những giá trị định hình văn hóa và hướng dẫn mọi hoạt động của NHACUALAND
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4.5 mt-6 sm:mt-7">
@@ -205,7 +205,7 @@ export default function GioiThieuPage() {
               Sẵn sàng tìm căn phòng phù hợp?
             </h2>
             <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 max-w-[640px] mx-auto leading-relaxed">
-              Khám phá các phòng đang có trên QNS BROKER và kết nối với chủ nhà phù hợp với nhu cầu của bạn
+              Khám phá các phòng đang có trên NHACUALAND và kết nối với chủ nhà phù hợp với nhu cầu của bạn
             </p>
             <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5">
               <Link

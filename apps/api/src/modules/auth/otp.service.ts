@@ -362,7 +362,7 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
             ApiKey: apiKey,
             SecretKey: secretKey,
             Phone: phone,
-            Content: `Ma xac thuc QNS BROKER cua ban la: ${code}. Hieu luc 5 phut.`,
+            Content: `Ma xac thuc NHACUALAND cua ban la: ${code}. Hieu luc 5 phut.`,
             SmsType: '2',
           }),
           signal: controller.signal,
@@ -390,7 +390,7 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
         const params = new URLSearchParams();
         params.set('To', phone.startsWith('+') ? phone : `+84${phone.replace(/^0/, '')}`);
         params.set('From', fromPhone);
-        params.set('Body', `Ma xac thuc QNS BROKER cua ban la: ${code}. Hieu luc 5 phut.`);
+        params.set('Body', `Ma xac thuc NHACUALAND cua ban la: ${code}. Hieu luc 5 phut.`);
 
         const authHeader = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
         const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
@@ -422,7 +422,7 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
           },
           body: JSON.stringify({
             to: [phone],
-            content: `Ma xac thuc QNS BROKER cua ban la: ${code}. Hieu luc 5 phut.`,
+            content: `Ma xac thuc NHACUALAND cua ban la: ${code}. Hieu luc 5 phut.`,
             sms_type: 2,
           }),
           signal: controller.signal,
@@ -447,7 +447,7 @@ export class OtpService implements OnModuleInit, OnModuleDestroy {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: `[QNS BROKER] Mã xác thực OTP cho số ${phone} là: ${code} (hiệu lực 5 phút)`,
+            text: `[NHACUALAND] Mã xác thực OTP cho số ${phone} là: ${code} (hiệu lực 5 phút)`,
           }),
           signal: controller.signal,
         }).finally(() => clearTimeout(timeoutId));

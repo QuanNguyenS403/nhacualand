@@ -444,7 +444,7 @@ export class AuthService {
         data: {
           docCode: 'BROKER_TERMS_V2',
           docType: 'terms_of_service',
-          title: 'Điều khoản và Chính sách Dịch vụ Môi giới Cho thuê QNS BROKER',
+          title: 'Điều khoản và Chính sách Dịch vụ Môi giới Cho thuê NHACUALAND',
           version: '2.0',
           fileUrl: '/dieu-khoan',
           fileHash: 'sha256:qns-broker-terms-v2',

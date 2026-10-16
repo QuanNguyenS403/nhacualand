@@ -9,7 +9,7 @@ import { VIETNAM_UNIVERSITIES, calculateDistanceKm } from '@/lib/vietnam-univers
 import { DEMO_ROOM_RENT_LISTINGS } from '@/lib/demo-data';
 
 export const metadata: Metadata = {
-  title: 'Cho thuê phòng trọ, nhà trọ sinh viên & người đi làm — QNS BROKER',
+  title: 'Cho thuê phòng trọ, nhà trọ sinh viên & người đi làm — NHACUALAND',
   description:
     'Kênh tìm kiếm phòng trọ, nhà trọ giá rẻ, ký túc xá, căn hộ mini khép kín, an ninh tốt, minh bạch giá điện nước trên toàn quốc — kết nối trực tiếp bên cho thuê',
 };

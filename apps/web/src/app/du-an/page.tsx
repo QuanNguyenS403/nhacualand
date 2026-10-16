@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ComingSoonNotice } from '@/components/ComingSoonNotice';
 
 export const metadata: Metadata = {
-  title: 'Khu trọ & Dự án Căn hộ cho thuê | QNS BROKER',
+  title: 'Khu trọ & Dự án Căn hộ cho thuê | NHACUALAND',
   description: 'Danh sách tổ hợp khu trọ quy mô lớn, chung cư mini và căn hộ dịch vụ cho thuê sắp ra mắt',
   robots: { index: false, follow: true },
 };

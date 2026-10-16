@@ -2,13 +2,13 @@ import { Metadata } from 'next';
 import { MapReviewsExplorer } from '@/components/reviews/MapReviewsExplorer';
 
 export const metadata: Metadata = {
-  title: 'Bản đồ phòng trọ & Đánh giá minh bạch — QNS Land',
+  title: 'Bản đồ phòng trọ & Đánh giá minh bạch — NHACUALAND',
   description: 'Bản đồ Google Maps tra cứu vị trí phòng trọ theo ngõ phường quận, tích hợp lịch sử tìm kiếm và đánh giá thực tế từ cựu người thuê',
   alternates: {
     canonical: '/danh-gia',
   },
   openGraph: {
-    title: 'Bản đồ phòng trọ & Đánh giá minh bạch — QNS Land',
+    title: 'Bản đồ phòng trọ & Đánh giá minh bạch — NHACUALAND',
     description: 'Bản đồ Google Maps tra cứu vị trí phòng trọ theo ngõ phường quận, tích hợp lịch sử tìm kiếm và đánh giá thực tế từ cựu người thuê',
     type: 'website',
   },

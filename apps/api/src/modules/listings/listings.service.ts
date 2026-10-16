@@ -1357,7 +1357,7 @@ export class ListingsService {
       phone,
       brokerName,
       role,
-      agency: 'QNS BROKER',
+      agency: 'NHACUALAND',
       note: 'Tư vấn và xem phòng miễn phí. Hợp đồng thuê ký trực tiếp với bên có quyền cho thuê',
     };
   }
@@ -1408,7 +1408,7 @@ export class ListingsService {
         role: 'Người tư vấn và trực tiếp dẫn xem',
         phone: listing.contactAgent?.workPhone || '0981 753 082',
         zalo: '0981 753 082',
-        agencyName: 'QNS BROKER',
+        agencyName: 'NHACUALAND',
         workingHours: '24/7',
       },
       lessorDisclosure: {

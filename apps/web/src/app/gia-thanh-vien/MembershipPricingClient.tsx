@@ -141,7 +141,7 @@ export function MembershipPricingClient() {
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">Chủ nhà</h3>
             <p className="text-xs text-slate-600 leading-relaxed mb-6">
-              Người tư vấn và trực tiếp dẫn khách xem phòng trên toàn hệ thống, đại diện dịch vụ môi giới cho thuê QNS BROKER
+              Người tư vấn và trực tiếp dẫn khách xem phòng trên toàn hệ thống, đại diện dịch vụ môi giới cho thuê NHACUALAND
             </p>
             <ul className="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-5">
               <li className="flex items-center gap-2">

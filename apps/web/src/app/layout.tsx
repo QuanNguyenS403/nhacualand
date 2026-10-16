@@ -13,16 +13,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://qnsbroker.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://nhacualand.com'),
   title: {
-    default: 'QNS BROKER — Rõ chi phí, đúng người cho thuê',
-    template: '%s | QNS BROKER',
+    default: 'NHACUALAND — Rõ chi phí, đúng người cho thuê',
+    template: '%s | NHACUALAND',
   },
   description:
-    'Nền tảng kết nối tìm phòng trọ sinh viên, căn hộ dịch vụ, studio và mặt bằng cho thuê QNS BROKER — biểu phí điện nước minh bạch, kết nối đúng bên có quyền cho thuê',
+    'Nền tảng kết nối tìm phòng trọ sinh viên, căn hộ dịch vụ, studio và mặt bằng cho thuê NHACUALAND — biểu phí điện nước minh bạch, kết nối đúng bên có quyền cho thuê',
   keywords: [
-    'QNS BROKER',
-    'qnsbroker.com',
+    'NHACUALAND',
+    'nhacualand.com',
     'thuê phòng trọ',
     'phòng trọ sinh viên',
     'căn hộ dịch vụ',
@@ -34,12 +34,12 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
-    siteName: 'QNS BROKER',
+    siteName: 'NHACUALAND',
   },
   icons: {
-    icon: '/logo-qns.svg',
-    shortcut: '/logo-qns.svg',
-    apple: '/logo-qns.svg',
+    icon: '/logo-nhacualand.svg',
+    shortcut: '/logo-nhacualand.svg',
+    apple: '/logo-nhacualand.svg',
   },
   robots: { index: true, follow: true },
 };

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .trim();
     const desc = listing.description?.slice(0, 160) ?? `${cleanTitle} tại ${listing.location?.name ?? 'Việt Nam'}`;
     return {
-      title: `${cleanTitle} | QNS BROKER`,
+      title: `${cleanTitle} | NHACUALAND`,
       description: desc,
       openGraph: {
         title: cleanTitle,
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: 'Phòng không tồn tại | QNS BROKER',
+    title: 'Phòng không tồn tại | NHACUALAND',
     description: 'Thông tin phòng cho thuê không tìm thấy hoặc đã ngừng hiển thị',
   };
 }

@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { SITE_CONFIG } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Liên hệ & Hỗ trợ | QNS BROKER',
+  title: 'Liên hệ & Hỗ trợ | NHACUALAND',
   description:
-    'Thông tin liên hệ, báo cáo tin đăng vi phạm và giải đáp thắc mắc người dùng tại QNS BROKER',
+    'Thông tin liên hệ, báo cáo tin đăng vi phạm và giải đáp thắc mắc người dùng tại NHACUALAND',
 };
 
 export default function ContactPage() {
@@ -26,7 +26,7 @@ export default function ContactPage() {
             Thông tin Liên hệ &amp; Hỗ trợ
           </h1>
           <p className="text-base text-text-secondary leading-relaxed mb-8 border-b border-surface-border pb-5">
-            Ban Quản trị nền tảng QNS BROKER luôn sẵn sàng lắng nghe ý kiến đóng góp, giải đáp thắc mắc và hỗ trợ bạn trong quá trình tìm phòng hoặc đăng tin
+            Ban Quản trị nền tảng NHACUALAND luôn sẵn sàng lắng nghe ý kiến đóng góp, giải đáp thắc mắc và hỗ trợ bạn trong quá trình tìm phòng hoặc đăng tin
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

@@ -120,7 +120,7 @@ export function healCustomListingsInLocalStorage(): any[] {
       let itemOwner = item.owner;
       if (itemOwner) {
         const rawOwner = itemOwner.fullName || '';
-        if (!rawOwner || /qns broker|dẫn xem|đức quân|môi giới/i.test(rawOwner)) {
+        if (!rawOwner || /nhacualand|qns broker|dẫn xem|đức quân|môi giới/i.test(rawOwner)) {
           itemOwner = { ...itemOwner, fullName: 'Chủ nhà' };
           changed = true;
         }

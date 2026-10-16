@@ -4,7 +4,7 @@ export interface QnsLogoProps {
   /**
    * 'emblem': Chỉ biểu tượng ngôi nhà trong chữ Q (tỉ lệ 1:1, phù hợp avatar, icon, badge)
    * 'full': Logo đầy đủ dạng dọc (Biểu tượng Q + chữ QNS bên dưới chuẩn hình ảnh)
-   * 'horizontal': Biểu tượng bên trái + chữ QNS BROKER bên phải (chuẩn thanh header website)
+   * 'horizontal': Biểu tượng bên trái + chữ NHACUALAND bên phải (chuẩn thanh header website)
    */
   variant?: 'emblem' | 'full' | 'horizontal';
   /**
@@ -81,7 +81,7 @@ export function QnsLogo({
     );
   }
 
-  // Dạng 2: Full dọc (Emblem + Chữ QNS chuẩn 100% theo ảnh cung cấp)
+  // Dạng 2: Full dọc (Emblem + Chữ NHACUALAND)
   if (variant === 'full') {
     return (
       <div className={`inline-flex flex-col items-center justify-center ${className}`}>
@@ -91,11 +91,11 @@ export function QnsLogo({
           style={{
             color: primaryColor,
             fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: size ? `${Number(size) * 0.28}px` : '32px',
+            fontSize: size ? `${Number(size) * 0.22}px` : '24px',
             letterSpacing: '0.04em',
           }}
         >
-          QNS
+          NHACUALAND
         </span>
       </div>
     );
@@ -110,7 +110,7 @@ export function QnsLogo({
           className="font-black tracking-tight leading-none text-lg select-none"
           style={{ color: primaryColor, letterSpacing: '0.02em' }}
         >
-          QNS <span className={theme === 'light' ? 'font-light opacity-90' : 'font-semibold text-slate-700'}>BROKER</span>
+          NHACUA<span className={theme === 'light' ? 'font-light opacity-90' : 'font-semibold text-slate-700'}>LAND</span>
         </span>
       </div>
     </div>
@@ -118,7 +118,12 @@ export function QnsLogo({
 }
 
 /**
- * Avatar Chủ Nhà mặc định mang thương hiệu QNS
+ * Alias tương thích
+ */
+export const NhacualandLogo = QnsLogo;
+
+/**
+ * Avatar Chủ Nhà mặc định mang thương hiệu NHACUALAND
  * Dùng trên tất cả các bề mặt trang (chi tiết tin, danh sách tin, sidebar liên hệ)
  */
 export function LandlordAvatar({
@@ -148,7 +153,7 @@ export function LandlordAvatar({
     <div
       className={`relative shrink-0 rounded-full overflow-hidden flex items-center justify-center bg-[#fdfbf2] border border-[#f5dc93]/60 shadow-xs ring-2 ring-white p-1 ${className}`}
       style={{ width: size, height: size }}
-      title={`${name} (Đối tác xác thực QNS)`}
+      title={`${name} (Đối tác xác thực NHACUALAND)`}
     >
       <QnsLogo variant="emblem" theme="brand" size={size - 8} />
     </div>

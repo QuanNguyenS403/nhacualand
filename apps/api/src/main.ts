@@ -56,8 +56,8 @@ async function bootstrap() {
   // Trong môi trường production (NODE_ENV=production), tắt hoàn toàn /docs để bảo vệ API surface.
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
-      .setTitle('QNS BROKER API')
-      .setDescription('API cho nền tảng dịch vụ môi giới cho thuê bất động sản QNS BROKER')
+      .setTitle('NHACUALAND API')
+      .setDescription('API cho nền tảng dịch vụ môi giới cho thuê bất động sản NHACUALAND')
       .setVersion('0.1')
       .addBearerAuth()
       .build();

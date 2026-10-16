@@ -530,7 +530,7 @@ export function ContactBrokerModal({
                 >
                   Chính sách bảo mật
                 </a>{' '}
-                của QNS BROKER
+                của NHACUALAND
               </label>
             </div>
 

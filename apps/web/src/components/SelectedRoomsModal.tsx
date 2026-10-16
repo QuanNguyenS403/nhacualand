@@ -129,7 +129,7 @@ export function SelectedRoomsModal({
                       />
                     ) : (
                       <div className="h-12 w-16 rounded-lg bg-brand-50 flex items-center justify-center text-brand font-bold text-xs shrink-0">
-                        QNS
+                        NHACUA
                       </div>
                     )}
                     <div className="min-w-0">

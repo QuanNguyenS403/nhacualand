@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ComingSoonNotice } from '@/components/ComingSoonNotice';
 
 export const metadata: Metadata = {
-  title: 'Bảng giá thuê phòng & căn hộ theo khu vực | QNS BROKER',
+  title: 'Bảng giá thuê phòng & căn hộ theo khu vực | NHACUALAND',
   description: 'Thống kê mức giá thuê trung bình phòng trọ, studio, căn hộ theo từng quận huyện và cụm trường Đại học — sắp ra mắt',
   robots: { index: false, follow: true },
 };

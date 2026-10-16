@@ -1,0 +1,23 @@
+<svg width="400" height="460" viewBox="0 0 200 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Biểu tượng NHACUALAND kết hợp Ngôi nhà & Đất đai -->
+  <g id="emblem">
+    <!-- Vòng tròn nền bảo chứng phong thủy & định vị bản đồ -->
+    <circle cx="100" cy="85" r="68" fill="#b88014" />
+    
+    <!-- Mái nhà & Thân nhà vươn cao -->
+    <path d="M 100 34 L 142 72 L 142 126 C 142 131 138 136 132 136 L 68 136 C 62 136 58 131 58 126 L 58 72 Z" fill="#ffffff" />
+    
+    <!-- Cửa sổ đón nắng 4 cánh -->
+    <rect x="86.5" y="58" width="11" height="11" rx="2" fill="#b88014" />
+    <rect x="102.5" y="58" width="11" height="11" rx="2" fill="#b88014" />
+    <rect x="86.5" y="73" width="11" height="11" rx="2" fill="#b88014" />
+    <rect x="102.5" y="73" width="11" height="11" rx="2" fill="#b88014" />
+    
+    <!-- Cổng vòm chào đón sang trọng -->
+    <path d="M 85 136 L 85 106 A 15 15 0 0 1 115 106 L 115 136 Z" fill="#b88014" />
+    <circle cx="108" cy="116" r="3" fill="#ffffff" />
+  </g>
+  
+  <!-- Nhãn chữ NHACUALAND -->
+  <text x="100" y="210" text-anchor="middle" fill="#b88014" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="28" letter-spacing="0.06em">NHACUALAND</text>
+</svg>

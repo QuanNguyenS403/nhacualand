@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 /**
- * Hệ thống Loading toàn thể website QNS BROKER
+ * Hệ thống Loading toàn thể website NHACUALAND
  *
  * Tự động điều phối hiệu ứng loading và đảm bảo chuyển trang dứt khoát
  * ngay sau 0.5 giây (500ms) khi click vào bất kỳ mục nào trên toàn bộ website.
@@ -197,7 +197,7 @@ export function TopProgressBar() {
 
   return (
     <>
-      {/* Thanh tiến trình gradient QNS BROKER trên mép trên cùng */}
+      {/* Thanh tiến trình gradient NHACUALAND trên mép trên cùng */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed left-0 top-0 z-[99999] h-[3.5px] w-full overflow-hidden bg-transparent"

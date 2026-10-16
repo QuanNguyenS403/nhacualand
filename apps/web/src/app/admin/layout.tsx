@@ -117,14 +117,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">Yêu cầu quyền Quản trị viên</h2>
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            Khu vực này chỉ dành riêng cho Ban Quản trị hệ thống QNS BROKER — bạn cần đăng nhập bằng tài khoản có vai trò Quản trị (Admin) để tiếp tục
+            Khu vực này chỉ dành riêng cho Ban Quản trị hệ thống NHACUALAND — bạn cần đăng nhập bằng tài khoản có vai trò Quản trị (Admin) để tiếp tục
           </p>
           <div className="flex flex-col gap-2.5">
             <Link
-              href="/qnsbroker/admin"
+              href="/admin"
               className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2"
             >
-              <span>Vào Cổng Quản trị qnsbroker/admin</span>
+              <span>Vào Cổng Quản trị /admin</span>
               <span>→</span>
             </Link>
             <div className="flex flex-col sm:flex-row gap-2.5">
