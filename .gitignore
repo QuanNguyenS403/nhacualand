@@ -44,3 +44,5 @@ apps/api/uploads/
 packages/database/prisma/generated/
 data/
 backup/
+cloudflared.exe
+*.exe
