@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import GoogleSignInButton from './GoogleSignInButton';
 import { setTokens } from '@/lib/auth-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
+  ? process.env.NEXT_PUBLIC_API_URL
+  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
 
 interface AuthModalProps {
   isOpen: boolean;

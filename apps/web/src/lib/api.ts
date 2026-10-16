@@ -1,10 +1,13 @@
 import type { ListingMapPin } from '@qns/shared';
 export type { ListingMapPin };
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-const API_URL = rawApiUrl.startsWith('http://') || rawApiUrl.startsWith('https://') || rawApiUrl.startsWith('/')
-  ? rawApiUrl
-  : `https://${rawApiUrl}`;
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL !== undefined
+  ? process.env.NEXT_PUBLIC_API_URL
+  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+
+const API_URL = typeof window === 'undefined'
+  ? (process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000')
+  : rawApiUrl;
 
 export interface UniversityItem {
   id: number;

@@ -210,7 +210,9 @@ export function ContactBrokerModal({
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL !== undefined
+        ? process.env.NEXT_PUBLIC_API_URL
+        : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
       const token = getAccessToken();
 
       const headers: Record<string, string> = {

@@ -20,7 +20,7 @@ loadEnv({ path: join(__dirname, '..', '..', '.env') });
 const nextConfig = {
   env: {
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '853230977507-6f7vlho33papqgpn12j5eq3p4ids6hdh.apps.googleusercontent.com',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL !== undefined ? process.env.NEXT_PUBLIC_API_URL : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''),
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   },
   compress: true,
@@ -64,6 +64,10 @@ const nextConfig = {
         destination: `${apiUrl}/auth/:path*`,
       },
       {
+        source: '/users/:path*',
+        destination: `${apiUrl}/users/:path*`,
+      },
+      {
         source: '/listings/:path*',
         destination: `${apiUrl}/listings/:path*`,
       },
@@ -82,6 +86,10 @@ const nextConfig = {
       {
         source: '/tasks/:path*',
         destination: `${apiUrl}/tasks/:path*`,
+      },
+      {
+        source: '/memberships/:path*',
+        destination: `${apiUrl}/memberships/:path*`,
       },
       {
         source: '/membership/:path*',
@@ -126,6 +134,18 @@ const nextConfig = {
       {
         source: '/admin/tasks/:path*',
         destination: `${apiUrl}/admin/tasks/:path*`,
+      },
+      {
+        source: '/admin/pricing-seasons/:path*',
+        destination: `${apiUrl}/admin/pricing-seasons/:path*`,
+      },
+      {
+        source: '/admin/membership-requests/:path*',
+        destination: `${apiUrl}/admin/membership-requests/:path*`,
+      },
+      {
+        source: '/admin/api/:path*',
+        destination: `${apiUrl}/admin/:path*`,
       },
     ];
   },

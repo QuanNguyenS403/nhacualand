@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
+  ? process.env.NEXT_PUBLIC_API_URL
+  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
 
 const REPORT_REASONS = [
   { value: 'da_het_phong', label: 'Đã hết phòng / đã cho thuê' },

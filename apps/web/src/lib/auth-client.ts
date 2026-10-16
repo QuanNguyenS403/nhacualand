@@ -2,7 +2,9 @@
  * auth-client.ts — fetch có gắn sẵn Bearer accessToken, tự động thử làm mới token khi hết hạn.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
+  ? process.env.NEXT_PUBLIC_API_URL
+  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
