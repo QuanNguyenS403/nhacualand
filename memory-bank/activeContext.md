@@ -1,6 +1,26 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (14/10/2026 — HỆ THỐNG BẢN ĐỒ CHÍNH XÁC & ĐỒNG BỘ DỮ LIỆU TOÀN WEBSITE QNS BROKER):**
+**Việc vừa hoàn thành (14/10/2026 — RÀ SOÁT & CHUẨN HOÁ QUẢN LÝ TIN ĐĂNG, PHÒNG ĐÃ LƯU & QUẢN TRỊ HỆ THỐNG KÈM XÁC THỰC P0):**
+- Hoàn thành xuất sắc toàn diện prompt chuẩn hoá 3 trang: "Quản lý tin đăng", "Phòng đã lưu" và "Quản trị hệ thống" kèm bảo mật P0:
+  1. **Bảo mật P0**: Loại bỏ 100% mật khẩu hardcode và mock token (`admin_token_*`, `user_token_*`, `g_token_*`); Xóa bỏ hoàn toàn kho lưu trữ `localStorage.qns_registered_users`; Xóa 4 file/module legacy cũ (`users-server.ts`, `password-reset-server.ts`, `custom-listings-server.ts`, `/api/auth/*`); Khóa mã HTTP `410 Gone` đối với `/api/custom-listings/*`; Chuyển hướng tự động `/qnsbroker/admin` sang `/admin`.
+  2. **Backend API & IDOR**: Sửa lỗi đệ quy vô hạn trong `BigIntInterceptor` bằng `WeakSet` và `isPlainObject`; Xóa `ownerId` khỏi DTO Map Listings (chống IDOR); Cài đặt State Machine `canTransition` trong `@qns/shared`; Bổ sung các endpoint `GET /listings/mine/counts`, `GET /listings/saved/ids`, `PUT /listings/:id/save`, `DELETE /listings/:id/save`, `POST /listings/:id/resubmit`, `GET /admin/audit-logs`.
+  3. **Hai trang người dùng**:
+     - `/tai-khoan/quan-ly-tin`: Số lượng tab đồng bộ trực tiếp từ DB qua `/listings/mine/counts`; Hỗ trợ đầy đủ các thao tác xem trước, gỡ tin, đã cho thuê, còn phòng, gửi duyệt lại; Sử dụng modal xác nhận và toast nội bộ, 0 alert/confirm thô.
+     - `/tai-khoan/tin-da-luu`: Bỏ lưu bằng `DELETE /listings/:id/save`; Hiển thị badge trạng thái cho tin đã thuê/gỡ/hết hạn.
+     - `/tin/[slug]`: Nút Lưu tin đồng bộ `PUT` và `DELETE`.
+  4. **Trang quản trị**:
+     - `/admin/nguoi-dung`: Hiển thị đồng thời số tin đăng (`listingsCount`) và số phòng đã lưu (`savedListingsCount`) từ CSDL.
+     - `/admin/nhat-ky`: Xây dựng trang nhật ký hệ thống kèm bộ lọc hành động, đối tượng, khoảng thời gian.
+  5. **Kiểm thử nghiệm thu & Chất lượng**:
+     - `pnpm --filter api exec tsc --noEmit` đạt 0 lỗi (Exit code 0).
+     - `pnpm --filter web exec tsc --noEmit` đạt 0 lỗi (Exit code 0).
+     - `node packages/database/scripts/test-account-management-audit.js`: 11/11 bài test PASS (100%).
+     - `node packages/database/scripts/static-lint-check.js`: 5/5 PASS (100%).
+     - `node packages/database/scripts/test-map-reviews.js`: 4/4 PASS (100%).
+     - Tuân thủ quy chuẩn GEMINI.md § 8: 100% không có dấu chấm ở cuối câu trên toàn bộ văn bản UI.
+  6. **Báo cáo kiểm toán**: Đã lập báo cáo chi tiết tại `AUDIT-gemini-flash-2026-10-14-tai-khoan-quan-tri.md` (chưa commit, chưa push theo đúng LUẬT CỨNG).
+
+**Việc trước đó (14/10/2026 — HỆ THỐNG BẢN ĐỒ CHÍNH XÁC & ĐỒNG BỘ DỮ LIỆU TOÀN WEBSITE QNS BROKER):**
 - Hoàn thành xuất sắc toàn diện prompt hệ thống bản đồ chính xác và đồng bộ dữ liệu toàn website:
   1. **Single Source of Truth**: Thống nhất 1 nguồn sự thật duy nhất là PostgreSQL thông qua NestJS API; Đã khóa vĩnh viễn `/api/custom-listings` và `/api/custom-listings/[slug]` với mã HTTP `410 Gone`; Xóa bỏ hoàn toàn phụ thuộc vào `custom-listings.json` và `localStorage`
   2. **Bản đồ chính xác tuyệt đối**: Bổ sung endpoint `@Public() @Get('map')` trên NestJS trả về danh sách pin nhẹ; Xóa bỏ triệt để hàm sinh tọa độ ngẫu nhiên `resolveListingCoordinates`, đánh giá ảo 4.8*, review ảo; Khử trùng lặp và tính toán tâm cụm hình học chuẩn xác, cho phép các phòng cùng tòa nhà cùng tồn tại mà không bị mất

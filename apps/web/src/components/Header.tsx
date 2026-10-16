@@ -103,11 +103,6 @@ export function Header() {
     const token = getAccessToken();
     if (!token) return;
 
-    // Không gửi request ngầm nếu là phiên client phục hồi nhanh để tránh bị 401 xóa phiên
-    if (token.startsWith('g_token_') || token.startsWith('admin_token_') || token.startsWith('user_token_')) {
-      return;
-    }
-
     authFetch('/auth/me')
       .then((res) => {
         if (res.status === 401) {

@@ -92,69 +92,21 @@ export default function DangTinPage() {
 
   async function handleGoogleLoginSuccess(credential: string) {
     try {
-      let loggedIn = false;
-      try {
-        const res = await fetch(`${API_URL}/auth/google`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ credential }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setTokens(data.accessToken, data.refreshToken, data.user);
-          setCurrentUser(data.user);
-          loggedIn = true;
-        }
-      } catch {}
-
-      if (!loggedIn) {
-        const googleProfile = parseGoogleJwt(credential);
-        if (googleProfile?.email) {
-          const lowerEmail = googleProfile.email.toLowerCase();
-          const isAdmin =
-            lowerEmail === 'ducquan16102006@gmail.com' ||
-            lowerEmail === 'admin@qns.com' ||
-            lowerEmail === 'contact@qns.com';
-          const fallbackUser = {
-            id: isAdmin ? '1' : (googleProfile.sub || `g_${Date.now()}`),
-            fullName: isAdmin ? 'Chủ nhà' : (googleProfile.name || googleProfile.email.split('@')[0]),
-            email: googleProfile.email,
-            avatarUrl: googleProfile.picture || null,
-            phone: '0981 753 082',
-            role: isAdmin ? 'admin' : 'user',
-            createdAt: new Date().toISOString(),
-          };
-          const mockToken = isAdmin
-            ? `admin_token_${Date.now()}`
-            : `g_token_${Date.now()}_${btoa(googleProfile.email)}`;
-          setTokens(mockToken, mockToken, fallbackUser);
-          setCurrentUser(fallbackUser);
-
-          // Luôn đồng bộ tài khoản admin vào kho local
-          if (isAdmin) {
-            try {
-              const savedUsersRaw = localStorage.getItem('qns_registered_users');
-              const savedUsers: any[] = savedUsersRaw ? JSON.parse(savedUsersRaw) : [];
-              const idx = savedUsers.findIndex((u) => u.email.toLowerCase() === lowerEmail);
-              const adminEntry = {
-                id: '1',
-                fullName: 'Chủ nhà',
-                email: lowerEmail,
-                password: 'Quannguyenkay6@',
-                phone: '0981 753 082',
-                role: 'admin',
-                createdAt: fallbackUser.createdAt,
-              };
-              if (idx >= 0) savedUsers[idx] = { ...savedUsers[idx], ...adminEntry };
-              else savedUsers.push(adminEntry);
-              localStorage.setItem('qns_registered_users', JSON.stringify(savedUsers));
-            } catch {}
-          }
-        }
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTokens(data.accessToken, data.refreshToken, data.user);
+        setCurrentUser(data.user);
+        setAuthModalOpen(false);
+      } else {
+        setError('Không thể xác thực thông tin tài khoản Google, vui lòng thử lại');
       }
-      setAuthModalOpen(false);
-    } catch (err) {
-      console.warn('Lỗi xử lý đăng nhập Google:', err);
+    } catch {
+      setError('Không thể kết nối máy chủ để đăng nhập Google, vui lòng thử lại');
     }
   }
 
@@ -333,6 +285,7 @@ export default function DangTinPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('qns_last_posted_id', listingId);
         window.dispatchEvent(new CustomEvent('qns_listing_posted', { detail: newListing }));
+        window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: newListing }));
       }
 
       setCreatedSlug(newListing.slug);

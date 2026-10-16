@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { JwtService } from '@nestjs/jwt';
 import { ListingsService } from './listings.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { CreateListingDto } from './dto/create-listing.dto';
@@ -33,7 +35,7 @@ interface AuthUser {
 }
 
 const ACCEPTED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB/ảnh — khớp đúng giới hạn đã ghi trong skill 04
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB/ảnh
 
 @ApiTags('listings')
 @Controller('listings')
@@ -41,6 +43,7 @@ export class ListingsController {
   constructor(
     private readonly listingsService: ListingsService,
     private readonly uploadsService: UploadsService,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Public()
@@ -50,15 +53,16 @@ export class ListingsController {
   }
 
   /**
-   * Danh sách tin đăng của CHÍNH người gọi API (mọi trạng thái) — phục vụ trang "Quản lý tin".
-   * PHÁT HIỆN QUA AUDIT (01/09/2026): endpoint này TRƯỚC ĐÂY HOÀN TOÀN CHƯA TỒN TẠI — người
-   * dùng đăng tin xong không có cách nào trong app để xem lại tin của mình, phải nhờ admin
-   * vào Prisma Studio tra thủ công. Đây là thiếu sót phá vỡ luồng lõi "Đăng tin → Quản lý tin".
-   *
-   * QUAN TRỌNG VỀ THỨ TỰ ROUTE: route này PHẢI khai báo TRƯỚC `@Get(':idOrSlug')` bên dưới.
-   * NestJS khớp route theo thứ tự khai báo trong class — nếu đặt SAU, mọi request tới
-   * "GET /listings/mine" sẽ bị route ":idOrSlug" khớp trước, biến "mine" thành giá trị idOrSlug
-   * và không bao giờ tới được handler đúng (lỗi kinh điển khi thêm route tĩnh cạnh route động).
+   * Thống kê số lượng tin đăng theo từng trạng thái của CHÍNH người gọi API
+   */
+  @ApiBearerAuth()
+  @Get('mine/counts')
+  getMineCounts(@CurrentUser() user: AuthUser) {
+    return this.listingsService.getMineCounts(user.id);
+  }
+
+  /**
+   * Danh sách tin đăng của CHÍNH người gọi API (mọi trạng thái)
    */
   @ApiBearerAuth()
   @Get('mine')
@@ -67,8 +71,16 @@ export class ListingsController {
   }
 
   /**
-   * Danh sách BĐS đã lưu (SavedListing) của người dùng hiện tại — hoàn thiện mục 16 README.
-   * Cần khai báo TRƯỚC :idOrSlug để không bị coi là param động.
+   * Lấy danh sách ID các tin đăng mà người dùng hiện tại đã lưu
+   */
+  @ApiBearerAuth()
+  @Get('saved/ids')
+  getSavedIds(@CurrentUser() user: AuthUser) {
+    return this.listingsService.getSavedIds(user.id);
+  }
+
+  /**
+   * Danh sách BĐS đã lưu (SavedListing) của người dùng hiện tại
    */
   @ApiBearerAuth()
   @Get('saved/mine')
@@ -81,13 +93,27 @@ export class ListingsController {
 
   /**
    * Endpoint bản đồ siêu nhẹ phục vụ /danh-gia và /thue.
-   * Chỉ trả pin toạ độ và thông tin cần thiết nhất, có cache control ngắn (10s).
-   * PHẢI khai báo TRƯỚC @Get(':idOrSlug') để không bị nuốt bởi param động.
+   * Pin pending chỉ hiển thị cho chính chủ nhân dựa trên token JWT gửi kèm.
    */
   @Public()
   @Get('map')
-  getMapPins(@Query() query: QueryMapListingsDto) {
-    return this.listingsService.getMapPins(query);
+  getMapPins(
+    @Query() query: QueryMapListingsDto,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    let currentUserId: bigint | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const decoded = this.jwtService.decode(token) as any;
+        if (decoded?.sub) {
+          currentUserId = BigInt(decoded.sub);
+        }
+      } catch {
+        // Token không hợp lệ thì coi như khách vãng lai
+      }
+    }
+    return this.listingsService.getMapPins(query, currentUserId);
   }
 
   @Public()
@@ -122,6 +148,15 @@ export class ListingsController {
   }
 
   /**
+   * Gửi duyệt lại tin đăng đã bị từ chối
+   */
+  @ApiBearerAuth()
+  @Post(':id/resubmit')
+  resubmitListing(@CurrentUser() user: AuthUser, @Param('id', ParseBigIntPipe) id: bigint) {
+    return this.listingsService.resubmitListing(id, user);
+  }
+
+  /**
    * Xác nhận phòng vẫn còn trống theo chu kỳ 7 ngày (§7, Gate E).
    */
   @ApiBearerAuth()
@@ -137,11 +172,8 @@ export class ListingsController {
     FilesInterceptor('files', 20, {
       limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
       fileFilter: (_req, file, callback) => {
-        // TRƯỚC ĐÂY: không có bước này — bất kỳ ai đăng nhập cũng upload được file bất kỳ định dạng
-        // (kể cả .exe đổi đuôi) và dung lượng bất kỳ (có thể làm đầy ổ đĩa server). Đây là lỗ hổng
-        // thật, không phải chỉ thiếu tính năng.
         if (!ACCEPTED_IMAGE_MIME_TYPES.includes(file.mimetype)) {
-          callback(new UnsupportedMediaTypeException('Chỉ chấp nhận ảnh định dạng JPEG, PNG hoặc WEBP.'), false);
+          callback(new UnsupportedMediaTypeException('Chỉ chấp nhận ảnh định dạng JPEG, PNG hoặc WEBP'), false);
           return;
         }
         callback(null, true);
@@ -156,9 +188,6 @@ export class ListingsController {
     if (!files || files.length === 0) {
       throw new BadRequestException('Vui lòng chọn ít nhất 1 ảnh để tải lên');
     }
-    // BẢO MẬT (audit 02/09/2026): kiểm tra quyền sở hữu TRƯỚC KHI ghi file vào đĩa server.
-    // Trước đây uploadsService.saveListingImages chạy trước, ghi hàng chục file và convert webp
-    // vào ổ cứng rồi mới gọi assertOwnership, mở ra lỗ hổng làm tràn đĩa server (DoS).
     await this.listingsService.assertOwnership(id, user);
     const currentCount = await this.listingsService.getImageCount(id);
     if (currentCount + files.length > 20) {
@@ -170,6 +199,27 @@ export class ListingsController {
     return this.listingsService.addImages(id, user, urls);
   }
 
+  /**
+   * Lưu tin đăng (idempotent, không cho phép tự lưu tin của chính mình)
+   */
+  @ApiBearerAuth()
+  @Put(':id/save')
+  saveListing(@CurrentUser() user: AuthUser, @Param('id', ParseBigIntPipe) id: bigint) {
+    return this.listingsService.saveListing(id, user.id);
+  }
+
+  /**
+   * Bỏ lưu tin đăng (idempotent, luôn được phép bất kể trạng thái tin)
+   */
+  @ApiBearerAuth()
+  @Delete(':id/save')
+  unsaveListing(@CurrentUser() user: AuthUser, @Param('id', ParseBigIntPipe) id: bigint) {
+    return this.listingsService.unsaveListing(id, user.id);
+  }
+
+  /**
+   * Toggle lưu/bỏ lưu tin đăng (giữ lại tương thích ngược)
+   */
   @ApiBearerAuth()
   @Post(':id/save')
   toggleSave(@CurrentUser() user: AuthUser, @Param('id', ParseBigIntPipe) id: bigint) {
@@ -200,4 +250,3 @@ export class ListingsController {
     return this.listingsService.report(id, dto.reason, dto.note);
   }
 }
-

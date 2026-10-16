@@ -45,6 +45,11 @@ export declare const LISTING_STATUS_LABELS: Record<ListingStatusType, string>;
  * Kiểm tra xem trạng thái mới có hợp lệ từ trạng thái hiện tại hay không
  */
 export declare function isValidStatusTransition(current: ListingStatusType, next: ListingStatusType): boolean;
+export interface TransitionResult {
+    allowed: boolean;
+    message?: string;
+}
+export declare function canTransition(current: ListingStatusType, target: ListingStatusType, role: 'owner' | 'admin' | 'system', isContentModified?: boolean): TransitionResult;
 export declare const AMENITY_DEFINITIONS: readonly [{
     readonly key: "balcony";
     readonly label: "Ban công";

@@ -39,6 +39,8 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.r2.dev' },
       { protocol: 'https', hostname: 'qns.vn' },
       { protocol: 'https', hostname: '*.qns.vn' },
+      { protocol: 'https', hostname: 'nhacualand.com' },
+      { protocol: 'https', hostname: '*.nhacualand.com' },
     ],
   },
   async rewrites() {

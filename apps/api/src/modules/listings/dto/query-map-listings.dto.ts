@@ -37,11 +37,6 @@ export class QueryMapListingsDto {
   @IsString()
   updatedSince?: string;
 
-  @ApiPropertyOptional({ description: 'Mã chủ tin để hiển thị kèm tin chờ duyệt của chính chủ' })
-  @IsOptional()
-  @IsString()
-  ownerId?: string;
-
   @ApiPropertyOptional({ description: 'Số lượng pin tối đa trả về (mặc định 500, tối đa 2000)' })
   @IsOptional()
   @Type(() => Number)

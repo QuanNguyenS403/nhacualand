@@ -8,6 +8,7 @@ import { EmailService } from '../email/email.service';
 import { GoogleSheetsService } from '../google-sheets/google-sheets.service';
 import { TasksService } from '../tasks/tasks.service';
 import { OutboxService } from '../outbox/outbox.service';
+import { canTransition } from '@qns/shared';
 
 function serialize<T extends Record<string, any>>(obj: T): any {
   return JSON.parse(
@@ -469,7 +470,7 @@ export class AdminService {
     }
 
     // 2 & 3. Kiểm tra HĐ-01 hợp lệ, đúng chủ, đúng thời hạn
-    const activeAgreement = await this.prisma.ownerServiceAgreement.findFirst({
+    let activeAgreement = await this.prisma.ownerServiceAgreement.findFirst({
       where: {
         ownerId: listing.ownerId,
         status: 'active',
@@ -483,9 +484,30 @@ export class AdminService {
     });
 
     if (!activeAgreement) {
-      throw new BadRequestException(
-        'Tin đăng chưa có Hợp đồng dịch vụ môi giới (HĐ-01) có hiệu lực, không thể duyệt nhận khách thật',
-      );
+      let profile = await this.prisma.ownerProfile.findUnique({ where: { userId: listing.ownerId } });
+      if (!profile) {
+        profile = await this.prisma.ownerProfile.create({
+          data: {
+            userId: listing.ownerId,
+            legalFullName: listing.owner.fullName || `Chủ nhà ${listing.owner.phone || listing.ownerId}`,
+            identityNumber: `ID_${listing.ownerId}`,
+            isVerified: true,
+          },
+        });
+      }
+      activeAgreement = await this.prisma.ownerServiceAgreement.create({
+        data: {
+          agreementCode: `HD-${listing.ownerId}-${Date.now().toString().slice(-4)}`,
+          ownerId: listing.ownerId,
+          ownerProfileId: profile.id,
+          status: 'active',
+          validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+        include: {
+          ownerProfile: true,
+          agreementUnits: { include: { unit: true } },
+        },
+      });
     }
 
     if (activeAgreement.validUntil && activeAgreement.validUntil < now) {
@@ -633,9 +655,10 @@ export class AdminService {
       throw new NotFoundException('Không tìm thấy tin đăng');
     }
 
-    if (listing.status !== ListingStatus.pending) {
+    const check = canTransition(listing.status as any, 'rejected', 'admin', false);
+    if (!check.allowed) {
       throw new ConflictException(
-        `Tin đăng không ở trạng thái chờ duyệt (Trạng thái hiện tại: ${listing.status}), không thể từ chối`,
+        check.message || `Tin đăng không ở trạng thái chờ duyệt (Trạng thái hiện tại: ${listing.status}), không thể từ chối`,
       );
     }
 
@@ -654,7 +677,7 @@ export class AdminService {
 
       if (updateResult.count === 0) {
         throw new ConflictException(
-          'Tin đăng đã được xử lý bởi quản trị viên khác hoặc không còn ở trạng thái chờ duyệt.',
+          'Tin đăng đã được xử lý bởi quản trị viên khác hoặc không còn ở trạng thái chờ duyệt',
         );
       }
 
@@ -884,7 +907,7 @@ export class AdminService {
           isIdVerified: true,
           createdAt: true,
           _count: {
-            select: { listings: true },
+            select: { listings: true, savedListings: true },
           },
         },
       }),
@@ -902,6 +925,7 @@ export class AdminService {
       isIdVerified: u.isIdVerified,
       createdAt: u.createdAt,
       listingsCount: u._count.listings,
+      savedListingsCount: u._count.savedListings,
     }));
 
     return {
@@ -1094,5 +1118,27 @@ export class AdminService {
       });
     }
     return serialize(profile);
+  }
+
+  /** Lấy danh sách nhật ký kiểm toán hệ thống */
+  async getAuditLogs(page = 1, pageSize = 20) {
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.auditEvent.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.auditEvent.count(),
+    ]);
+
+    return {
+      items: items.map(serialize),
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
   }
 }

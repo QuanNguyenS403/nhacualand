@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Prisma, ListingStatus, TransactionType } from '@batdongsan/database';
 import slugify from 'slugify';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,6 +15,7 @@ import {
   normalizeAmenities,
   buildSlug,
   isValidVietnamCoordinate,
+  canTransition,
 } from '@qns/shared';
 
 const PUBLIC_LISTING_SELECT = {
@@ -108,7 +109,7 @@ export class ListingsService {
    * Chỉ trả các bản ghi có toạ độ hợp lệ tại Việt Nam.
    * Hỗ trợ bounding box bbox, loại hình, khoảng giá, và thời gian polling.
    */
-  async getMapPins(query: QueryMapListingsDto): Promise<ListingMapPin[]> {
+  async getMapPins(query: QueryMapListingsDto, currentUserId?: bigint): Promise<ListingMapPin[]> {
     if (!this.prisma.isConnected) {
       throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
     }
@@ -120,34 +121,21 @@ export class ListingsService {
     };
 
     // Mặc định công chúng chỉ thấy tin active còn hạn.
-    // Nếu có ownerId thì cho phép trả kèm tin pending của chính chủ đó (để họ thấy pin chờ duyệt ngay sau khi đăng).
-    if (query.ownerId) {
-      let ownerIdBigInt: bigint | null = null;
-      try {
-        ownerIdBigInt = BigInt(query.ownerId);
-      } catch {}
-
-      if (ownerIdBigInt) {
-        where.OR = [
-          {
-            status: ListingStatus.active,
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } },
-            ],
-          },
-          {
-            status: ListingStatus.pending,
-            ownerId: ownerIdBigInt,
-          },
-        ];
-      } else {
-        where.status = ListingStatus.active;
-        where.OR = [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ];
-      }
+    // Nếu có currentUserId thì cho phép trả kèm tin pending của chính chủ đó (để họ thấy pin chờ duyệt ngay sau khi đăng).
+    if (currentUserId) {
+      where.OR = [
+        {
+          status: ListingStatus.active,
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: new Date() } },
+          ],
+        },
+        {
+          status: ListingStatus.pending,
+          ownerId: currentUserId,
+        },
+      ];
     } else {
       where.status = ListingStatus.active;
       where.OR = [
@@ -230,7 +218,7 @@ export class ListingsService {
       .map((item) => {
         const isOwnerPending =
           item.status === ListingStatus.pending &&
-          Boolean(query.ownerId && String(item.ownerId) === String(query.ownerId));
+          Boolean(currentUserId && String(item.ownerId) === String(currentUserId));
 
         return {
           id: String(item.id),
@@ -1170,6 +1158,15 @@ export class ListingsService {
 
   async remove(id: bigint, requester: { id: bigint; role: string }) {
     const listing = await this.assertOwnership(id, requester);
+    const check = canTransition(listing.status as any, 'removed', requester.role === 'admin' ? 'admin' : 'owner');
+    if (!check.allowed) {
+      throw new ConflictException(check.message || 'Không thể gỡ tin này');
+    }
+
+    if (listing.status === ListingStatus.removed) {
+      return { message: 'Tin đăng đã ở trạng thái đã gỡ' };
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.listing.update({ where: { id: listing.id }, data: { status: ListingStatus.removed } });
       await tx.auditEvent.create({
@@ -1184,12 +1181,21 @@ export class ListingsService {
         },
       });
     });
-    return { message: 'Đã gỡ tin đăng.' };
+    return { message: 'Đã gỡ tin đăng' };
   }
 
   /** Đánh dấu phòng đã cho thuê thành công (FE-N09) */
   async markAsRented(id: bigint, requester: { id: bigint; role: string }) {
     const listing = await this.assertOwnership(id, requester);
+    const check = canTransition(listing.status as any, 'rented', requester.role === 'admin' ? 'admin' : 'owner');
+    if (!check.allowed) {
+      throw new ConflictException(check.message || 'Không thể chuyển tin sang trạng thái đã cho thuê');
+    }
+
+    if (listing.status === ListingStatus.rented) {
+      return { message: 'Phòng đã ở trạng thái đã cho thuê' };
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.listing.update({ where: { id: listing.id }, data: { status: ListingStatus.rented } });
       await tx.auditEvent.create({
@@ -1204,7 +1210,40 @@ export class ListingsService {
         },
       });
     });
-    return { message: 'Đã đánh dấu phòng cho thuê thành công.' };
+    return { message: 'Đã đánh dấu phòng cho thuê thành công' };
+  }
+
+  /** Gửi duyệt lại tin đăng bị từ chối */
+  async resubmitListing(id: bigint, requester: { id: bigint; role: string }) {
+    const listing = await this.assertOwnership(id, requester);
+    const check = canTransition(listing.status as any, 'pending', requester.role === 'admin' ? 'admin' : 'owner');
+    if (!check.allowed) {
+      throw new ConflictException(check.message || 'Chỉ có thể gửi duyệt lại đối với tin đăng đang bị từ chối');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.listing.update({
+        where: { id: listing.id },
+        data: {
+          status: ListingStatus.pending,
+          rejectionReason: null,
+        },
+      });
+
+      await tx.auditEvent.create({
+        data: {
+          action: 'listing.resubmit',
+          actorId: requester.id,
+          entityType: 'listing',
+          entityId: listing.id.toString(),
+          beforeState: { status: listing.status, rejectionReason: listing.rejectionReason },
+          afterState: { status: ListingStatus.pending, rejectionReason: null },
+          reason: 'Chủ tin gửi yêu cầu kiểm duyệt lại',
+        },
+      });
+    });
+
+    return { message: 'Đã gửi duyệt lại tin đăng thành công' };
   }
 
   /**
@@ -1445,29 +1484,71 @@ export class ListingsService {
     };
   }
 
-  /**
-   * Toggle lưu/bỏ lưu BĐS yêu thích (SavedListing) — hoàn thiện tính năng mục 16 README.
-   */
-  async toggleSave(listingId: bigint, userId: bigint) {
-    const listing = await this.prisma.listing.findUnique({ where: { id: listingId } });
-    if (!listing || listing.status !== ListingStatus.active) {
-      throw new NotFoundException('Không tìm thấy tin đăng hoặc tin chưa được duyệt');
+  async getMineCounts(userId: bigint) {
+    const [total, pending, active, rented, rejected, expired, removed] = await Promise.all([
+      this.prisma.listing.count({ where: { ownerId: userId } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.pending } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.active } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.rented } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.rejected } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.expired } }),
+      this.prisma.listing.count({ where: { ownerId: userId, status: ListingStatus.removed } }),
+    ]);
+
+    return { total, pending, active, rented, rejected, expired, removed };
+  }
+
+  async getSavedIds(userId: bigint) {
+    const saved = await this.prisma.savedListing.findMany({
+      where: { userId },
+      select: { listingId: true },
+    });
+    return { savedIds: saved.map((s) => s.listingId.toString()) };
+  }
+
+  async saveListing(listingId: bigint, userId: bigint) {
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+      select: { id: true, ownerId: true, status: true },
+    });
+    if (!listing) {
+      throw new NotFoundException('Không tìm thấy tin đăng');
+    }
+    if (listing.ownerId === userId) {
+      throw new BadRequestException('Bạn không thể lưu tin đăng của chính mình');
+    }
+    if (listing.status !== ListingStatus.active) {
+      throw new BadRequestException('Chỉ có thể lưu tin đăng đang hiển thị');
     }
 
-    const existing = await this.prisma.savedListing.findUnique({
+    await this.prisma.savedListing.upsert({
+      where: { userId_listingId: { userId, listingId } },
+      create: { userId, listingId },
+      update: {},
+    });
+
+    return { saved: true, message: 'Đã lưu phòng vào danh sách yêu thích' };
+  }
+
+  async unsaveListing(listingId: bigint, userId: bigint) {
+    await this.prisma.savedListing.deleteMany({
+      where: { userId, listingId },
+    });
+    return { saved: false, message: 'Đã bỏ lưu phòng' };
+  }
+
+  /**
+   * Toggle lưu/bỏ lưu BĐS yêu thích (SavedListing) — giữ tương thích ngược
+   */
+  async toggleSave(listingId: bigint, userId: bigint) {
+    const isAlreadySaved = await this.prisma.savedListing.findUnique({
       where: { userId_listingId: { userId, listingId } },
     });
 
-    if (existing) {
-      await this.prisma.savedListing.delete({
-        where: { userId_listingId: { userId, listingId } },
-      });
-      return { saved: false, message: 'Đã bỏ lưu tin đăng' };
+    if (isAlreadySaved) {
+      return this.unsaveListing(listingId, userId);
     } else {
-      await this.prisma.savedListing.create({
-        data: { userId, listingId },
-      });
-      return { saved: true, message: 'Đã lưu tin đăng vào danh sách yêu thích' };
+      return this.saveListing(listingId, userId);
     }
   }
 
@@ -1481,11 +1562,13 @@ export class ListingsService {
   async findSaved(userId: bigint, query: { page?: number; pageSize?: number }) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const publicWhere = ListingsService.getPublicWhereClause();
 
     const [savedItems, total] = await this.prisma.$transaction([
       this.prisma.savedListing.findMany({
-        where: { userId, listing: publicWhere },
+        where: {
+          userId,
+          listing: { owner: { isBlocked: false } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -1496,7 +1579,10 @@ export class ListingsService {
         },
       }),
       this.prisma.savedListing.count({
-        where: { userId, listing: publicWhere },
+        where: {
+          userId,
+          listing: { owner: { isBlocked: false } },
+        },
       }),
     ]);
 

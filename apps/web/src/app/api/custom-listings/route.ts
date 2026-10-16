@@ -1,52 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import {
-  getCustomListingsServer,
-  getCustomListingsByOwnerServer,
-  getPublicCustomListingsServer,
-} from '@/lib/custom-listings-server';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const ownerId = searchParams.get('ownerId');
-    const ownerEmail = searchParams.get('ownerEmail');
-    const scope = searchParams.get('scope');
+/**
+ * Tuyến API lưu trữ tin đăng cục bộ vào file json cũ đã bị vô hiệu hóa vĩnh viễn (410 Gone).
+ * Toàn bộ tin đăng được quản lý và kiểm duyệt trực tiếp tại máy chủ API NestJS.
+ */
+function goneResponse() {
+  return NextResponse.json(
+    {
+      statusCode: 410,
+      error: 'Gone',
+      message: 'Tuyến API lưu trữ tin đăng cục bộ cũ đã bị vô hiệu hóa vĩnh viễn, vui lòng sử dụng API chính thức tại /listings',
+    },
+    { status: 410 },
+  );
+}
 
-    let items;
-    if (ownerId || ownerEmail) {
-      items = getCustomListingsByOwnerServer(ownerId || undefined, ownerEmail || undefined);
-    } else if (scope === 'all') {
-      items = getCustomListingsServer();
-    } else {
-      items = getPublicCustomListingsServer();
-    }
-
-    return NextResponse.json({ success: true, items });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, message: 'Không thể tải danh sách tin tự đăng' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return goneResponse();
 }
 
 export async function POST() {
-  return NextResponse.json(
-    { success: false, message: 'Cổng ghi dữ liệu file tạm thời đã ngừng hoạt động, vui lòng đăng tin qua API chính thức' },
-    { status: 410 }
-  );
+  return goneResponse();
+}
+
+export async function PUT() {
+  return goneResponse();
 }
 
 export async function PATCH() {
-  return NextResponse.json(
-    { success: false, message: 'Cổng cập nhật dữ liệu file tạm thời đã ngừng hoạt động' },
-    { status: 410 }
-  );
+  return goneResponse();
 }
 
 export async function DELETE() {
-  return NextResponse.json(
-    { success: false, message: 'Cổng xóa dữ liệu file tạm thời đã ngừng hoạt động' },
-    { status: 410 }
-  );
+  return goneResponse();
 }

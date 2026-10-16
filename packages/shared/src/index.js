@@ -9,6 +9,7 @@ exports.AMENITY_DEFINITIONS = exports.LISTING_STATUS_LABELS = exports.LISTING_ST
 exports.getPropertyTypeLabel = getPropertyTypeLabel;
 exports.normalizeLegacyPropertyType = normalizeLegacyPropertyType;
 exports.isValidStatusTransition = isValidStatusTransition;
+exports.canTransition = canTransition;
 exports.normalizeAmenities = normalizeAmenities;
 exports.formatPrice = formatPrice;
 exports.formatArea = formatArea;
@@ -94,6 +95,89 @@ function isValidStatusTransition(current, next) {
         default:
             return false;
     }
+}
+function canTransition(current, target, role, isContentModified = false) {
+    if (current === target) {
+        return { allowed: true };
+    }
+    // Admin có quyền chuyển đổi hầu hết mọi trạng thái hợp lệ
+    if (role === 'admin') {
+        switch (current) {
+            case 'pending':
+                if (target === 'active' || target === 'rejected' || target === 'removed')
+                    return { allowed: true };
+                break;
+            case 'active':
+                if (target === 'rented' || target === 'removed' || target === 'expired')
+                    return { allowed: true };
+                break;
+            case 'rented':
+                if (target === 'active' || target === 'removed' || target === 'pending')
+                    return { allowed: true };
+                break;
+            case 'rejected':
+                if (target === 'active' || target === 'pending' || target === 'removed')
+                    return { allowed: true };
+                break;
+            case 'expired':
+                if (target === 'active' || target === 'pending' || target === 'removed')
+                    return { allowed: true };
+                break;
+            case 'removed':
+                if (target === 'active' || target === 'pending')
+                    return { allowed: true };
+                break;
+        }
+        return {
+            allowed: false,
+            message: `Quản trị viên không thể chuyển trạng thái từ "${exports.LISTING_STATUS_LABELS[current] || current}" sang "${exports.LISTING_STATUS_LABELS[target] || target}"`,
+        };
+    }
+    // Chủ tin (Owner)
+    if (role === 'owner') {
+        switch (current) {
+            case 'pending':
+                if (target === 'removed')
+                    return { allowed: true };
+                if (target === 'pending')
+                    return { allowed: true };
+                break;
+            case 'active':
+                if (target === 'rented' || target === 'removed')
+                    return { allowed: true };
+                if (target === 'pending' && isContentModified)
+                    return { allowed: true };
+                break;
+            case 'rented':
+                if (target === 'removed')
+                    return { allowed: true };
+                if (target === 'active' || target === 'pending')
+                    return { allowed: true };
+                break;
+            case 'rejected':
+                if (target === 'removed')
+                    return { allowed: true };
+                if (target === 'pending')
+                    return { allowed: true };
+                break;
+            case 'expired':
+                if (target === 'removed')
+                    return { allowed: true };
+                if (target === 'pending')
+                    return { allowed: true };
+                break;
+            case 'removed':
+                return {
+                    allowed: false,
+                    message: 'Tin đã gỡ không thể tự kích hoạt lại, vui lòng đăng tin mới hoặc liên hệ quản trị viên',
+                };
+        }
+        return {
+            allowed: false,
+            message: `Bạn không thể chuyển trạng thái tin từ "${exports.LISTING_STATUS_LABELS[current] || current}" sang "${exports.LISTING_STATUS_LABELS[target] || target}"`,
+        };
+    }
+    return { allowed: false, message: 'Thao tác không được hỗ trợ' };
 }
 // ── 3. TIỆN NGHI CHUẨN (AMENITY DEFINITIONS) ──
 exports.AMENITY_DEFINITIONS = [

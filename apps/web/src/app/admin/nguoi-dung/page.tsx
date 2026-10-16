@@ -14,6 +14,7 @@ interface UserItem {
   isIdVerified: boolean;
   createdAt: string;
   listingsCount: number;
+  savedListingsCount?: number;
 }
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
@@ -280,10 +281,10 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
 
-                      {/* Số tin */}
+                      {/* Số tin & phòng đã lưu */}
                       <td className="py-4 px-4">
                         <span className="font-semibold text-slate-800">
-                          {u.listingsCount} tin
+                          {u.listingsCount} tin • {u.savedListingsCount ?? 0} đã lưu
                         </span>
                       </td>
 

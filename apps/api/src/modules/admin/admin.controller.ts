@@ -168,5 +168,16 @@ export class AdminController {
   ) {
     return this.adminService.verifyOwnerProfile(userId, Boolean(isVerified));
   }
+
+  @Get('audit-logs')
+  getAuditLogs(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.adminService.getAuditLogs(
+      page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : 20,
+    );
+  }
 }
 

@@ -1,31 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getCustomListingBySlugServer } from '@/lib/custom-listings-server';
+import { NextResponse } from 'next/server';
 
-interface Params {
-  params: { slug: string };
+function goneResponse() {
+  return NextResponse.json(
+    {
+      statusCode: 410,
+      error: 'Gone',
+      message: 'Tuyến API lưu trữ tin đăng cục bộ cũ đã bị vô hiệu hóa vĩnh viễn, vui lòng sử dụng API chính thức tại /listings',
+    },
+    { status: 410 },
+  );
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  try {
-    const listing = getCustomListingBySlugServer(params.slug);
-    if (!listing) {
-      return NextResponse.json(
-        { success: false, message: 'Không tìm thấy phòng cho thuê' },
-        { status: 404 }
-      );
-    }
-    return NextResponse.json({ success: true, listing });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, message: 'Lỗi máy chủ khi lấy thông tin phòng' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return goneResponse();
+}
+
+export async function POST() {
+  return goneResponse();
+}
+
+export async function PUT() {
+  return goneResponse();
+}
+
+export async function PATCH() {
+  return goneResponse();
 }
 
 export async function DELETE() {
-  return NextResponse.json(
-    { success: false, message: 'Cổng xóa dữ liệu file tạm thời đã ngừng hoạt động' },
-    { status: 410 }
-  );
+  return goneResponse();
 }

@@ -19,7 +19,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  const defaultOrigins = 'http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,https://qnsbroker.com,https://www.qnsbroker.com';
+  const defaultOrigins = 'http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,https://qnsbroker.com,https://www.qnsbroker.com,https://nhacualand.com,https://www.nhacualand.com,https://api.nhacualand.com';
   const allowedOrigins = (process.env.CORS_ORIGINS || `${process.env.NEXT_PUBLIC_SITE_URL || ''},${defaultOrigins}`)
     .split(',')
     .map((o) => o.trim())

@@ -8,9 +8,10 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 /**
- * Đệ quy biến đổi mọi giá trị kiểu bigint thành string trong đối tượng hoặc mảng kết quả
+ * Đệ quy biến đổi mọi giá trị kiểu bigint thành string trong đối tượng hoặc mảng kết quả,
+ * sử dụng WeakSet để ngăn chặn vòng lặp tham chiếu tuần hoàn (circular references).
  */
-function serializeBigInt(obj: any): any {
+function serializeBigInt(obj: any, seen = new WeakSet()): any {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -19,19 +20,31 @@ function serializeBigInt(obj: any): any {
     return obj.toString();
   }
 
+  if (typeof obj !== 'object' || obj instanceof Date) {
+    return obj;
+  }
+
+  // Chống circular reference
+  if (seen.has(obj)) {
+    return obj;
+  }
+  seen.add(obj);
+
   if (Array.isArray(obj)) {
-    return obj.map(serializeBigInt);
+    return obj.map((item) => serializeBigInt(item, seen));
   }
 
-  if (typeof obj === 'object' && !(obj instanceof Date)) {
-    const serialized: Record<string, any> = {};
-    for (const key of Object.keys(obj)) {
-      serialized[key] = serializeBigInt(obj[key]);
-    }
-    return serialized;
+  // Chỉ serialize plain object hoặc đối tượng dữ liệu thuần túy
+  const proto = Object.getPrototypeOf(obj);
+  if (proto !== null && proto !== Object.prototype) {
+    return obj;
   }
 
-  return obj;
+  const serialized: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    serialized[key] = serializeBigInt(obj[key], seen);
+  }
+  return serialized;
 }
 
 /**

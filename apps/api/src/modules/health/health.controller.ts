@@ -1,6 +1,5 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Public } from '../../common/decorators/public.decorator';
 
@@ -11,17 +10,17 @@ export class HealthController {
 
   @Public()
   @Get()
-  async check(@Res() res: Response) {
+  async check() {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      return res.status(HttpStatus.OK).json({
+      return {
         status: 'ok',
         database: 'connected',
         uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
-      });
+      };
     } catch (error) {
-      return res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
+      throw new ServiceUnavailableException({
         status: 'error',
         database: 'disconnected',
         error: (error as Error).message,
