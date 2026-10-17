@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "build": "npx prisma generate",
-    "generate": "npx prisma generate",
+    "build": "node scripts/prisma-generate-safe.js",
+    "generate": "node scripts/prisma-generate-safe.js",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:deploy": "npx prisma migrate deploy",
     "studio": "npx prisma studio",
