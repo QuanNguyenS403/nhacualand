@@ -16,12 +16,22 @@ pnpm install --prod=false
 
 export NODE_ENV="$ORIGINAL_NODE_ENV"
 
+# Chuẩn hóa an toàn cho DATABASE_URL để bước sinh Prisma Client không bao giờ bị lỗi P1012
+PRISMA_DB_URL="$DATABASE_URL"
+if [[ -z "$DATABASE_URL" || ( "$DATABASE_URL" != postgresql://* && "$DATABASE_URL" != postgres://* ) ]]; then
+  echo "⚠️ DATABASE_URL chưa có hoặc chưa đúng định dạng postgresql://, dùng URL dự phòng an toàn để sinh Prisma Client"
+  export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/batdongsan"
+fi
+
 echo "=== [Render Unified Build] Sinh Prisma Database Client ==="
 pnpm db:generate
 
 echo "=== [Render Unified Build] Áp dụng Database Migrations ==="
-if [ -n "$DATABASE_URL" ]; then
+if [[ -n "$PRISMA_DB_URL" && ( "$PRISMA_DB_URL" == postgresql://* || "$PRISMA_DB_URL" == postgres://* ) ]]; then
+  export DATABASE_URL="$PRISMA_DB_URL"
   pnpm db:migrate:deploy || echo "Database migration đã cập nhật hoặc bỏ qua"
+else
+  echo "Bỏ qua migration vì DATABASE_URL chưa kết nối cơ sở dữ liệu thật"
 fi
 
 echo "=== [Render Unified Build] Build tuần tự từng package (Tránh nghẽn tài nguyên trên Render) ==="
