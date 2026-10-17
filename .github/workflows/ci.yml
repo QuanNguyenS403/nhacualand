@@ -88,6 +88,12 @@ jobs:
         run: |
           node packages/database/scripts/static-lint-check.js
 
+      - name: Run Behavioral Security & Integrity Test Suite
+        run: |
+          node packages/database/scripts/test-sec001-jwt.js
+          node packages/database/scripts/test-wave2-backend.js
+          node packages/database/scripts/test-wave2-frontend.js
+
       - name: Production API Start Smoke Test
         run: |
           node apps/api/dist/main.js &

@@ -420,3 +420,13 @@ export function isValidVietnamCoordinate(lat: number | null | undefined, lng: nu
   // Giới hạn vĩ độ: 8.5 đến 23.5, kinh độ: 102.0 đến 109.5
   return numLat >= 8.5 && numLat <= 23.5 && numLng >= 102.0 && numLng <= 109.5;
 }
+
+// ── 6. CHÍNH SÁCH KINH DOANH & PHÍ HOA HỒNG (BIZ-003) ──
+/**
+ * Tỷ lệ phí môi giới thành công mà chủ nhà chi trả cho QNS BROKER (40% tiền thuê tháng đầu tiên)
+ * Khách thuê hoàn toàn không mất phí (0 đồng).
+ */
+export const BROKERAGE_COMMISSION_PERCENT = 40;
+export const DEFAULT_COMMISSION_RATE_BPS = 4000;
+export const TENANT_FEE_PERCENT = 0;
+

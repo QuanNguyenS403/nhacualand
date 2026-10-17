@@ -22,32 +22,31 @@ export class ViewingsService {
     });
 
     if (!agent) {
-      let quan = await this.prisma.user.findFirst({
-        where: { phone: '0981753082' },
+      let defaultUser = await this.prisma.user.findFirst({
+        where: { role: { in: ['admin', 'broker'] } },
       });
 
-      if (!quan) {
-        quan = await this.prisma.user.create({
+      if (!defaultUser) {
+        defaultUser = await this.prisma.user.findFirst();
+      }
+
+      if (defaultUser) {
+        agent = await this.prisma.agentProfile.create({
           data: {
-            phone: '0981753082',
-            fullName: 'Đức Quân',
-            role: 'broker',
-            isPhoneVerified: true,
+            userId: defaultUser.id,
+            displayName: defaultUser.fullName || 'Người tư vấn QNS',
+            workPhone: defaultUser.phone,
+            zaloPhone: defaultUser.phone,
+            bio: 'Người tư vấn và trực tiếp dẫn xem phòng',
+            maxDailyViewings: 3,
+            isActive: true,
           },
         });
       }
+    }
 
-      agent = await this.prisma.agentProfile.create({
-        data: {
-          userId: quan.id,
-          displayName: 'Đức Quân',
-          workPhone: '0981753082',
-          zaloPhone: '0981753082',
-          bio: 'Người tư vấn và trực tiếp dẫn xem',
-          maxDailyViewings: 3,
-          isActive: true,
-        },
-      });
+    if (!agent) {
+      throw new BadRequestException('Hệ thống chưa thiết lập hồ sơ người môi giới phụ trách xem phòng');
     }
 
     return agent;
