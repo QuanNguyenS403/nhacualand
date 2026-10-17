@@ -232,4 +232,11 @@ export declare function buildSlug(title: string, id: string | bigint | number): 
  * Kiểm tra toạ độ nằm trong lãnh thổ Việt Nam hợp lệ
  */
 export declare function isValidVietnamCoordinate(lat: number | null | undefined, lng: number | null | undefined): boolean;
+/**
+ * Tỷ lệ phí môi giới thành công mà chủ nhà chi trả cho QNS BROKER (40% tiền thuê tháng đầu tiên)
+ * Khách thuê hoàn toàn không mất phí (0 đồng).
+ */
+export declare const BROKERAGE_COMMISSION_PERCENT = 40;
+export declare const DEFAULT_COMMISSION_RATE_BPS = 4000;
+export declare const TENANT_FEE_PERCENT = 0;
 //# sourceMappingURL=index.d.ts.map

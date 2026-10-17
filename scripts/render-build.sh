@@ -24,7 +24,14 @@ if [ -n "$DATABASE_URL" ]; then
   pnpm db:migrate:deploy || echo "Database migration đã cập nhật hoặc bỏ qua"
 fi
 
-echo "=== [Render Unified Build] Build đồng thời cả Backend API và Frontend Web ==="
-pnpm build
+echo "=== [Render Unified Build] Build tuần tự từng package (Tránh nghẽn tài nguyên trên Render) ==="
+echo "1. Build Shared Package..."
+pnpm --filter @qns/shared build
+
+echo "2. Build Backend API (NestJS)..."
+pnpm --filter @batdongsan/api build
+
+echo "3. Build Frontend Web (Next.js)..."
+NODE_OPTIONS="--max-old-space-size=2048" pnpm --filter @batdongsan/web build
 
 echo "=== [Render Unified Build] Build thành công toàn bộ hệ thống ==="

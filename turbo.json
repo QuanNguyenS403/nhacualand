@@ -6,19 +6,22 @@
       "persistent": true
     },
     "@batdongsan/database#build": {
-      "outputs": ["../../node_modules/.prisma/**", "node_modules/.prisma/**"]
+      "cache": false
+    },
+    "@qns/shared#build": {
+      "outputs": ["src/**/*.js", "src/**/*.d.ts"]
     },
     "@batdongsan/api#build": {
-      "dependsOn": ["@batdongsan/database#build"],
+      "dependsOn": ["@batdongsan/database#build", "@qns/shared#build"],
       "outputs": ["dist/**"]
     },
     "@batdongsan/web#build": {
-      "dependsOn": [],
+      "dependsOn": ["@qns/shared#build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/**/*.js"]
     },
     "lint": {
       "outputs": []

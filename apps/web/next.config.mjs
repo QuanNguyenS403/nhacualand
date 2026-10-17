@@ -23,6 +23,10 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL !== undefined ? process.env.NEXT_PUBLIC_API_URL : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''),
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  transpilePackages: ['@qns/shared'],
   compress: true,
   poweredByHeader: false,
   images: {

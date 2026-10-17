@@ -5,7 +5,7 @@
  * Tuân thủ quy chuẩn Single Source of Truth
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AMENITY_DEFINITIONS = exports.LISTING_STATUS_LABELS = exports.LISTING_STATUS = exports.PROPERTY_TYPES = void 0;
+exports.TENANT_FEE_PERCENT = exports.DEFAULT_COMMISSION_RATE_BPS = exports.BROKERAGE_COMMISSION_PERCENT = exports.AMENITY_DEFINITIONS = exports.LISTING_STATUS_LABELS = exports.LISTING_STATUS = exports.PROPERTY_TYPES = void 0;
 exports.getPropertyTypeLabel = getPropertyTypeLabel;
 exports.normalizeLegacyPropertyType = normalizeLegacyPropertyType;
 exports.isValidStatusTransition = isValidStatusTransition;
@@ -353,4 +353,12 @@ function isValidVietnamCoordinate(lat, lng) {
     // Giới hạn vĩ độ: 8.5 đến 23.5, kinh độ: 102.0 đến 109.5
     return numLat >= 8.5 && numLat <= 23.5 && numLng >= 102.0 && numLng <= 109.5;
 }
+// ── 6. CHÍNH SÁCH KINH DOANH & PHÍ HOA HỒNG (BIZ-003) ──
+/**
+ * Tỷ lệ phí môi giới thành công mà chủ nhà chi trả cho QNS BROKER (40% tiền thuê tháng đầu tiên)
+ * Khách thuê hoàn toàn không mất phí (0 đồng).
+ */
+exports.BROKERAGE_COMMISSION_PERCENT = 40;
+exports.DEFAULT_COMMISSION_RATE_BPS = 4000;
+exports.TENANT_FEE_PERCENT = 0;
 //# sourceMappingURL=index.js.map
