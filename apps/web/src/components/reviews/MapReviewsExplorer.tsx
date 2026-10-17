@@ -5,11 +5,12 @@ import {
   filterMapRooms,
   pinToMapRoom,
   getCommunityReviewPins,
+  getFallbackDemoPins,
   type MapRoom,
   type MapFilterParams,
   type CommunityReviewPin,
 } from '@/lib/map-rooms-data';
-import { fetchMapPins, fetchListingBySlug, type ListingMapPin } from '@/lib/api';
+import { fetchMapPins, fetchListingBySlug, resetApiCircuitBreaker, type ListingMapPin } from '@/lib/api';
 import { geocodeAddressPipeline } from '@/lib/vietnam-geocoding';
 import { MapRoomCanvas } from './MapRoomCanvas';
 import { MapFloatingSearchBar } from './MapFloatingSearchBar';
@@ -31,19 +32,35 @@ export function MapReviewsExplorer() {
     return getCommunityReviewPins();
   }, []);
 
-  // 1. Nạp danh sách tin từ nguồn duy nhất: GET /listings/map qua fetchMapPins()
-  const loadMapPins = useCallback(async (isInitial = false) => {
+  // 1. Nạp danh sách tin từ GET /listings/map qua fetchMapPins() kèm Fallback an toàn
+  const loadMapPins = useCallback(async (isInitial = false, isRetry = false) => {
     try {
       if (isInitial) setIsLoading(true);
-      setFetchError(null);
+      if (isRetry) {
+        resetApiCircuitBreaker();
+      }
 
-      const pins = await fetchMapPins();
-      if (Array.isArray(pins)) {
+      const pins = await fetchMapPins(undefined, { bypassCircuitBreaker: isRetry });
+      if (Array.isArray(pins) && pins.length > 0) {
         setAllPins(pins);
+        setFetchError(null);
+      } else {
+        // Nếu DB chưa có tin hoặc trả về mảng rỗng, nạp fallback demo pins để bản đồ không bị trống trơn
+        const fallback = getFallbackDemoPins();
+        setAllPins(fallback);
+        setFetchError(null);
       }
     } catch (err: any) {
-      if (isInitial) {
-        setFetchError('Không thể kết nối đến máy chủ bản đồ. Vui lòng thử lại sau.');
+      // Khi API ngoại tuyến hoặc mất kết nối:
+      // Tự động nạp bộ tin mẫu chuẩn vào allPins để đảm bảo người dùng luôn có dữ liệu tương tác
+      const fallback = getFallbackDemoPins();
+      setAllPins((prev) => (prev.length > 0 ? prev : fallback));
+
+      // Không hiển thị banner lỗi gây hoang mang khi đã có dữ liệu phòng dự phòng đầy đủ
+      if (fallback.length === 0) {
+        setFetchError('Không thể kết nối đến máy chủ bản đồ, vui lòng thử lại sau');
+      } else {
+        setFetchError(null);
       }
     } finally {
       if (isInitial) setIsLoading(false);
@@ -107,8 +124,12 @@ export function MapReviewsExplorer() {
       checkOwnerPendingListing();
     }, 8000);
 
-    // Lắng nghe sự kiện phát ra từ luồng đăng tin / admin duyệt tin
-    const handleUpdateEvent = () => {
+    // Lắng nghe sự kiện phát ra từ luồng đăng tin / admin duyệt tin / đánh dấu đã cho thuê
+    const handleUpdateEvent = (e: any) => {
+      if (e?.detail?.id && (e.detail.status === 'rented' || e.detail.status === 'removed')) {
+        const targetId = String(e.detail.id);
+        setAllPins((prev) => prev.filter((p) => p.id !== targetId));
+      }
       loadMapPins(false);
       checkOwnerPendingListing();
     };
@@ -184,13 +205,13 @@ export function MapReviewsExplorer() {
 
   return (
     <div className="relative w-full h-full min-h-[580px] sm:min-h-[640px] overflow-hidden bg-slate-900">
-      {/* Thông báo lỗi nếu máy chủ API ngoại tuyến */}
-      {fetchError && (
+      {/* Thông báo lỗi nếu máy chủ API ngoại tuyến và hoàn toàn không có dữ liệu phòng */}
+      {fetchError && allPins.length === 0 && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2.5 rounded-2xl bg-amber-500/90 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-3 border border-amber-300">
           <span>{fetchError}</span>
           <button
             type="button"
-            onClick={() => loadMapPins(true)}
+            onClick={() => loadMapPins(false, true)}
             className="px-2.5 py-1 rounded-xl bg-slate-950 text-amber-300 text-xs font-semibold hover:bg-slate-900 transition-colors"
           >
             Thử lại

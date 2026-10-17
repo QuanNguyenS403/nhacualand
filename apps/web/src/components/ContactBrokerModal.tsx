@@ -210,9 +210,12 @@ export function ContactBrokerModal({
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL !== undefined
-        ? process.env.NEXT_PUBLIC_API_URL
-        : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+      const envApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+      const apiUrl = envApiUrl
+        ? envApiUrl
+        : (typeof window !== 'undefined'
+            ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : '')
+            : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''));
       const token = getAccessToken();
 
       const headers: Record<string, string> = {
@@ -246,24 +249,45 @@ export function ContactBrokerModal({
       let success = false;
       let respMsg = '';
 
+      const leadPayload = {
+        listingId: rawId,
+        listingTitle: resolvedTitle,
+        fullName: fullName.trim(),
+        phone: cleanPhone,
+        email: cleanEmail,
+        message: fullMessage,
+        channel: 'web_form',
+        consent: true,
+      };
+
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch(`${apiUrl}/leads`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            listingId: rawId,
-            listingTitle: resolvedTitle,
-            fullName: fullName.trim(),
-            phone: cleanPhone,
-            email: cleanEmail,
-            message: fullMessage,
-            channel: 'web_form',
-            consent: true,
-          }),
-          signal: controller.signal,
-        });
+        let res: Response;
+        try {
+          res = await fetch(`${apiUrl}/leads`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(leadPayload),
+            signal: controller.signal,
+          });
+        } catch (initialErr) {
+          if (
+            typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+            !apiUrl.startsWith('http://localhost:4000') &&
+            !apiUrl.startsWith('http://127.0.0.1:4000')
+          ) {
+            res = await fetch(`http://localhost:4000/leads`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(leadPayload),
+              signal: controller.signal,
+            });
+          } else {
+            throw initialErr;
+          }
+        }
         clearTimeout(timeoutId);
 
         const data = await res.json().catch(() => ({}));

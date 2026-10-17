@@ -111,7 +111,10 @@ export class ListingsService {
    */
   async getMapPins(query: QueryMapListingsDto, currentUserId?: bigint): Promise<ListingMapPin[]> {
     if (!this.prisma.isConnected) {
-      throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+      const reconnected = await this.prisma.testConnection().catch(() => false);
+      if (!reconnected && !this.prisma.isConnected) {
+        return [];
+      }
     }
 
     const where: Prisma.ListingWhereInput = {
@@ -182,71 +185,80 @@ export class ListingsService {
 
     const takeLimit = Math.min(query.limit || 500, 2000);
 
-    const items = await this.prisma.listing.findMany({
-      where,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        lat: true,
-        lng: true,
-        price: true,
-        propertyType: true,
-        areaM2: true,
-        status: true,
-        ownerId: true,
-        depositAmount: true,
-        electricityPricePerKwh: true,
-        waterPricePerM3: true,
-        waterPriceFlat: true,
-        amenities: true,
-        images: {
-          select: { imageUrl: true },
-          orderBy: { sortOrder: 'asc' },
-          take: 1,
+    try {
+      const items = await this.prisma.listing.findMany({
+        where,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          lat: true,
+          lng: true,
+          price: true,
+          propertyType: true,
+          areaM2: true,
+          status: true,
+          ownerId: true,
+          depositAmount: true,
+          electricityPricePerKwh: true,
+          waterPricePerM3: true,
+          waterPriceFlat: true,
+          amenities: true,
+          images: {
+            select: { imageUrl: true },
+            orderBy: { sortOrder: 'asc' },
+            take: 1,
+          },
+          addressDetail: true,
+          location: {
+            select: { name: true },
+          },
         },
-        location: {
-          select: { name: true },
-        },
-      },
-      take: takeLimit,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return items
-      .filter((item) => isValidVietnamCoordinate(item.lat, item.lng))
-      .map((item) => {
-        const isOwnerPending =
-          item.status === ListingStatus.pending &&
-          Boolean(currentUserId && String(item.ownerId) === String(currentUserId));
-
-        return {
-          id: String(item.id),
-          slug: item.slug,
-          lat: Number(item.lat),
-          lng: Number(item.lng),
-          title: item.title,
-          price: Number(item.price),
-          propertyType: normalizeLegacyPropertyType(item.propertyType),
-          areaM2: Number(item.areaM2),
-          thumbnailUrl: item.images?.[0]?.imageUrl || null,
-          locationName: item.location?.name || 'Hà Nội',
-          status: item.status as any,
-          depositAmount: item.depositAmount ? Number(item.depositAmount) : undefined,
-          electricityPricePerKwh: item.electricityPricePerKwh ?? undefined,
-          waterPricePerM3: item.waterPricePerM3 ?? undefined,
-          waterPriceFlat: item.waterPriceFlat ?? undefined,
-          amenities: typeof item.amenities === 'object' && item.amenities !== null
-            ? normalizeAmenities(item.amenities as Record<string, any>)
-            : undefined,
-          isOwnerPending,
-        };
+        take: takeLimit,
+        orderBy: { createdAt: 'desc' },
       });
+
+      return items
+        .filter((item) => isValidVietnamCoordinate(item.lat, item.lng))
+        .map((item) => {
+          const isOwnerPending =
+            item.status === ListingStatus.pending &&
+            Boolean(currentUserId && String(item.ownerId) === String(currentUserId));
+
+          return {
+            id: String(item.id),
+            slug: item.slug,
+            lat: Number(item.lat),
+            lng: Number(item.lng),
+            title: item.title,
+            price: Number(item.price),
+            propertyType: normalizeLegacyPropertyType(item.propertyType),
+            areaM2: Number(item.areaM2),
+            thumbnailUrl: item.images?.[0]?.imageUrl || null,
+            locationName: item.addressDetail || item.location?.name || 'Hà Nội',
+            addressDetail: item.addressDetail || undefined,
+            status: item.status as any,
+            depositAmount: item.depositAmount ? Number(item.depositAmount) : undefined,
+            electricityPricePerKwh: item.electricityPricePerKwh ?? undefined,
+            waterPricePerM3: item.waterPricePerM3 ?? undefined,
+            waterPriceFlat: item.waterPriceFlat ?? undefined,
+            amenities: typeof item.amenities === 'object' && item.amenities !== null
+              ? normalizeAmenities(item.amenities as Record<string, any>)
+              : undefined,
+            isOwnerPending,
+          };
+        });
+    } catch {
+      return [];
+    }
   }
 
   async findAll(query: QueryListingsDto) {
     if (!this.prisma.isConnected) {
-      throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+      const reconnected = await this.prisma.testConnection().catch(() => false);
+      if (!reconnected && !this.prisma.isConnected) {
+        throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+      }
     }
 
     const where: Prisma.ListingWhereInput = {
@@ -806,7 +818,10 @@ export class ListingsService {
    */
   async findOne(idOrSlug: string) {
     if (!this.prisma.isConnected) {
-      throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+      const reconnected = await this.prisma.testConnection().catch(() => false);
+      if (!reconnected && !this.prisma.isConnected) {
+        throw new ServiceUnavailableException('Cơ sở dữ liệu đang ngoại tuyến');
+      }
     }
 
     let listing: any = null;
@@ -831,12 +846,12 @@ export class ListingsService {
       }
     }
 
-    // Cố tình trả cùng 1 thông báo lỗi cho "không tồn tại" và "tồn tại nhưng chưa active" —
-    // không phân biệt 2 trường hợp để không lộ thông tin rằng 1 ID nào đó có tồn tại hay không.
+    // Cho phép hiển thị tin active và rented (đã cho thuê) để thông báo chính xác tình trạng phòng cho khách xem
     const now = new Date();
+    const allowedStatuses: string[] = [ListingStatus.active, ListingStatus.rented];
     if (
       !listing ||
-      listing.status !== ListingStatus.active ||
+      !allowedStatuses.includes(listing.status) ||
       (listing.expiresAt && listing.expiresAt <= now) ||
       (listing as any).owner?.isBlocked
     ) {

@@ -285,6 +285,7 @@ export interface ListingMapPin {
   areaM2: number;
   thumbnailUrl: string | null;
   locationName: string;
+  addressDetail?: string;
   district?: string;
   ward?: string;
   status: ListingStatusType;

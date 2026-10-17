@@ -1,6 +1,78 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (17/10/2026 — ĐỘI AGENT RÀ SOÁT TOÀN DIỆN & BĂNG CHUYỀN SỬA LỖI 4 GIAI ĐOẠN):**
+**Việc vừa hoàn thành (18/10/2026 — XÓA BỎ HOÀN TOÀN 4 DÒNG CHỮ MÔ TẢ CHUYÊN MỤC BẤT ĐỘNG SẢN):**
+- **Xóa bỏ triệt để 4 dòng chữ mô tả chuyên mục theo đúng yêu cầu người dùng**:
+  1. `"Giá tốt từ 1.5 - 4 triệu/tháng, gần các trường đại học, giờ giấc tự do"`
+  2. `"Đầy đủ nội thất, view thoáng mát, an ninh cho người đi làm & gia đình"`
+  3. `"Studio ban công, duplex gác lửng, full nội thất hiện đại cho người đi làm & chuyên gia"`
+  4. `"Mặt phố kinh doanh, vỉa hè rộng, shophouse khối đế lưu lượng người qua lại cao"`
+- **Các tệp đã chỉnh sửa**:
+  - `apps/web/src/app/page.tsx`: Xóa bỏ 4 đoạn thẻ `<p>` mô tả bên dưới tiêu đề `Phòng trọ sinh viên`, `Chung cư`, `Chung cư mini`, `Mặt bằng kinh doanh`, giúp tiêu đề và nút "Xem tất cả" căn chỉnh thẳng hàng, giao diện tinh gọn và hiện đại
+  - `apps/web/src/components/SearchFilterBar.tsx`: Loại bỏ 4 nhánh hardcoded subtitle trong logic khởi tạo `sectionSubtitle`, chuyển sang `propSubtitle || ''` và bọc điều kiện chỉ render thẻ `<p>` khi có `sectionSubtitle`
+- **Kiểm thử & Rà soát**:
+  - Grep toàn bộ dự án xác nhận không còn tồn tại 4 dòng chữ trong bất kỳ tệp mã nguồn nào
+  - Chạy `tsc --noEmit` trên `apps/web` thành công với mã **Exit Code 0**
+  - Tuân thủ nghiêm ngặt **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu)
+
+**Việc trước đó (18/10/2026 — THU GỌN KÍCH THƯỚC DỌC & BO TRÒN GÓC KHUNG CHI TIẾT PHÒNG BẢN ĐỒ):**
+- **Tinh chỉnh giao diện `MapRoomDetailDrawer.tsx`**:
+  1. **Thu ngắn kích thước dọc**:
+     - Thay thế `h-full top-0 right-0` (bị kéo dài toàn màn hình và dán chặt vào mép) bằng `top-3 sm:top-4 right-3 sm:right-4 md:right-5 bottom-3 sm:bottom-4 md:bottom-5 max-h-[calc(100%-1.5rem)] sm:max-h-[calc(100%-2rem)] md:max-h-[82vh] w-[calc(100%-24px)] sm:w-[350px] md:w-[370px]`
+     - Giới hạn chiều cao dọc tối đa `82vh` tạo khoảng cách đệm trên dưới rộng rãi, không bị đè che bản đồ và nút footer luôn hiển thị trọn vẹn
+  2. **Bo tròn 4 góc mềm mại**:
+     - Áp dụng `rounded-2xl sm:rounded-3xl` kèm `border border-slate-200/90 shadow-2xl overflow-hidden`
+     - Header và Footer nằm bên trong `overflow-hidden` tự động bo tròn theo 4 góc của khung mà không bị răng cưa
+     - Chuyển `overflow-y-auto` vào phần thân giữa (`flex-1 overflow-y-auto`), giữ cố định Header (`shrink-0`) và Footer (`shrink-0`)
+  3. **Áp dụng đồng bộ cho cả 2 chế độ**: Chi tiết phòng cho thuê và Chi tiết đánh giá cộng đồng
+  4. **Kiểm thử**: Chạy `tsc --noEmit` đạt mã **Exit Code 0**; Tuân thủ nghiêm ngặt **GEMINI.md § 8** (không thêm dấu chấm vào cuối câu)
+
+**Việc trước đó (18/10/2026 — THIẾT LẬP ĐỊNH VỊ VỊ TRÍ TẤT CẢ PHÒNG CHO THUÊ CHUẨN XÁC THEO ĐÚNG ĐỊA CHỈ THÔNG TIN):**
+- **Chuẩn hóa tọa độ GPS lat, lng cho 100% phòng cho thuê theo đúng địa chỉ cụ thể được gán trong phần thông tin**:
+  1. **Rà soát và chỉnh sửa tọa độ phòng trong `demo-data.ts`**:
+     - Phòng ID 13 (`Ngõ 20 Hồ Tùng Mậu, Mai Dịch, Cầu Giấy, Hà Nội`): Điều chỉnh từ tọa độ lệch cũ (`21.0392, 105.7681` ở Bắc Từ Liêm) về tọa độ chuẩn xác (`21.0375, 105.7765`) tại đầu đường Hồ Tùng Mậu sát cầu vượt Mai Dịch, phường Mai Dịch, quận Cầu Giấy; Cập nhật khoảng cách tới ĐHQG Hà Nội (400m) và ĐH Thương Mại (650m)
+     - Phòng ID 2 (`Đường Nguyễn Trãi, Phường Bến Thành, Quận 1, TP.HCM`): Chuẩn hóa tọa độ tâm Phường Bến Thành gần ngã 6 Phù Đổng (`lat: 10.7712, lng: 106.6925`) thay cho tọa độ cũ bị lệch
+     - Phòng ID 14 (`Ngõ 119 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội`): Chuẩn hóa tọa độ đúng ngõ 119 Chùa Láng (`lat: 21.0225, lng: 105.8032`) thay cho tọa độ trùng cổng trường Ngoại Thương; Bổ sung các trường ĐH lân cận (ĐH Ngoại Thương 150m, HV Ngoại Giao 350m)
+     - Phòng ID 11 (`Ngõ 68 Cầu Giấy, Phường Quan Hoa, Cầu Giấy, Hà Nội`): Chuẩn hóa tọa độ đúng ngõ 68 Cầu Giấy (`lat: 21.0352, lng: 105.8022`)
+     - Phòng ID 3, 1, 38 (Quận 7, TP.HCM), ID 5, 31 (Ngõ 165 Cầu Giấy, Hà Nội), ID 10 (Masteri Thảo Điền), ID 12 (Điện Biên Phủ, Bình Thạnh), ID 4 (Nguyễn Trãi, Thanh Xuân): Xác minh tọa độ khớp 100% với địa chỉ thực tế
+  2. **Đồng bộ dữ liệu định vị địa chỉ trong bản đồ và API**:
+     - Bổ sung `addressDetail?: string;` vào interface `ListingMapPin` trong `packages/shared/src/index.ts` và `index.d.ts`
+     - Cập nhật backend `getMapPins` (`listings.service.ts`): Bổ sung `addressDetail: true` vào select, trả về `locationName` ưu tiên `addressDetail` và trường `addressDetail` nguyên vẹn
+     - Cập nhật `map-rooms-data.ts`: Sửa `pinToMapRoom` và `getFallbackDemoPins` ưu tiên `addressDetail`, đảm bảo địa chỉ hiển thị trên bản đồ không bị biến thành tên quận chung chung
+  3. **Mở rộng cơ chế Geocoding thông minh đa tầng (`vietnam-geocoding.ts` & `GoogleMapAddressPicker.tsx`)**:
+     - Bổ sung danh bạ Offline Locations cho toàn bộ TP. Hồ Chí Minh (`HCMC_OFFLINE_LOCATIONS`: Quận 1, Quận 7, Bình Thạnh, Thủ Đức) và cập nhật tọa độ các ngõ Cầu Giấy, Đống Đa
+     - Cấu hình tự động nhận diện khu vực Hà Nội / TP.HCM từ địa chỉ phòng để mở tâm bản đồ chính xác
+     - Tự động kích hoạt geocode định vị vị trí phòng ngay khi nhập xong địa chỉ (`onBlur`) hoặc khi mở component với địa chỉ ban đầu có sẵn
+  4. **Kiểm thử tự động**: Viết script `scripts/verify-coordinates.js` xác minh 12/12 phòng đạt 100% chuẩn xác; Chạy `tsc --noEmit` cả `apps/web` và `apps/api` đạt mã **Exit Code 0**
+  5. **Quy chuẩn GEMINI.md § 8**: Tuyệt đối không thêm dấu chấm vào cuối câu; Thông tin liên hệ duy nhất từ `SITE_CONFIG`
+
+**Việc trước đó (17/10/2026 — LOẠI BỎ TRIỆT ĐỂ HARNESS/GITNESS SIGN-IN & KHỞI CHẠY BẢO ĐẢM 24/7):**
+- **Xử lý dứt điểm sự cố Harness Signin khi vào nhacualand.com**:
+  1. Phát hiện và loại bỏ container Docker `harness/gitness:latest` (tên: `harness_gitness_server`) chiếm dụng cổng `3000` với chính sách `restart: always`. Đã dừng và xóa vĩnh viễn container khỏi hệ thống.
+  2. Khởi động lại PostgreSQL và Redis qua `docker compose up -d`.
+  3. Cập nhật chuỗi bí mật ngẫu nhiên mạnh (crypto 32-byte) cho JWT và Admin Bootstrap trong `.env` và `.env.production` để vượt qua cổng kiểm tra `assertRequiredSecrets()`.
+  4. Cấu hình lại `apps/web/next.config.mjs`: rewrite nội bộ trỏ trực tiếp sang `http://127.0.0.1:4000`, bổ sung redirect `/signin` và `/login` về trang đăng nhập chính thức `/dang-nhap` của NHACUALAND.
+  5. Đóng gói lại (build) ứng dụng Next.js thành công 100%.
+  6. Sửa lỗi cú pháp escape trong `chay-website-va-tunnel.bat` và bổ sung script `chay-ngam-24-7.vbs` để người dùng có thể kích hoạt toàn bộ hệ thống chạy ngầm không cần mở cửa sổ console.
+  7. Xác minh truy cập thực tế qua Cloudflare Tunnel: `https://nhacualand.com` (HTTP 200), `https://nhacualand.com/signin` (HTTP 200 chuyển tiếp sang `/dang-nhap`), `https://nhacualand.com/listings` (HTTP 200).
+
+**Việc trước đó (17/10/2026 — LOẠI BỎ HOÀN TOÀN RENDER & CHUYỂN SANG CLOUDFLARE TUNNEL NETWORKING):**
+- Đã loại bỏ 100% cấu hình môi trường, dịch vụ và dữ liệu liên quan đến Render:
+  1. **Xóa bỏ các tệp cấu hình Render**: `.env.render`, `.env.render.api`, `.env.render.web`, `render.yaml`, `HUONG-DAN-TRIEN-KHAI-RENDER.md`, `scripts/render-build.sh`, `scripts/render-build-api.sh`, `scripts/render-build-web.sh`.
+  2. **Làm sạch mã nguồn & Biến môi trường**:
+     - `.env.production`: Thay thế DATABASE_URL của Render bằng DB PostgreSQL chuẩn; Loại bỏ các domain `*.onrender.com` khỏi `CORS_ORIGINS`; Cập nhật cổng mặc định thành 3000/4000.
+     - `apps/web/next.config.mjs`: Xóa bỏ `*.onrender.com` khỏi `images.remotePatterns`.
+     - `scripts/start-all.js`: Cập nhật banner, bỏ tham chiếu Render, thiết lập cổng Web 3000 / API 4000 chuẩn.
+     - `.gitignore`: Xóa `.env.render*`, bổ sung `.cloudflared/`.
+     - `GEMINI.md`: Cập nhật quy tắc triển khai chính thức sang Cloudflare Tunnel (Zero Trust > Networks > Tunnels).
+  3. **Thiết lập hạ tầng kết nối Cloudflare Tunnel**:
+     - `HUONG-DAN-CAI-DAT-CLOUDFLARE-TUNNEL.md`: Hướng dẫn chi tiết từng bước cấu hình Cloudflare Zero Trust (Networks > Tunnels), ánh xạ Public Hostnames `nhacualand.com` -> `localhost:3000` và `api.nhacualand.com` -> `localhost:4000`.
+     - `cai-dat-cloudflare-service.bat`: Script tự động xin quyền Admin, tự tải `cloudflared.exe`, đăng ký Windows Service và chạy 24/7.
+     - `chay-cloudflare-tunnel.bat`: Script khởi chạy trực tiếp console để kiểm tra luồng và debug.
+     - `chay-website-va-tunnel.bat`: Khởi động 1-chạm toàn bộ DB, Cloudflare Tunnel và Website.
+     - `scripts/setup-cloudflare-tunnel-linux.sh`: Script cài đặt tự động systemd service trên Linux VPS (Ubuntu/Debian).
+     - `scripts/nhacualand.service`: File mẫu cấu hình systemd service chạy website trên Linux server.
+
+**Việc trước đó (17/10/2026 — ĐỘI AGENT RÀ SOÁT TOÀN DIỆN & BĂNG CHUYỀN SỬA LỖI 4 GIAI ĐOẠN):**
 - Hoàn thành đầy đủ 4 giai đoạn theo quy chuẩn:
   1. **Giai đoạn 0 (Đường cơ sở & Kiểm kê)**: Lập nhánh `audit/doi-agent-2026-10-17`, sinh 6 tệp kiểm kê CSV (120 endpoints, 37 routes, 39 models, 53 env vars, 83 calls, 85 scripts).
   2. **Giai đoạn A (Rà soát mù song song A1–A9)**: 9 báo cáo chuyên trách, phát hiện 29 vấn đề (3 P0, 9 P1, 13 P2, 4 P3). Đối chiếu Phụ lục A đạt 17/17 mục (100% tỷ lệ phát hiện độc lập).

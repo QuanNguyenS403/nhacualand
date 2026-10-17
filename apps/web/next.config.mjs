@@ -48,17 +48,11 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.qns.vn' },
       { protocol: 'https', hostname: 'nhacualand.com' },
       { protocol: 'https', hostname: '*.nhacualand.com' },
-      { protocol: 'https', hostname: '*.onrender.com' },
     ],
   },
   async rewrites() {
     const internalApi = process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000';
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl || apiUrl.startsWith('/') || apiUrl === 'same-origin' || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')) {
-      apiUrl = internalApi;
-    } else if (!apiUrl.startsWith('http')) {
-      apiUrl = `https://${apiUrl}`;
-    }
+    const apiUrl = internalApi;
 
     return [
       {
@@ -158,6 +152,16 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: '/signin',
+        destination: '/dang-nhap',
+        permanent: false,
+      },
+      {
+        source: '/login',
+        destination: '/dang-nhap',
+        permanent: false,
+      },
       {
         source: '/mua-ban',
         destination: '/thue',

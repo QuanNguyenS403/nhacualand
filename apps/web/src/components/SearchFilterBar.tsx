@@ -138,23 +138,8 @@ export function SearchFilterBar({
     return 'Bộ lọc tìm kiếm';
   })();
 
-  const sectionSubtitle = (() => {
-    if (propSubtitle) return propSubtitle;
-    const group = initialParams.categoryGroup;
-    if (group === 'thue_can_ho') {
-      return 'Đầy đủ nội thất, view thoáng mát, an ninh cho người đi làm & gia đình';
-    }
-    if (group === 'thue_studio') {
-      return 'Studio ban công, duplex gác lửng, full nội thất hiện đại cho người đi làm & chuyên gia';
-    }
-    if (group === 'thue_tro' || basePath === '/cho-thue-tro') {
-      return 'Giá tốt từ 1.5 - 4 triệu/tháng, gần các trường đại học, giờ giấc tự do';
-    }
-    if (group === 'thue_mat_bang' || basePath === '/cho-thue-mat-bang') {
-      return 'Mặt phố kinh doanh, vỉa hè rộng, shophouse khối đế lưu lượng người qua lại cao';
-    }
-    return 'Tìm kiếm nhanh theo khu vực, trường học, mức giá và nhu cầu của bạn';
-  })();
+  const sectionSubtitle = propSubtitle || '';
+
 
   // Nhãn rút gọn cho các dropdown mặc định
   const displayPropertyTypes = availablePropertyTypes.map((t, idx) =>
@@ -253,9 +238,11 @@ export function SearchFilterBar({
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
           {sectionTitle}
         </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-500">
-          {sectionSubtitle}
-        </p>
+        {sectionSubtitle ? (
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            {sectionSubtitle}
+          </p>
+        ) : null}
       </div>
 
       {/* Hàng tìm kiếm chính: Search, Khu vực, Gần trường ĐH / CĐ, Loại phòng, Khoảng giá & Nút Tìm phòng */}

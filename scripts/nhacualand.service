@@ -1,0 +1,21 @@
+[Unit]
+Description=NHACUALAND Unified Web & API Server
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/batdongsan
+ExecStart=/usr/bin/node scripts/start-all.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=INTERNAL_API_PORT=4000
+EnvironmentFile=/var/www/batdongsan/.env.production
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -37,9 +37,22 @@ export function GoogleMapAddressPicker({
   onCoordinatesChange,
   onUniversitiesChange,
 }: GoogleMapAddressPickerProps) {
-  // Mặc định tọa độ trung tâm Hai Bà Trưng, Hà Nội (khu vực trụ sở NHACUALAND) nếu chưa chọn
-  const DEFAULT_LAT = 20.9982;
-  const DEFAULT_LNG = 105.8778;
+  // Tự động nhận diện khu vực Hà Nội hay TP.HCM từ địa chỉ ban đầu để mở bản đồ chuẩn xác
+  const isHcmInitial = useMemo(() => {
+    const raw = (initialAddress || '').toLowerCase();
+    return (
+      raw.includes('hồ chí minh') ||
+      raw.includes('tp.hcm') ||
+      raw.includes('tphcm') ||
+      raw.includes('quận 7') ||
+      raw.includes('quận 1') ||
+      raw.includes('bình thạnh') ||
+      raw.includes('thủ đức')
+    );
+  }, [initialAddress]);
+
+  const DEFAULT_LAT = isHcmInitial ? 10.7769 : 20.9982;
+  const DEFAULT_LNG = isHcmInitial ? 106.7009 : 105.8778;
 
   const [address, setAddress] = useState(initialAddress);
   const [lat, setLat] = useState<number | null>(initialLat ?? null);
@@ -436,6 +449,14 @@ export function GoogleMapAddressPicker({
     }
   }
 
+  // Tự động định vị vị trí phòng chính xác theo địa chỉ được gán khi khởi tạo (nếu chưa có tọa độ)
+  useEffect(() => {
+    if (initialAddress && initialAddress.trim() && initialLat == null && initialLng == null) {
+      handleGeocodeAddress(initialAddress);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialAddress, initialLat, initialLng]);
+
   // Hàm lấy vị trí GPS hiện tại của thiết bị và tự động Reverse Geocode địa chỉ
   function handleGetDeviceGps() {
     if (!navigator.geolocation) {
@@ -582,6 +603,11 @@ export function GoogleMapAddressPicker({
                 const val = e.target.value;
                 setAddress(val);
                 onAddressChangeRef.current?.(val);
+              }}
+              onBlur={() => {
+                if (address.trim() && (lat == null || lng == null)) {
+                  handleGeocodeAddress(address);
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

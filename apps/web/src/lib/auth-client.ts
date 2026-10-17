@@ -2,9 +2,12 @@
  * auth-client.ts — fetch có gắn sẵn Bearer accessToken, tự động thử làm mới token khi hết hạn.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
-  ? process.env.NEXT_PUBLIC_API_URL
-  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+const envApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const API_URL = envApiUrl
+  ? envApiUrl
+  : (typeof window !== 'undefined'
+      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : '')
+      : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''));
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -109,8 +112,11 @@ async function tryRefreshToken(): Promise<string | null> {
  * Dùng thay cho fetch() thủ công ở MỌI nơi cần gọi API đã đăng nhập từ Client Component.
  */
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const doFetch = (token: string | null) =>
-    fetch(`${API_URL}${path}`, {
+  const isClient = typeof window !== 'undefined';
+  const primaryUrl = `${API_URL}${path}`;
+
+  const doFetch = (token: string | null, customUrl?: string) =>
+    fetch(customUrl || primaryUrl, {
       ...init,
       headers: {
         ...(init.headers ?? {}),
@@ -118,7 +124,21 @@ export async function authFetch(path: string, init: RequestInit = {}): Promise<R
       },
     });
 
-  let res = await doFetch(getAccessToken());
+  let res: Response;
+  try {
+    res = await doFetch(getAccessToken());
+  } catch (err) {
+    if (
+      isClient &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      !primaryUrl.startsWith('http://localhost:4000') &&
+      !primaryUrl.startsWith('http://127.0.0.1:4000')
+    ) {
+      res = await doFetch(getAccessToken(), `http://localhost:4000${path}`);
+    } else {
+      throw err;
+    }
+  }
 
   if (res.status === 401) {
     const newToken = await tryRefreshToken();

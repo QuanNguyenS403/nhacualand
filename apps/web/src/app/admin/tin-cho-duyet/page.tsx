@@ -205,7 +205,13 @@ export default function AdminPendingListingsPage() {
       setSelectedListing(null);
       loadListings();
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('qns_listings_updated'));
+        try {
+          localStorage.setItem('qns_listings_updated_at', Date.now().toString());
+          localStorage.setItem('qns_last_approved_id', String(id));
+        } catch {}
+        window.dispatchEvent(new CustomEvent('qns_listings_updated', {
+          detail: { id: String(id), status: 'approved' }
+        }));
       }
     } catch (err: any) {
       showToast(err?.message || 'Lỗi kết nối máy chủ', 'error');
@@ -273,7 +279,13 @@ export default function AdminPendingListingsPage() {
       setCustomReason('');
       loadListings();
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('qns_listings_updated'));
+        try {
+          localStorage.setItem('qns_listings_updated_at', Date.now().toString());
+          localStorage.setItem('qns_last_rejected_id', String(rejectingListing.id));
+        } catch {}
+        window.dispatchEvent(new CustomEvent('qns_listings_updated', {
+          detail: { id: String(rejectingListing.id), status: 'rejected' }
+        }));
       }
     } catch (err: any) {
       showToast(err?.message || 'Lỗi kết nối máy chủ', 'error');

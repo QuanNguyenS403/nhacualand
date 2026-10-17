@@ -8,6 +8,7 @@ import { CreateDealDto } from './dto/create-deal.dto';
 import { RecordDepositDto } from './dto/record-deposit.dto';
 import { RecordContractDto } from './dto/record-contract.dto';
 import { RecordHandoverDto } from './dto/record-handover.dto';
+import { ListingStatus } from '@batdongsan/database';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -267,6 +268,12 @@ export class DealsService {
       await tx.rentalUnit.update({
         where: { id: deal.unitId },
         data: { status: 'rented' },
+      });
+
+      // Bảo đảm tính toàn vẹn dữ liệu: Cập nhật đồng thời mọi tin đăng Listing liên quan sang 'rented'
+      await tx.listing.updateMany({
+        where: { unitId: deal.unitId },
+        data: { status: ListingStatus.rented },
       });
 
       return {

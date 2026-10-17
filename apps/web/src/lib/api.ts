@@ -1,9 +1,12 @@
 import type { ListingMapPin } from '@qns/shared';
 export type { ListingMapPin };
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL !== undefined
-  ? process.env.NEXT_PUBLIC_API_URL
-  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+const envApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const rawApiUrl = envApiUrl
+  ? envApiUrl
+  : (typeof window !== 'undefined'
+      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : '')
+      : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''));
 
 const API_URL = typeof window === 'undefined'
   ? (process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000')
@@ -81,27 +84,57 @@ export interface ListingListResponse {
   pagination: { page: number; pageSize: number; total: number; totalPages: number };
 }
 
-// Circuit breaker: bảo vệ SSR và giảm thời gian tải trang từ 4s xuống 0ms khi DB/API ngoại tuyến
+// Circuit breaker: bảo vệ SSR và giảm thời gian chờ khi DB/API ngoại tuyến
 let isCircuitOpen = false;
 let lastFailureTimestamp = 0;
-const CIRCUIT_BREAKER_COOLDOWN_MS = 20000; // 20 giây thăm dò lại 1 lần nếu backend lỗi
+const CIRCUIT_BREAKER_COOLDOWN_MS = 5000; // 5s thăm dò lại thay vì 20s
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export function resetApiCircuitBreaker() {
+  isCircuitOpen = false;
+  lastFailureTimestamp = 0;
+}
+
+export interface ApiFetchOptions extends RequestInit {
+  bypassCircuitBreaker?: boolean;
+  timeoutMs?: number;
+}
+
+async function apiFetch<T>(path: string, init?: ApiFetchOptions): Promise<T> {
+  const isClient = typeof window !== 'undefined';
   const now = Date.now();
-  if (isCircuitOpen && now - lastFailureTimestamp < CIRCUIT_BREAKER_COOLDOWN_MS) {
+
+  if (!init?.bypassCircuitBreaker && isCircuitOpen && now - lastFailureTimestamp < CIRCUIT_BREAKER_COOLDOWN_MS) {
     throw new Error('API_CIRCUIT_OPEN: Backend tạm thời ngoại tuyến');
   }
 
-  // Chống treo SSR nếu backend phản hồi chậm (timeout 1.2s tối đa thay vì 3.5s)
-  const signal = init?.signal ?? AbortSignal.timeout(1200);
+  // Timeout thông minh: trên client cho phép 10s (chống ngắt mạng di động / cold DB query), SSR 4s
+  const defaultTimeout = isClient ? 10000 : 4000;
+  const timeoutMs = init?.timeoutMs ?? defaultTimeout;
+  const signal = init?.signal ?? AbortSignal.timeout(timeoutMs);
+
+  const fetchOptions: RequestInit = {
+    ...init,
+    signal,
+    headers: {
+      ...(init?.headers ?? {}),
+    },
+  };
+
+  if (init?.body) {
+    fetchOptions.headers = {
+      'Content-Type': 'application/json',
+      ...(fetchOptions.headers as Record<string, string>),
+    };
+  }
+
+  if (!isClient) {
+    (fetchOptions as any).next = { revalidate: 60 };
+  }
+
+  const primaryUrl = `${API_URL}${path}`;
+
   try {
-    const res = await fetch(`${API_URL}${path}`, {
-      ...init,
-      signal,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-      // Trang danh sách/chi tiết cần dữ liệu tương đối mới — cache ngắn 60s (ISR-style) thay vì always dynamic hoàn toàn.
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(primaryUrl, fetchOptions);
 
     if (!res.ok) {
       if (res.status === 404) throw new Error('NOT_FOUND');
@@ -115,6 +148,24 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     isCircuitOpen = false;
     return (await res.json()) as T;
   } catch (err: any) {
+    // Trên client localhost: nếu route tương đối qua Next.js rewrite gặp sự cố, tự động thử trực tiếp http://localhost:4000
+    if (
+      isClient &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      !primaryUrl.startsWith('http://localhost:4000') &&
+      !primaryUrl.startsWith('http://127.0.0.1:4000')
+    ) {
+      try {
+        const fallbackUrl = `http://localhost:4000${path}`;
+        const fallbackSignal = AbortSignal.timeout(6000);
+        const retryRes = await fetch(fallbackUrl, { ...fetchOptions, signal: fallbackSignal });
+        if (retryRes.ok) {
+          isCircuitOpen = false;
+          return (await retryRes.json()) as T;
+        }
+      } catch {}
+    }
+
     if (err?.message !== 'NOT_FOUND') {
       isCircuitOpen = true;
       lastFailureTimestamp = Date.now();
@@ -157,7 +208,10 @@ export interface MapPinsQuery {
   limit?: number;
 }
 
-export async function fetchMapPins(params?: MapPinsQuery): Promise<ListingMapPin[]> {
+export async function fetchMapPins(
+  params?: MapPinsQuery,
+  options?: { bypassCircuitBreaker?: boolean; timeoutMs?: number }
+): Promise<ListingMapPin[]> {
   const query = new URLSearchParams();
   if (params?.bbox) query.set('bbox', params.bbox);
   if (params?.propertyType) query.set('propertyType', params.propertyType);
@@ -170,7 +224,10 @@ export async function fetchMapPins(params?: MapPinsQuery): Promise<ListingMapPin
 
   const qs = query.toString();
   const url = qs ? `/listings/map?${qs}` : '/listings/map';
-  return apiFetch<ListingMapPin[]>(url, { next: { revalidate: 10 } });
+  return apiFetch<ListingMapPin[]>(url, {
+    bypassCircuitBreaker: options?.bypassCircuitBreaker,
+    timeoutMs: options?.timeoutMs ?? (typeof window !== 'undefined' ? 10000 : 4000),
+  });
 }
 
 export function fetchUniversities(params?: { locationSlug?: string; keyword?: string }) {

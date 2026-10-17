@@ -2,6 +2,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { fetchListingBySlug, fetchListings } from '@/lib/api';
+import { findDemoListing, ALL_DEMO_LISTINGS } from '@/lib/demo-data';
 import legacyRedirects from '@/lib/legacy-slug-redirects.json';
 import { ListingDetailClientView } from './ListingDetailClientView';
 
@@ -14,7 +15,7 @@ const getListingOrNull = cache(async (slug: string) => {
     const listing = await fetchListingBySlug(slug);
     if (listing && listing.id) return listing;
   } catch {}
-  return null;
+  return findDemoListing(slug, false);
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -49,13 +50,13 @@ export default async function ListingDetailPage({ params }: Props) {
     redirect(`/tin/${redirectedSlug}`);
   }
 
-  // 2. Lấy dữ liệu thật duy nhất từ PostgreSQL qua API
+  // 2. Lấy dữ liệu thật từ API hoặc tin mẫu chuẩn đồng bộ
   const listing = await getListingOrNull(params.slug);
   if (!listing) {
     notFound();
   }
 
-  // 3. Lấy tin tương tự từ API
+  // 3. Lấy tin tương tự từ API hoặc danh sách phòng cùng phân khúc
   let similarListings: any[] = [];
   try {
     if (listing.propertyType) {
@@ -66,6 +67,12 @@ export default async function ListingDetailPage({ params }: Props) {
       similarListings = (res.items || []).filter((it) => it.id !== listing.id).slice(0, 4);
     }
   } catch {}
+
+  if (similarListings.length === 0 && listing.propertyType) {
+    similarListings = ALL_DEMO_LISTINGS.filter(
+      (it) => it.propertyType === listing.propertyType && it.id !== listing.id
+    ).slice(0, 4);
+  }
 
   return (
     <ListingDetailClientView

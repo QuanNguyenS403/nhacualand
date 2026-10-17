@@ -32,7 +32,7 @@ export const DEMO_ROOM_RENT_LISTINGS: Listing[] = [
     bathrooms: 1,
     legalStatus: 'hop_dong_6_thang',
     addressDetail: 'Đường số 10, Phường Tân Phong, Quận 7, TP.HCM',
-    lat: 10.7328,
+    lat: 10.7330,
     lng: 106.7028,
     status: 'active',
     publishedAt: new Date().toISOString(),
@@ -248,8 +248,8 @@ export const DEMO_STUDIO_RENT_LISTINGS: Listing[] = [
     bathrooms: 1,
     legalStatus: 'hop_dong_1_nam',
     addressDetail: 'Đường Nguyễn Trãi, Phường Bến Thành, Quận 1, TP.HCM',
-    lat: 10.7686,
-    lng: 106.6917,
+    lat: 10.7712,
+    lng: 106.6925,
     status: 'active',
     publishedAt: new Date().toISOString(),
     viewCount: 295,
@@ -297,8 +297,8 @@ export const DEMO_STUDIO_RENT_LISTINGS: Listing[] = [
     bathrooms: 1,
     legalStatus: 'hop_dong_1_nam',
     addressDetail: 'Ngõ 20 Hồ Tùng Mậu, Mai Dịch, Cầu Giấy, Hà Nội',
-    lat: 21.0392,
-    lng: 105.7681,
+    lat: 21.0375,
+    lng: 105.7765,
     status: 'active',
     publishedAt: new Date().toISOString(),
     viewCount: 310,
@@ -311,9 +311,14 @@ export const DEMO_STUDIO_RENT_LISTINGS: Listing[] = [
     owner: { id: '1', fullName: 'Chủ nhà', avatarUrl: null, createdAt: '2026-01-01T00:00:00.000Z' },
     nearbyUniversities: [
       {
-        distanceMeters: 600,
-        travelTimeMinutes: 7,
+        distanceMeters: 400,
+        travelTimeMinutes: 5,
         university: { id: 1, name: 'Đại học Quốc gia Hà Nội', abbreviation: 'VNU HN', slug: 'dhqg-ha-noi', address: '144 Xuân Thủy, Cầu Giấy' },
+      },
+      {
+        distanceMeters: 650,
+        travelTimeMinutes: 8,
+        university: { id: 8, name: 'Trường Đại học Thương mại', abbreviation: 'TMU', slug: 'dh-thuong-mai', address: '79 Hồ Tùng Mậu, Cầu Giấy' },
       },
     ],
   },
@@ -483,8 +488,8 @@ export const DEMO_CAN_HO_RENT_LISTINGS: Listing[] = [
     bathrooms: 1,
     legalStatus: 'hop_dong_1_nam',
     addressDetail: 'Ngõ 119 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội',
-    lat: 21.0232,
-    lng: 105.8049,
+    lat: 21.0225,
+    lng: 105.8032,
     status: 'active',
     publishedAt: new Date().toISOString(),
     viewCount: 240,
@@ -495,6 +500,18 @@ export const DEMO_CAN_HO_RENT_LISTINGS: Listing[] = [
     location: { id: 1, name: 'Đống Đa, Hà Nội', slug: 'dong-da', level: 'district' },
     project: null,
     owner: { id: '1', fullName: 'Chủ nhà', avatarUrl: null, createdAt: '2026-01-01T00:00:00.000Z' },
+    nearbyUniversities: [
+      {
+        distanceMeters: 150,
+        travelTimeMinutes: 2,
+        university: { id: 11, name: 'Trường Đại học Ngoại thương', abbreviation: 'FTU', slug: 'dh-ngoai-thuong-hn', address: '91 Chùa Láng, Đống Đa' },
+      },
+      {
+        distanceMeters: 350,
+        travelTimeMinutes: 4,
+        university: { id: 12, name: 'Học viện Ngoại giao', abbreviation: 'DAV', slug: 'hoc-vien-ngoai-giao', address: '69 Chùa Láng, Đống Đa' },
+      },
+    ],
   },
 ];
 
@@ -521,8 +538,8 @@ export const DEMO_HOUSE_RENT_LISTING: Listing = {
   bathrooms: 3,
   legalStatus: 'hop_dong_1_nam',
   addressDetail: 'Ngõ 68 Cầu Giấy, Phường Quan Hoa, Cầu Giấy, Hà Nội',
-  lat: 21.0345,
-  lng: 105.8005,
+  lat: 21.0352,
+  lng: 105.8022,
   status: 'active',
   publishedAt: new Date().toISOString(),
   viewCount: 175,
@@ -533,6 +550,13 @@ export const DEMO_HOUSE_RENT_LISTING: Listing = {
   location: { id: 1, name: 'Cầu Giấy, Hà Nội', slug: 'cau-giay', level: 'district' },
   project: null,
   owner: { id: '1', fullName: 'Chủ nhà', avatarUrl: null, createdAt: '2026-01-01T00:00:00.000Z' },
+  nearbyUniversities: [
+    {
+      distanceMeters: 800,
+      travelTimeMinutes: 9,
+      university: { id: 5, name: 'Trường Đại học Giao thông Vận tải', abbreviation: 'UTC', slug: 'dh-giao-thong-van-tai', address: '3 Cầu Giấy, Đống Đa' },
+    },
+  ],
 };
 
 export const DEMO_SPACE_RENT_LISTINGS: Listing[] = [

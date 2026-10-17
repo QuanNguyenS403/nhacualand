@@ -20,6 +20,7 @@ const TOC_ITEMS = [
   { id: 'muc-9', title: '9. Cookie & Công nghệ theo dõi' },
   { id: 'muc-10', title: '10. Cập nhật chính sách bảo mật' },
   { id: 'muc-11', title: '11. Tiếp nhận phản hồi & Thông tin liên hệ' },
+  { id: 'muc-12', title: '12. Dữ liệu Google, Mục đích, Cam kết & Hướng dẫn xóa dữ liệu' },
 ];
 
 export default function ChinhSachPage() {
@@ -40,41 +41,10 @@ export default function ChinhSachPage() {
             Cam kết minh bạch về việc thu thập, sử dụng, bảo vệ dữ liệu cá nhân và dữ liệu người dùng Google trên nền tảng NHACUALAND
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs sm:text-sm text-white/85">
-            <span className="rounded-lg bg-white/10 px-3 py-1 border border-white/20">
-              Cập nhật lần cuối: 16/10/2026
-            </span>
-            <span className="rounded-lg bg-white/10 px-3 py-1 border border-white/20">
-              Phiên bản: 3.0 (Tuân thủ Google API Services User Data Policy)
-            </span>
-          </div>
         </div>
       </section>
 
       <div className="container-max max-w-6xl mt-8 space-y-8">
-        {/* Khối cam kết bảo mật nổi bật */}
-        <div className="rounded-2xl border border-brand-300 bg-brand-50/80 p-5 text-brand-950 shadow-xs space-y-2.5">
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-brand-900">
-            <svg className="h-5 w-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Cam kết cốt lõi về bảo mật và quyền riêng tư</span>
-          </div>
-          <ul className="space-y-1.5 text-xs sm:text-sm text-brand-900 pl-7 list-none">
-            <li className="flex items-center gap-2">
-              <span className="text-brand font-bold">•</span>
-              <span>Tuân thủ nghiêm ngặt Luật An toàn thông tin mạng, Nghị định 13/2023/NĐ-CP và Chính sách dữ liệu người dùng Google API</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-brand font-bold">•</span>
-              <span>Tuyệt đối KHÔNG bán, cho thuê hay thương mại hóa dữ liệu cá nhân của người dùng cho bất kỳ bên thứ ba nào</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-brand font-bold">•</span>
-              <span>Áp dụng mã hóa đường truyền HTTPS/TLS 256-bit và thuật toán mã hóa mật khẩu một chiều bcrypt chuẩn quốc tế</span>
-            </li>
-          </ul>
-        </div>
 
         {/* Khối cảnh báo an toàn OTP & mật khẩu */}
         <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 sm:p-5 text-amber-900 shadow-xs flex items-start gap-3.5">
@@ -311,6 +281,59 @@ export default function ChinhSachPage() {
                 <p>• Địa chỉ: <strong>{SITE_CONFIG.address}</strong></p>
                 <p>• Hotline hỗ trợ: <strong>{SITE_CONFIG.hotline}</strong></p>
                 <p>• Email tiếp nhận bảo mật: <strong className="text-slate-900 font-semibold">{SITE_CONFIG.supportEmail}</strong> hoặc <strong className="text-slate-900 font-semibold">ducquan16102006@gmail.com</strong></p>
+              </div>
+            </article>
+
+            {/* Mục 12 — Thu thập thông tin từ Google, Mục đích sử dụng, Cam kết & Hướng dẫn xóa dữ liệu */}
+            <article id="muc-12" className="rounded-2xl border-2 border-brand-500 bg-white p-6 sm:p-7 shadow-card space-y-4 scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white text-xs font-bold">12</span>
+                <h2 className="text-base sm:text-lg font-bold text-brand-950">
+                  Dữ liệu người dùng Google, Mục đích sử dụng, Cam kết & Hướng dẫn xóa dữ liệu
+                </h2>
+              </div>
+
+              <div className="space-y-3.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-1.5">
+                  <h3 className="font-bold text-slate-900 text-sm">
+                    Chúng tôi thu thập thông tin gì từ Google
+                  </h3>
+                  <p className="text-slate-600">
+                    Khi người dùng chọn tính năng đăng nhập bằng tài khoản Google, hệ thống chỉ tiếp nhận các thông tin cơ bản gồm: Họ tên, email, ảnh đại diện
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-1.5">
+                  <h3 className="font-bold text-slate-900 text-sm">
+                    Mục đích sử dụng dữ liệu
+                  </h3>
+                  <p className="text-slate-600">
+                    Dữ liệu thu thập từ Google chỉ để xác thực tài khoản và quản lý đơn hàng/dịch vụ (bao gồm gửi yêu cầu đặt lịch xem phòng, quản lý tin đăng cho thuê và theo dõi tiến độ xử lý dịch vụ)
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-brand-50/70 p-4 border border-brand-200 space-y-1.5">
+                  <h3 className="font-bold text-brand-950 text-sm">
+                    Cam kết bảo mật & Quyền riêng tư
+                  </h3>
+                  <p className="text-brand-900 font-medium">
+                    NHACUALAND cam kết không chia sẻ dữ liệu với bên thứ ba hoặc bán cho bên quảng cáo dưới bất kỳ hình thức nào
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-2">
+                  <h3 className="font-bold text-slate-900 text-sm">
+                    Hướng dẫn người dùng cách yêu cầu xóa dữ liệu tài khoản khỏi hệ thống
+                  </h3>
+                  <p className="text-slate-600">
+                    Người dùng có quyền yêu cầu xóa bỏ hoàn toàn dữ liệu cá nhân và tài khoản bất cứ lúc nào thông qua các bước sau:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-slate-600">
+                    <li>Gửi email yêu cầu xóa dữ liệu tới hộp thư: <strong className="text-slate-900">{SITE_CONFIG.supportEmail}</strong> hoặc <strong className="text-slate-900">ducquan16102006@gmail.com</strong> với tiêu đề &ldquo;Yêu cầu xóa tài khoản và dữ liệu cá nhân&rdquo;</li>
+                    <li>Liên hệ Hotline hỗ trợ: <strong className="text-slate-900">{SITE_CONFIG.hotline}</strong> để được chuyên viên hỗ trợ kiểm tra và tiếp nhận yêu cầu xóa tài khoản</li>
+                    <li>Sau khi tiếp nhận yêu cầu hợp lệ, hệ thống sẽ tiến hành xóa vĩnh viễn toàn bộ thông tin tài khoản, lịch sử phiên đăng nhập và các dữ liệu liên quan khỏi cơ sở dữ liệu trong vòng 24 đến 48 giờ làm việc</li>
+                  </ul>
+                </div>
               </div>
             </article>
 

@@ -44,6 +44,8 @@ const HANOI_OFFLINE_LOCATIONS: LocationEntry[] = [
   { names: ['tây sơn', 'tay son'], lat: 21.0105, lng: 105.8239, label: 'Tây Sơn, Đống Đa, Hà Nội' },
   { names: ['thái hà', 'thai ha'], lat: 21.0142, lng: 105.8197, label: 'Thái Hà, Đống Đa, Hà Nội' },
   { names: ['láng hạ', 'lang ha'], lat: 21.0175, lng: 105.8142, label: 'Láng Hạ, Đống Đa, Hà Nội' },
+  { names: ['ngõ 119 chùa láng', '119 chùa láng'], lat: 21.0225, lng: 105.8032, label: 'Ngõ 119 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội' },
+  { names: ['ngõ 84 chùa láng', '84 chùa láng'], lat: 21.0242, lng: 105.8038, label: 'Ngõ 84 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội' },
   { names: ['chùa láng', 'chua lang'], lat: 21.0232, lng: 105.8049, label: 'Chùa Láng, Đống Đa, Hà Nội' },
   { names: ['đường láng', 'duong lang'], lat: 21.0148, lng: 105.8058, label: 'Đường Láng, Đống Đa, Hà Nội' },
   { names: ['nguyễn chí thanh', 'nguyen chi thanh'], lat: 21.0221, lng: 105.8105, label: 'Nguyễn Chí Thanh, Đống Đa, Hà Nội' },
@@ -54,9 +56,12 @@ const HANOI_OFFLINE_LOCATIONS: LocationEntry[] = [
   { names: ['quận đống đa', 'đống đa', 'dong da'], lat: 21.0181, lng: 105.8268, label: 'Quận Đống Đa, Hà Nội' },
 
   // ── TUYẾN ĐƯỜNG & KHU VỰC QUẬN CẦU GIẤY ──
+  { names: ['ngõ 165 cầu giấy', '165 cầu giấy'], lat: 21.0336, lng: 105.7978, label: 'Ngõ 165 Cầu Giấy, Dịch Vọng, Cầu Giấy, Hà Nội' },
+  { names: ['ngõ 68 cầu giấy', '68 cầu giấy'], lat: 21.0352, lng: 105.8022, label: 'Ngõ 68 Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội' },
   { names: ['cầu giấy', 'cau giay'], lat: 21.0336, lng: 105.7978, label: 'Đường Cầu Giấy, Hà Nội' },
   { names: ['xuân thủy', 'xuan thuy'], lat: 21.0373, lng: 105.7828, label: 'Xuân Thủy, Cầu Giấy, Hà Nội' },
-  { names: ['hồ tùng mậu', 'ho tung mau'], lat: 21.0392, lng: 105.7681, label: 'Hồ Tùng Mậu, Cầu Giấy, Hà Nội' },
+  { names: ['ngõ 20 hồ tùng mậu', '20 hồ tùng mậu'], lat: 21.0375, lng: 105.7765, label: 'Ngõ 20 Hồ Tùng Mậu, Mai Dịch, Cầu Giấy, Hà Nội' },
+  { names: ['hồ tùng mậu', 'ho tung mau'], lat: 21.0375, lng: 105.7765, label: 'Hồ Tùng Mậu, Mai Dịch, Cầu Giấy, Hà Nội' },
   { names: ['hoàng quốc việt', 'hoang quoc viet'], lat: 21.0467, lng: 105.7928, label: 'Hoàng Quốc Việt, Cầu Giấy, Hà Nội' },
   { names: ['duy tân', 'duy tan'], lat: 21.0306, lng: 105.7828, label: 'Duy Tân, Cầu Giấy, Hà Nội' },
   { names: ['trần thái tông', 'tran thai tong'], lat: 21.0315, lng: 105.7885, label: 'Trần Thái Tông, Cầu Giấy, Hà Nội' },
@@ -145,6 +150,42 @@ const HANOI_OFFLINE_LOCATIONS: LocationEntry[] = [
 
   // ── TP HÀ NỘI TRUNG TÂM TỔNG THỂ ──
   { names: ['hà nội', 'ha noi', 'tp hà nội', 'thành phố hà nội'], lat: 21.0285, lng: 105.8542, label: 'Thành phố Hà Nội' },
+];
+
+const HCMC_OFFLINE_LOCATIONS: LocationEntry[] = [
+  // ── QUẬN 1 ──
+  { names: ['nguyễn trãi quận 1', 'nguyễn trãi bến thành', 'nguyễn trãi'], lat: 10.7712, lng: 106.6925, label: 'Đường Nguyễn Trãi, Phường Bến Thành, Quận 1, TP.HCM' },
+  { names: ['nguyễn thị minh khai', 'nguyễn thị minh khai quận 1'], lat: 10.7828, lng: 106.6958, label: 'Đường Nguyễn Thị Minh Khai, Phường Bến Nghé, Quận 1, TP.HCM' },
+  { names: ['bến thành', 'ben thanh', 'phường bến thành'], lat: 10.7712, lng: 106.6925, label: 'Phường Bến Thành, Quận 1, TP.HCM' },
+  { names: ['bến nghé', 'ben nghe', 'phường bến nghé'], lat: 10.7828, lng: 106.6958, label: 'Phường Bến Nghé, Quận 1, TP.HCM' },
+  { names: ['quận 1', 'quan 1'], lat: 10.7756, lng: 106.7004, label: 'Quận 1, TP. Hồ Chí Minh' },
+
+  // ── QUẬN 7 ──
+  { names: ['đường số 10 tân phong', 'đường số 10 quận 7', 'đường số 10'], lat: 10.7330, lng: 106.7028, label: 'Đường số 10, Phường Tân Phong, Quận 7, TP.HCM' },
+  { names: ['lê văn lương quận 7', 'lê văn lương tân phong'], lat: 10.7350, lng: 106.7040, label: 'Đường Lê Văn Lương, Phường Tân Phong, Quận 7, TP.HCM' },
+  { names: ['nguyễn hữu thọ', 'nguyen huu tho'], lat: 10.7326, lng: 106.6992, label: 'Nguyễn Hữu Thọ, Phường Tân Phong, Quận 7, TP.HCM' },
+  { names: ['phường tân phong', 'tân phong quận 7', 'tân phong'], lat: 10.7330, lng: 106.7030, label: 'Phường Tân Phong, Quận 7, TP.HCM' },
+  { names: ['phú mỹ hưng', 'phu my hung'], lat: 10.7297, lng: 106.7072, label: 'Khu đô thị Phú Mỹ Hưng, Quận 7, TP.HCM' },
+  { names: ['quận 7', 'quan 7'], lat: 10.7340, lng: 106.7160, label: 'Quận 7, TP. Hồ Chí Minh' },
+
+  // ── QUẬN BÌNH THẠNH ──
+  { names: ['điện biên phủ bình thạnh', 'điện biên phủ phường 25'], lat: 10.8005, lng: 106.7165, label: 'Đường Điện Biên Phủ, Phường 25, Bình Thạnh, TP.HCM' },
+  { names: ['phường 25 bình thạnh', 'phường 25'], lat: 10.8016, lng: 106.7145, label: 'Phường 25, Bình Thạnh, TP.HCM' },
+  { names: ['quận bình thạnh', 'bình thạnh', 'binh thanh'], lat: 10.8105, lng: 106.7091, label: 'Quận Bình Thạnh, TP. Hồ Chí Minh' },
+
+  // ── TP THỦ ĐỨC ──
+  { names: ['masteri thảo điền', 'thảo điền masteri'], lat: 10.8035, lng: 106.7378, label: '159 Xa Lộ Hà Nội, Thảo Điền, TP. Thủ Đức, TP.HCM' },
+  { names: ['xa lộ hà nội', 'võ nguyên giáp'], lat: 10.8035, lng: 106.7378, label: 'Xa Lộ Hà Nội, Thảo Điền, TP. Thủ Đức, TP.HCM' },
+  { names: ['thảo điền', 'thao dien'], lat: 10.8055, lng: 106.7335, label: 'Phường Thảo Điền, TP. Thủ Đức, TP.HCM' },
+  { names: ['tp thủ đức', 'thành phố thủ đức', 'thủ đức', 'thu duc'], lat: 10.8494, lng: 106.7537, label: 'TP. Thủ Đức, TP. Hồ Chí Minh' },
+
+  // ── TP HỒ CHÍ MINH TRUNG TÂM TỔNG THỂ ──
+  { names: ['tp.hcm', 'tphcm', 'tp hcm', 'tp hồ chí minh', 'thành phố hồ chí minh', 'hồ chí minh', 'ho chi minh', 'sài gòn', 'sai gon'], lat: 10.7769, lng: 106.7009, label: 'TP. Hồ Chí Minh' },
+];
+
+const ALL_OFFLINE_LOCATIONS: LocationEntry[] = [
+  ...HANOI_OFFLINE_LOCATIONS,
+  ...HCMC_OFFLINE_LOCATIONS,
 ];
 
 /**
@@ -305,7 +346,7 @@ export async function geocodeAddressPipeline(rawAddress: string): Promise<Geocod
   }
 
   // ── TẦNG 3: Khớp Từ điển Offline chuẩn xác (Đảm bảo 100% định vị thành công) ──
-  for (const item of HANOI_OFFLINE_LOCATIONS) {
+  for (const item of ALL_OFFLINE_LOCATIONS) {
     const isMatched = item.names.some((keyword) => {
       const lowerKeyword = keyword.toLowerCase();
       const nonAccentKeyword = removeVietnameseTones(keyword);
@@ -322,13 +363,28 @@ export async function geocodeAddressPipeline(rawAddress: string): Promise<Geocod
     }
   }
 
-  // Mặc định trả về tọa độ trung tâm Hà Nội nếu có chữ "Hà Nội"
+  // Mặc định trả về tọa độ trung tâm nếu có tên thành phố lớn
   if (lowerQuery.includes('hà nội') || nonAccentQuery.includes('ha noi')) {
     return {
       lat: 21.0285,
       lng: 105.8542,
       source: 'offline',
       label: 'Thành phố Hà Nội',
+    };
+  }
+
+  if (
+    lowerQuery.includes('hồ chí minh') ||
+    nonAccentQuery.includes('ho chi minh') ||
+    lowerQuery.includes('tp.hcm') ||
+    nonAccentQuery.includes('tphcm') ||
+    nonAccentQuery.includes('sai gon')
+  ) {
+    return {
+      lat: 10.7769,
+      lng: 106.7009,
+      source: 'offline',
+      label: 'TP. Hồ Chí Minh',
     };
   }
 
@@ -445,7 +501,7 @@ export async function reverseGeocodePipeline(lat: number, lng: number): Promise<
 
   // 3B. Tìm tuyến phố / địa danh offline gần nhất (< 2.5km)
   let closestLoc: { label: string; dist: number } | null = null;
-  for (const item of HANOI_OFFLINE_LOCATIONS) {
+  for (const item of ALL_OFFLINE_LOCATIONS) {
     const dist = calculateDistanceKm(lat, lng, item.lat, item.lng);
     if (!closestLoc || dist < closestLoc.dist) {
       closestLoc = { label: item.label, dist };

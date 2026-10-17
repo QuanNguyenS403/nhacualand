@@ -1,6 +1,7 @@
 import type { ListingMapPin } from '@qns/shared';
 import rawReviewsData from '../../data/nhaminhbach-reviews-899.json';
 import { removeDiacritics } from './reviews-types';
+import { ALL_DEMO_LISTINGS } from './demo-data';
 
 export interface RoomReview {
   id: string;
@@ -125,11 +126,41 @@ export function maskListingAddress(
  */
 export function pinToMapRoom(pin: ListingMapPin): MapRoom {
   const images = pin.thumbnailUrl ? [pin.thumbnailUrl] : [];
+  const rawAddr = pin.addressDetail || pin.locationName;
   return {
     ...pin,
-    maskedAddress: maskListingAddress(pin.locationName, '', pin.district, 'Hà Nội'),
+    rawAddress: rawAddr,
+    maskedAddress: maskListingAddress(rawAddr, pin.ward, pin.district, 'Hà Nội'),
     images,
   };
+}
+
+/**
+ * Dữ liệu phòng dự phòng từ danh sách tin chuẩn khi API máy chủ ngoại tuyến
+ */
+export function getFallbackDemoPins(): ListingMapPin[] {
+  return ALL_DEMO_LISTINGS
+    .filter((l) => l.lat != null && l.lng != null)
+    .map((l) => ({
+      id: String(l.id),
+      slug: l.slug,
+      title: l.title,
+      price: parseInt(String(l.price), 10) || 0,
+      depositAmount: l.depositAmount ? parseInt(String(l.depositAmount), 10) : undefined,
+      areaM2: parseInt(String(l.areaM2), 10) || 20,
+      propertyType: (l.propertyType as any) || 'phong_tro',
+      lat: l.lat!,
+      lng: l.lng!,
+      thumbnailUrl: l.images?.[0]?.imageUrl || null,
+      locationName: l.addressDetail || l.location?.name || 'Hà Nội',
+      addressDetail: l.addressDetail || undefined,
+      district: l.location?.name,
+      status: 'active',
+      electricityPricePerKwh: l.electricityPricePerKwh || undefined,
+      waterPricePerM3: l.waterPricePerM3 || undefined,
+      waterPriceFlat: l.waterPriceFlat || undefined,
+      amenities: l.amenities || undefined,
+    }));
 }
 
 /**

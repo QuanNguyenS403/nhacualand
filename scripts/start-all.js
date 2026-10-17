@@ -3,13 +3,37 @@ const path = require('path');
 const fs = require('fs');
 
 const rootDir = path.resolve(__dirname, '..');
+
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, 'utf8');
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    let val = trimmed.slice(eqIdx + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (!(key in process.env)) {
+      process.env[key] = val;
+    }
+  }
+}
+
+// Nạp biến môi trường từ .env.production và .env gốc monorepo
+loadEnvFile(path.resolve(rootDir, '.env.production'));
+loadEnvFile(path.resolve(rootDir, '.env'));
+
 const apiPort = process.env.INTERNAL_API_PORT || '4000';
-const publicPort = process.env.PORT || '10000';
+const publicPort = process.env.PORT || '3000';
 
 console.log('=============================================================');
-console.log('🚀 KHỞI ĐỘNG HỆ THỐNG GỘP (UNIFIED WEB + API) TRÊN RENDER');
-console.log(`🌐 Cổng công khai bên ngoài (Render Web):  ${publicPort}`);
-console.log(`⚙️  Cổng API nội bộ (NestJS Backend):     ${apiPort}`);
+console.log('🚀 KHỞI ĐỘNG HỆ THỐNG GỘP (UNIFIED WEB + API) - NHACUALAND');
+console.log(`🌐 Cổng Frontend Web (Next.js):           ${publicPort}`);
+console.log(`⚙️  Cổng Backend API (NestJS):             ${apiPort}`);
 console.log('=============================================================\n');
 
 // Kiểm tra artifact của Backend API

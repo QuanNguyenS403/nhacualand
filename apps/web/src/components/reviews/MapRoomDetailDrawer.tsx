@@ -106,9 +106,9 @@ export function MapRoomDetailDrawer({
   // ════════════════════════════════════════════════════════════════
   if (selectedReview && !room) {
     return (
-      <div className="absolute top-0 right-0 z-40 h-full w-full sm:w-[440px] md:w-[480px] bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-slide-left p-5 flex flex-col justify-between">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 md:right-5 bottom-3 sm:bottom-4 md:bottom-5 z-40 max-h-[calc(100%-1.5rem)] sm:max-h-[calc(100%-2rem)] md:max-h-[82vh] w-[calc(100%-24px)] sm:w-[350px] md:w-[370px] bg-white shadow-2xl rounded-2xl sm:rounded-3xl border border-slate-200/90 overflow-hidden animate-slide-left flex flex-col justify-between">
+        <div className="p-4 space-y-3.5 flex-1 overflow-y-auto">
+          <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 font-bold text-xs border border-amber-500/20">
                 Đánh giá cộng đồng
@@ -150,7 +150,7 @@ export function MapRoomDetailDrawer({
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 text-center">
+        <div className="p-3 sm:p-3.5 border-t border-slate-100 text-center shrink-0 bg-white">
           <button
             type="button"
             onClick={onClose}
@@ -179,16 +179,16 @@ export function MapRoomDetailDrawer({
   const isPending = room!.status === 'pending' || Boolean(room!.isOwnerListing) || Boolean(room!.isOwnerPending);
 
   return (
-    <div className="absolute top-0 right-0 z-40 h-full w-full sm:w-[440px] md:w-[480px] bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-slide-left flex flex-col">
+    <div className="absolute top-3 sm:top-4 right-3 sm:right-4 md:right-5 bottom-3 sm:bottom-4 md:bottom-5 z-40 max-h-[calc(100%-1.5rem)] sm:max-h-[calc(100%-2rem)] md:max-h-[82vh] w-[calc(100%-24px)] sm:w-[350px] md:w-[370px] bg-white shadow-2xl rounded-2xl sm:rounded-3xl border border-slate-200/90 overflow-hidden animate-slide-left flex flex-col">
       {/* Thông báo nếu có */}
       {listingNotice && (
-        <div className="p-3 bg-amber-50 text-amber-800 border-b border-amber-200 text-xs font-bold text-center">
+        <div className="p-2.5 bg-amber-50 text-amber-800 border-b border-amber-200 text-xs font-bold text-center shrink-0">
           {listingNotice}
         </div>
       )}
 
       {/* Header Panel */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 sm:px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+      <div className="shrink-0 bg-white/95 backdrop-blur-md px-3.5 sm:px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isPending ? (
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 font-bold text-xs border border-amber-500/30 flex items-center gap-1">
@@ -208,14 +208,14 @@ export function MapRoomDetailDrawer({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           title="Đóng bảng"
         >
           ✕
         </button>
       </div>
 
-      <div className="p-4 sm:p-5 space-y-5 flex-1">
+      <div className="p-3.5 sm:p-4 space-y-3 flex-1 overflow-y-auto">
         {/* Hình ảnh phòng */}
         {displayImages.length > 0 && (
           <div className="space-y-2">
@@ -253,11 +253,11 @@ export function MapRoomDetailDrawer({
 
         {/* Tiêu đề & Giá thuê */}
         <div>
-          <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
             {displayTitle}
           </h3>
-          <div className="mt-2.5 flex items-baseline gap-3 flex-wrap">
-            <span className="text-xl sm:text-2xl font-black text-brand">
+          <div className="mt-2 flex items-baseline gap-2.5 flex-wrap">
+            <span className="text-lg sm:text-xl font-black text-brand">
               {displayPrice}
             </span>
             {displayDeposit && (
@@ -272,10 +272,10 @@ export function MapRoomDetailDrawer({
         </div>
 
         {/* Địa chỉ trên bản đồ */}
-        <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-200/60 text-slate-700 space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-amber-800">
+        <div className="p-2.5 rounded-xl bg-amber-50/50 border border-amber-200/60 text-slate-700 space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-amber-800">
             <span>Vị trí trên bản đồ</span>
-            <span className="text-[10px] font-mono text-amber-700">
+            <span className="font-mono text-amber-700">
               {room!.lat.toFixed(4)}, {room!.lng.toFixed(4)}
             </span>
           </div>
@@ -355,10 +355,10 @@ export function MapRoomDetailDrawer({
       </div>
 
       {/* Footer Actions: Đặt lịch xem & Xem bài chi tiết */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-slate-200 p-4 flex items-center gap-3">
+      <div className="shrink-0 bg-white border-t border-slate-100 p-3 sm:p-3.5 flex items-center gap-2.5">
         <Link
           href={`/tin/${targetSlug}`}
-          className="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors border border-slate-200"
+          className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors border border-slate-200"
         >
           Xem bài chi tiết →
         </Link>
@@ -367,7 +367,7 @@ export function MapRoomDetailDrawer({
           <button
             type="button"
             onClick={() => setIsBookingModalOpen(true)}
-            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-brand to-amber-400 text-slate-950 font-bold text-xs text-center transition-all shadow-md hover:brightness-105"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-brand to-amber-400 text-slate-950 font-bold text-xs text-center transition-all shadow-md hover:brightness-105"
           >
             Đặt lịch xem phòng
           </button>

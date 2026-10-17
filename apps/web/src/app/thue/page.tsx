@@ -11,6 +11,7 @@ import {
 } from '@/components/SearchFilterBar';
 import { findHanoiWard } from '@/lib/hanoi-wards';
 import { VIETNAM_UNIVERSITIES, calculateDistanceKm } from '@/lib/vietnam-universities';
+import { removeDiacritics } from '@/lib/search-suggestions-data';
 import {
   ALL_DEMO_LISTINGS,
   DEMO_CAN_HO_RENT_LISTINGS,
@@ -109,8 +110,8 @@ export default async function ThuePage({ searchParams }: Props) {
 
   const cleanItems = (items || []).filter((it) => !isTestListing(it));
 
-  // Chỉ dùng fallbackListings khi API gặp sự cố kỹ thuật (isApiError)
-  const baseItems = isApiError ? fallbackListings : cleanItems;
+  // Đồng bộ: nếu API lỗi hoặc cơ sở dữ liệu chưa có tin thật, dùng fallbackListings
+  const baseItems = (isApiError || cleanItems.length === 0) ? fallbackListings : cleanItems;
 
   // Tự động loại bỏ triệt để mọi bài đăng phòng đã cho thuê hoặc đã gỡ
   let displayItems = baseItems.filter((it) => {
@@ -118,16 +119,25 @@ export default async function ThuePage({ searchParams }: Props) {
     return st !== 'rented' && st !== 'removed';
   });
 
-  // Hỗ trợ lọc tìm kiếm trên toàn bộ danh mục phòng
+  // Hỗ trợ lọc tìm kiếm trên toàn bộ danh mục phòng (hỗ trợ cả có dấu và không dấu)
   if (searchParams.keyword) {
     const kw = searchParams.keyword.toLowerCase().trim();
-    displayItems = displayItems.filter(
-      (it) =>
-        it.title.toLowerCase().includes(kw) ||
-        it.description?.toLowerCase().includes(kw) ||
-        it.addressDetail?.toLowerCase().includes(kw) ||
-        it.location?.name?.toLowerCase().includes(kw)
-    );
+    const kwNoDia = removeDiacritics(kw);
+    displayItems = displayItems.filter((it) => {
+      const title = (it.title || '').toLowerCase();
+      const desc = (it.description || '').toLowerCase();
+      const addr = (it.addressDetail || '').toLowerCase();
+      const loc = (it.location?.name || '').toLowerCase();
+      if (title.includes(kw) || desc.includes(kw) || addr.includes(kw) || loc.includes(kw)) {
+        return true;
+      }
+      return (
+        removeDiacritics(title).includes(kwNoDia) ||
+        removeDiacritics(desc).includes(kwNoDia) ||
+        removeDiacritics(addr).includes(kwNoDia) ||
+        removeDiacritics(loc).includes(kwNoDia)
+      );
+    });
   }
   if (searchParams.locationSlug) {
     const loc = searchParams.locationSlug.toLowerCase().trim();

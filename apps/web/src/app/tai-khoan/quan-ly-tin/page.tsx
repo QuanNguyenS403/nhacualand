@@ -146,7 +146,13 @@ export default function QuanLyTinPage() {
       loadCounts();
     };
     window.addEventListener('qns_listings_updated', handleUpdate);
-    return () => window.removeEventListener('qns_listings_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+    return () => {
+      window.removeEventListener('qns_listings_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+    };
   }, [load, statusFilter, page, loadCounts]);
 
   // Đánh dấu đã cho thuê
@@ -165,7 +171,7 @@ export default function QuanLyTinPage() {
             return;
           }
           showToast('Đã cập nhật phòng sang trạng thái đã cho thuê thành công');
-          window.dispatchEvent(new Event('qns_listings_updated'));
+          window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: { id: listingId, status: 'rented' } }));
         } catch {
           showToast('Lỗi kết nối máy chủ', 'error');
         }
@@ -189,7 +195,7 @@ export default function QuanLyTinPage() {
             return;
           }
           showToast('Đã mở lại tin phòng còn trống thành công');
-          window.dispatchEvent(new Event('qns_listings_updated'));
+          window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: { id: listingId, status: 'active' } }));
         } catch {
           showToast('Lỗi kết nối máy chủ', 'error');
         }
@@ -206,7 +212,7 @@ export default function QuanLyTinPage() {
       } else {
         showToast('Không thể cập nhật lúc này, vui lòng thử lại', 'error');
       }
-      window.dispatchEvent(new Event('qns_listings_updated'));
+      window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: { id: listingId, status: 'confirmed' } }));
     } catch {
       showToast('Lỗi kết nối máy chủ', 'error');
     }
@@ -228,7 +234,7 @@ export default function QuanLyTinPage() {
             return;
           }
           showToast('Đã gửi tin vào hàng đợi chờ duyệt lại thành công');
-          window.dispatchEvent(new Event('qns_listings_updated'));
+          window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: { id: listingId, status: 'pending' } }));
         } catch {
           showToast('Lỗi kết nối máy chủ', 'error');
         }
@@ -252,7 +258,7 @@ export default function QuanLyTinPage() {
             return;
           }
           showToast('Đã gỡ bài đăng phòng thành công');
-          window.dispatchEvent(new Event('qns_listings_updated'));
+          window.dispatchEvent(new CustomEvent('qns_listings_updated', { detail: { id: listingId, status: 'removed' } }));
         } catch {
           showToast('Lỗi kết nối máy chủ', 'error');
         }

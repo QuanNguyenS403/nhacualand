@@ -20,6 +20,7 @@
     "audit:data": "node scripts/audit-data.js",
     "test:e2e": "node scripts/e2e-map-sync-test.js",
     "test:static-lint": "node packages/database/scripts/static-lint-check.js",
+    "db:check": "node scripts/kiem-tra-supabase.js",
     "db:generate": "pnpm --filter @batdongsan/database generate",
     "db:migrate": "pnpm --filter @batdongsan/database migrate:dev",
     "db:migrate:deploy": "pnpm --filter @batdongsan/database migrate:deploy",

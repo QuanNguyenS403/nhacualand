@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { fetchListings } from '@/lib/api';
-import { ListingCard } from '@/components/ListingCard';
+import { ListingsGridWithCustom } from '@/components/ListingsGridWithCustom';
 import { Pagination } from '@/components/Pagination';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 import { findHanoiWard } from '@/lib/hanoi-wards';
 import { VIETNAM_UNIVERSITIES, calculateDistanceKm } from '@/lib/vietnam-universities';
+import { removeDiacritics } from '@/lib/search-suggestions-data';
 import { DEMO_ROOM_RENT_LISTINGS } from '@/lib/demo-data';
 
 export const metadata: Metadata = {
@@ -104,18 +105,30 @@ export default async function ChoThueTroPage({ searchParams }: Props) {
       mergedMap.set(item.slug, item);
     }
   }
-  let displayItems = Array.from(mergedMap.values());
+  let displayItems = Array.from(mergedMap.values()).filter((it) => {
+    const st = ((it as any).status || 'active').toLowerCase();
+    return st !== 'rented' && st !== 'removed';
+  });
 
-  // Hỗ trợ lọc tìm kiếm trên toàn bộ danh mục phòng trọ
+  // Hỗ trợ lọc tìm kiếm trên toàn bộ danh mục phòng trọ (hỗ trợ cả có dấu và không dấu)
   if (searchParams.keyword) {
     const kw = searchParams.keyword.toLowerCase().trim();
-    displayItems = displayItems.filter(
-      (it) =>
-        it.title.toLowerCase().includes(kw) ||
-        it.description?.toLowerCase().includes(kw) ||
-        it.addressDetail?.toLowerCase().includes(kw) ||
-        it.location?.name?.toLowerCase().includes(kw)
-    );
+    const kwNoDia = removeDiacritics(kw);
+    displayItems = displayItems.filter((it) => {
+      const title = (it.title || '').toLowerCase();
+      const desc = (it.description || '').toLowerCase();
+      const addr = (it.addressDetail || '').toLowerCase();
+      const loc = (it.location?.name || '').toLowerCase();
+      if (title.includes(kw) || desc.includes(kw) || addr.includes(kw) || loc.includes(kw)) {
+        return true;
+      }
+      return (
+        removeDiacritics(title).includes(kwNoDia) ||
+        removeDiacritics(desc).includes(kwNoDia) ||
+        removeDiacritics(addr).includes(kwNoDia) ||
+        removeDiacritics(loc).includes(kwNoDia)
+      );
+    });
   }
   if (searchParams.locationSlug) {
     const loc = searchParams.locationSlug.toLowerCase().trim();
@@ -275,7 +288,7 @@ export default async function ChoThueTroPage({ searchParams }: Props) {
       <div className="container-max py-8 sm:py-10 md:py-12">
         {isApiError && isProduction && (
           <div className="mb-4 sm:mb-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-700">
-            Đang có gián đoạn kết nối tới máy chủ dữ liệu. Danh sách phòng trọ tạm thời chưa tải được
+            Đang có gián đoạn kết nối tới máy chủ dữ liệu, danh sách phòng trọ tạm thời chưa tải được
           </div>
         )}
         {/* Breadcrumb */}
@@ -322,11 +335,7 @@ export default async function ChoThueTroPage({ searchParams }: Props) {
           </div>
         ) : (
           <>
-            <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-6">
-              {pagedItems.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
+            <ListingsGridWithCustom initialListings={pagedItems} />
             {totalPages > 1 && (
               <div className="mt-8 sm:mt-10 md:mt-12">
                 <Pagination
