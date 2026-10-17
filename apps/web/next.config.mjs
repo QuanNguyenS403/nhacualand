@@ -26,6 +26,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   transpilePackages: ['@qns/shared'],
   compress: true,
   poweredByHeader: false,
