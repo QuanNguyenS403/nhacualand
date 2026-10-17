@@ -1,6 +1,17 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (16/10/2026 — LOẠI BỎ HOÀN TOÀN NGÂN HÀNG & THANH TOÁN TRỰC TUYẾN KHỎI WEBSITE):**
+**Việc vừa hoàn thành (17/10/2026 — ĐỘI AGENT RÀ SOÁT TOÀN DIỆN & BĂNG CHUYỀN SỬA LỖI 4 GIAI ĐOẠN):**
+- Hoàn thành đầy đủ 4 giai đoạn theo quy chuẩn:
+  1. **Giai đoạn 0 (Đường cơ sở & Kiểm kê)**: Lập nhánh `audit/doi-agent-2026-10-17`, sinh 6 tệp kiểm kê CSV (120 endpoints, 37 routes, 39 models, 53 env vars, 83 calls, 85 scripts).
+  2. **Giai đoạn A (Rà soát mù song song A1–A9)**: 9 báo cáo chuyên trách, phát hiện 29 vấn đề (3 P0, 9 P1, 13 P2, 4 P3). Đối chiếu Phụ lục A đạt 17/17 mục (100% tỷ lệ phát hiện độc lập).
+  3. **Giai đoạn B (Tổng hợp & Kiểm chứng độc lập)**: Hoàn tất `AUDIT-gemini-3.8-flash-2026-10-17-tong-the.md`, `master-findings.json`, `00-TOM-TAT-CHO-CHU-DU-AN.md`. VER kiểm chứng 10/10 mẫu đạt 100%.
+  4. **Giai đoạn C (Băng chuyền sửa lỗi qua 3 đợt)**:
+     - **Đợt 1 (F0/F1/F5)**: Vá SEC-001 (xóa fallback JWT hardcode), SEC-007 (xóa phone khỏi JWT payload), OPS-001 (blacklist hex key mẫu), DAT-001 (rào chắn test DB cho seed), OPS-002 (trói cổng Docker vào 127.0.0.1), OPS-003 (đổi default mock mail). Checkpoint: `ac2fd65`.
+     - **Đợt 2 (F2/F3)**: Vá SEC-003 (chuyển jwtService.decode sang verify), SEC-004 (bật trust proxy), SEC-006 (tích hợp Helmet), SEC-005 (xác thực và giới hạn 5MB cho /api/upload-images), API-003 (trả 503 thay vì nuốt lỗi trả 200 trong feedback/consultation), FE-001 (ngừng ép gộp tin demo Unsplash khi có tin thật). Checkpoint: `a04a49f`.
+     - **Đợt 3 (F1/F2/F5)**: Vá POL-001 (gán agent động từ admin/broker, không tạo user SĐT cứng), BIZ-003 (trích xuất hoa hồng 40% vào @qns/shared), TST-001 (thêm test hành vi vào CI), OPS-004 (chuyển 6 audit cũ vào docs/audit/legacy/). Checkpoint: `dc50e7b`.
+  5. **Giai đoạn D (Nghiệm thu độc lập)**: 2 lượt xác minh độc lập liên tiếp 100% đạt; tsc --noEmit cả 2 app đạt Exit code 0; static-lint đạt 5/5; tuân thủ triệt để R1–R12 và GEMINI.md § 8 (0 dấu chấm cuối câu).
+
+**Việc trước đó (16/10/2026 — LOẠI BỎ HOÀN TOÀN NGÂN HÀNG & THANH TOÁN TRỰC TUYẾN KHỎI WEBSITE):**
 - Đã gỡ bỏ 100% phần ngân hàng và thanh toán trực tuyến do website chuyển đổi sang mô hình kết nối môi giới phòng trọ trực tiếp, hoàn toàn miễn phí cho khách thuê:
   1. **Backend API (`apps/api`)**:
      - Xóa bỏ hoàn toàn module `apps/api/src/modules/payments/` (`payments.controller.ts`, `payments.service.ts`, `payments.module.ts`, thư mục `dto/`).
