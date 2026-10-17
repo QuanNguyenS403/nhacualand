@@ -18,18 +18,30 @@
  * không phá vỡ trải nghiệm phát triển cục bộ khi chưa cấu hình secret thật.
  */
 
-const INSECURE_DEFAULTS: Record<string, string> = {
-  JWT_ACCESS_SECRET: 'changeme_access',
-  JWT_REFRESH_SECRET: 'changeme_refresh',
+const INSECURE_KEY_VALUES: Record<string, string[]> = {
+  JWT_ACCESS_SECRET: [
+    'changeme_access',
+    'c27987125a9cdaadf550541f5a048eb3b55c5c37a7a21dde7b3a51baa3c9dd49',
+    'ac4a434d314c000e3f774d1f56f5a6a01c3326c74022d1a84ebaa5b5e3d0434b',
+  ],
+  JWT_REFRESH_SECRET: [
+    'changeme_refresh',
+    'ac4a434d314c000e3f774d1f56f5a6a01c3326c74022d1a84ebaa5b5e3d0434b',
+    'c27987125a9cdaadf550541f5a048eb3b55c5c37a7a21dde7b3a51baa3c9dd49',
+  ],
+  ADMIN_BOOTSTRAP_SECRET: [
+    'ae45fa53647fdc8811164f26ad6ebda9275b379a0a092a739351c80f11fd357e',
+  ],
 };
 
 export function assertRequiredSecrets(): void {
   const isProduction = process.env.NODE_ENV === 'production';
 
-  for (const [key, insecureValue] of Object.entries(INSECURE_DEFAULTS)) {
+  for (const [key, insecureList] of Object.entries(INSECURE_KEY_VALUES)) {
     const value = process.env[key];
 
     if (!value) {
+      if (key === 'ADMIN_BOOTSTRAP_SECRET') continue; // optional in production
       throw new Error(
         `[Cấu hình thiếu] Biến môi trường ${key} chưa được thiết lập.\n` +
           `→ Tạo file ".env" ở gốc monorepo (copy từ ".env.example") và điền giá trị thật, ` +
@@ -37,21 +49,20 @@ export function assertRequiredSecrets(): void {
       );
     }
 
-    if (value === insecureValue) {
+    if (insecureList.includes(value)) {
       if (isProduction) {
         throw new Error(
-          `[BẢO MẬT NGHIÊM TRỌNG] ${key} vẫn đang dùng giá trị placeholder mặc định ` +
-            `"${insecureValue}" trong môi trường production (NODE_ENV=production).\n` +
-            `→ Đây là lỗ hổng cho phép giả mạo JWT của bất kỳ ai. Sinh giá trị ngẫu nhiên đủ mạnh ` +
-            `(ví dụ: chạy "openssl rand -hex 32") và điền vào biến ${key} trong .env thật trước khi deploy. ` +
+          `[BẢO MẬT NGHIÊM TRỌNG] ${key} vẫn đang dùng giá trị placeholder mặc định công khai ` +
+            `trong môi trường production (NODE_ENV=production).\n` +
+            `→ Sinh giá trị ngẫu nhiên đủ mạnh (ví dụ: chạy "openssl rand -hex 32") và điền vào biến ${key} trong .env thật trước khi deploy. ` +
             `Ứng dụng sẽ KHÔNG khởi động cho tới khi được sửa.`,
         );
       }
       // eslint-disable-next-line no-console
       console.warn(
-        `⚠️  [CHỈ CHẤP NHẬN Ở DEV] ${key} đang dùng giá trị placeholder mặc định "${insecureValue}". ` +
+        `⚠️  [CHỈ CHẤP NHẬN Ở DEV] ${key} đang dùng giá trị placeholder mặc định công khai. ` +
           `Việc này CHỈ được phép ở môi trường development/test. TUYỆT ĐỐI không deploy production ` +
-          `khi biến này chưa được đổi sang giá trị bí mật thật.`,
+          `khi biến này chưa được đổi sang giá trị bí mật thật`,
       );
     }
 

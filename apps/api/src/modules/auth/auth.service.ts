@@ -552,13 +552,16 @@ export class AuthService {
   }) {
     const payload = {
       sub: user.id.toString(),
-      phone: user.phone || '',
       role: user.role,
       tokenVersion: user.tokenVersion ?? 0,
     };
 
-    const accessSecret = (process.env.JWT_ACCESS_SECRET as string) || 'ac4a434d314c000e3f774d1f56f5a6a01c3326c74022d1a84ebaa5b5e3d0434b';
-    const refreshSecret = (process.env.JWT_REFRESH_SECRET as string) || 'c27987125a9cdaadf550541f5a048eb3b55c5c37a7a21dde7b3a51baa3c9dd49';
+    const accessSecret = process.env.JWT_ACCESS_SECRET;
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+
+    if (!accessSecret || !refreshSecret) {
+      throw new Error('JWT_ACCESS_SECRET và JWT_REFRESH_SECRET bắt buộc phải được cấu hình trong biến môi trường');
+    }
 
     const accessToken = this.jwtService.sign(payload, {
       secret: accessSecret,

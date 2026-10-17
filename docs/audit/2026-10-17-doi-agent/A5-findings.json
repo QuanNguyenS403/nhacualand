@@ -1,0 +1,47 @@
+[
+  {
+    "id": "FE-001",
+    "tiêu đề": "Dữ liệu phòng mẫu và ảnh Unsplash giả luôn bị gộp cưỡng bức vào danh sách phòng thật trên trang chủ và trang thuê phòng",
+    "mức độ": "P1",
+    "loại": "đúng đắn",
+    "vị trí": "apps/web/src/app/page.tsx:89",
+    "bằng chứng": "Hàm mergeHomeListings tại page.tsx:89 và vòng lặp for (const item of fallbackListings) tại thue/page.tsx:120 luôn nhồi toàn bộ các phần tử DEMO_*_RENT_LISTINGS (có chứa 27 ảnh Unsplash) vào danh sách hiển thị dù API trả về thành công",
+    "tái hiện": "Mở trang chủ http://localhost:3000/ hoặc http://localhost:3000/thue, các tin đăng giả từ demo-data.ts luôn xuất hiện cố định",
+    "tác động": "Khách thuê nhìn thấy các phòng ảo không có thật trên thực tế, dẫn tới liên hệ tư vấn phòng không tồn tại, làm giảm uy tín thương hiệu",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Chỉ kích hoạt dữ liệu fallback khi API lỗi hoàn toàn (isApiError === true); khi API trả về kết quả rỗng (empty array), hiển thị Empty State thay vì nhồi tin giả",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "FE-002",
+    "tiêu đề": "Route /qnsbroker/admin thực hiện chuyển hướng client-side bằng useEffect thay vì redirect server-side 301/308",
+    "mức độ": "P3",
+    "loại": "chất lượng",
+    "vị trí": "apps/web/src/app/qnsbroker/admin/page.tsx:9",
+    "bằng chứng": "Tệp page.tsx render giao diện với spinner và dùng router.replace('/admin') trong useEffect",
+    "tái hiện": "Truy cập /qnsbroker/admin màn hình nháy giao diện spinner trước khi điều hướng tới /admin",
+    "tác động": "Ảnh hưởng trải nghiệm người dùng và không tối ưu cho SEO",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Sử dụng redirect('/admin') của next/navigation tại Server Component hoặc cấu hình redirects trong next.config.mjs",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "FE-003",
+    "tiêu đề": "Khóa lưu trữ token phía client vẫn lưu dưới tiền tố cũ qns_auth_token",
+    "mức độ": "P3",
+    "loại": "chất lượng",
+    "vị trí": "apps/web/src/lib/auth-client.ts:25",
+    "bằng chứng": "auth-client.ts:25: const TOKEN_KEY = 'qns_auth_token'; const REFRESH_KEY = 'qns_refresh_token'",
+    "tái hiện": "Đăng nhập và kiểm tra Local Storage trong DevTools thấy các khóa qns_auth_token",
+    "tác động": "Không đồng bộ tên thương hiệu giữa giao diện và lưu trữ client",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Đồng bộ tên khóa theo quyết định chốt thương hiệu ở mục 14",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định thương hiệu)"
+  }
+]

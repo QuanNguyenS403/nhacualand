@@ -1,0 +1,62 @@
+[
+  {
+    "id": "POL-001",
+    "tiêu đề": "viewings.service.ts tự động tạo tài khoản người dùng và hồ sơ môi giới theo số điện thoại cá nhân gõ cứng",
+    "mức độ": "P1",
+    "loại": "chính sách",
+    "vị trí": "apps/api/src/modules/viewings/viewings.service.ts:30",
+    "bằng chứng": "viewings.service.ts:30-45 tạo người dùng với phone: '0981753082', fullName: 'Đức Quân', role: 'broker' ngay trong luồng nghiệp vụ khi chưa có agent",
+    "tái hiện": "Đọc tệp apps/api/src/modules/viewings/viewings.service.ts dòng 25-50",
+    "tác động": "Gắn chặt mã nguồn với thông tin cá nhân của một cá nhân, vi phạm quy tắc R6 về việc không dùng phương thức số điện thoại",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Chuyển việc cấu hình tài khoản môi giới mặc định sang biến môi trường hoặc tài khoản quản trị hệ thống",
+    "làn xử lý": "F2",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "POL-002",
+    "tiêu đề": "Số hotline cá nhân 0981 753 082 bị gõ cứng rải rác tại 26 vị trí trong mã nguồn",
+    "mức độ": "P2",
+    "loại": "chính sách",
+    "vị trí": "apps/web/src/lib/constants.ts:10",
+    "bằng chứng": "Đo đếm thực tế ghi nhận 26 vị trí chứa '0981 753 082' hoặc '0981753082' trải dài qua email.service.ts, leads.service.ts, listings.service.ts, viewings.service.ts, dang-nhap/page.tsx, AuthModal.tsx, constants.ts, .env.example",
+    "tái hiện": "Chạy script check-policy-brand.js ghi nhận chính xác 26 dòng mã",
+    "tác động": "Khó thay đổi số liên hệ khi bàn giao hoặc đổi sim hotline; nguy cơ lộ số cá nhân ra ngoài",
+    "độ chắc chắn": "ĐÃ TÁI HIỆN",
+    "đề xuất sửa": "Ghi nhận vào danh sách quyết định chủ dự án (mục 14). Đưa về Single Source of Truth duy nhất đọc từ biến môi trường NEXT_PUBLIC_HOTLINE và SITE_CONFIG",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định số hotline)"
+  },
+  {
+    "id": "POL-003",
+    "tiêu đề": "Bất đồng bộ nhận diện thương hiệu giữa nhacualand 136 lần và QNS BROKER 3 lần trong codebase",
+    "mức độ": "P2",
+    "loại": "chính sách",
+    "vị trí": "apps/web/src/app/layout.tsx:18",
+    "bằng chứng": "Codebase chứa 136 lần 'nhacualand' (trong title, meta, text), trong khi tên thư mục, logo file (logo-qns.svg), admin header (QNS.Admin), shared package (@qns/shared) và toàn bộ tài liệu dự án vẫn dùng 'QNS BROKER'",
+    "tái hiện": "Chạy check-policy-brand.js ghi nhận 136 vs 3",
+    "tác động": "Gây phân mảnh nhận diện thương hiệu với người dùng và đối tác",
+    "độ chắc chắn": "ĐÃ TÁI HIỆN",
+    "đề xuất sửa": "Ghi nhận vào mục 14 để chủ dự án chốt tên thương hiệu chính thức",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định tên thương hiệu)"
+  },
+  {
+    "id": "POL-004",
+    "tiêu đề": "Tuyên bố trực hotline 24/7 trong constants.ts tiềm ẩn rủi ro thông tin không chính xác cho mô hình môi giới đơn lẻ",
+    "mức độ": "P3",
+    "loại": "chính sách",
+    "vị trí": "apps/web/src/lib/constants.ts:11",
+    "bằng chứng": "constants.ts:11: hotlineDisplay: '0981 753 082 (24/7)'",
+    "tái hiện": "Đọc apps/web/src/lib/constants.ts dòng 11",
+    "tác động": "Cam kết 24/7 với 1 số điện thoại cá nhân không khả thi trong thực tế và có thể gây hiểu nhầm cho người thuê",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Điều chỉnh thành 'Giờ làm việc: 8:00 - 21:00 hàng ngày' hoặc chỉ hiển thị số điện thoại",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (chốt giờ làm việc)"
+  }
+]

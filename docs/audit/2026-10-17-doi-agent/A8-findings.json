@@ -1,0 +1,62 @@
+[
+  {
+    "id": "OPS-001",
+    "tiêu đề": "assert-env.ts chỉ kiểm tra chuỗi changeme cũ bỏ lọt hoàn toàn 2 khóa hex mẫu công khai trong .env.example",
+    "mức độ": "P1",
+    "loại": "vận hành",
+    "vị trí": "apps/api/src/common/config/assert-env.ts:21",
+    "bằng chứng": "INSECURE_DEFAULTS trong assert-env.ts:21 chỉ liệt kê 'changeme_access' và 'changeme_refresh'. Trong khi .env.example và auth.service.ts:560 dùng 2 chuỗi hex 64 ký tự (bắt đầu bằng c27987... và ac4a43...)",
+    "tái hiện": "Nếu sao chép .env.example sang .env thì assertRequiredSecrets() hoàn toàn không ném lỗi dù biến bí mật đang dùng khóa mẫu lộ công khai",
+    "tác động": "Hệ thống production có thể vô tình chạy bằng khóa JWT công khai mà assert-env không hề cảnh báo hay ngăn chặn",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Bổ sung hai chuỗi hex mẫu của .env.example vào INSECURE_DEFAULTS và kiểm tra cả ADMIN_BOOTSTRAP_SECRET",
+    "làn xử lý": "F0",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "OPS-002",
+    "tiêu đề": "docker-compose.yml mở cổng 5432 và 6379 ra toàn mạng 0.0.0.0 với mật khẩu mặc định",
+    "mức độ": "P1",
+    "loại": "vận hành",
+    "vị trí": "docker-compose.yml:8",
+    "bằng chứng": "ports: ['5432:5432'], ['6379:6379'] không ràng buộc localhost 127.0.0.1 và POSTGRES_PASSWORD đặt là 'postgres'",
+    "tái hiện": "Chạy docker-compose up trên máy chủ công khai, cổng DB và Redis sẽ bị quét và truy cập tự do từ internet",
+    "tác động": "Nguy cơ bị tấn công ransomware, đánh cắp hoặc xóa dữ liệu cơ sở dữ liệu và chiếm dụng Redis",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Đổi ports thành ['127.0.0.1:5432:5432'] và ['127.0.0.1:6379:6379']",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "OPS-003",
+    "tiêu đề": "Tệp .env.example đặt mặc định MAIL_DRIVER=smtp tiềm ẩn bẫy gửi email thật khi chạy test",
+    "mức độ": "P2",
+    "loại": "vận hành",
+    "vị trí": ".env.example:32",
+    "bằng chứng": ".env.example dòng 32: MAIL_DRIVER=smtp, SMTP_HOST=smtp.gmail.com",
+    "tái hiện": "Mở .env.example thấy cấu hình mặc định là smtp thay vì mock",
+    "tác động": "Lập trình viên khi cấu hình SMTP_PASS để test tính năng có thể vô tình kích hoạt gửi email thật tới khách hàng trong quá trình chạy test",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Đặt mặc định trong .env.example là MAIL_DRIVER=mock kèm ghi chú rõ ràng",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "OPS-004",
+    "tiêu đề": "Sáu tệp báo cáo audit cũ tồn lưu tại thư mục gốc repo gây rác kho mã nguồn",
+    "mức độ": "P3",
+    "loại": "tài liệu",
+    "vị trí": "AUDIT-CLAUDE-2026-09-01.md:1",
+    "bằng chứng": "Gốc repo có 6 tệp AUDIT-*.md gồm các ghi nhận lịch sử từ tháng 9 và đầu tháng 10/2026",
+    "tái hiện": "Chạy ls AUDIT-*.md tại thư mục gốc",
+    "tác động": "Làm rối cấu trúc kho mã nguồn và gây nhiễu ngữ cảnh cho các công cụ AI",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Quy hoạch di chuyển các tệp báo cáo cũ vào thư mục docs/audit/legacy/",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  }
+]

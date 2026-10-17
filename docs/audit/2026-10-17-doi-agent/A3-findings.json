@@ -1,0 +1,47 @@
+[
+  {
+    "id": "API-001",
+    "tiêu đề": "Ba module API gồm commissions, deals và viewings với 21 endpoint hoàn toàn không có trang frontend nào tiêu thụ",
+    "mức độ": "P2",
+    "loại": "chất lượng",
+    "vị trí": "apps/api/src/modules/commissions/commissions.controller.ts:1",
+    "bằng chứng": "Đối chiếu inv-calls.csv (83 lời gọi) và inv-endpoints.csv (120 endpoint). Không có bất kỳ tệp frontend nào gọi tới các prefix /commissions, /deals hay /viewings (chỉ có dòng rewrite trong next.config.mjs)",
+    "tái hiện": "Quét toàn bộ thư mục apps/web/src tìm kiếm /commissions và /deals cho kết quả 0 lời gọi",
+    "tác động": "Duy trì mã chết gây phình to bề mặt API, tốn tài nguyên bảo trì và kiểm thử",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Ghi nhận vào danh sách quyết định chủ dự án (mục 14) để quyết định giữ cho phase mở rộng hay thu gọn lại",
+    "làn xử lý": "F2",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định giữ hay gỡ module)"
+  },
+  {
+    "id": "API-002",
+    "tiêu đề": "Hai route handler custom-listings và custom-listings/[slug] trả về 410 Gone là mã chết tồn lưu",
+    "mức độ": "P3",
+    "loại": "chất lượng",
+    "vị trí": "apps/web/src/app/api/custom-listings/route.ts:7",
+    "bằng chứng": "Tệp trả về cố định 410 Gone cho toàn bộ các phương thức GET, POST, PUT, PATCH, DELETE",
+    "tái hiện": "Gửi request GET /api/custom-listings nhận về HTTP 410",
+    "tác động": "Tồn tại tệp mã chết không còn công năng",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Xóa hai route handler này và dọn dẹp các tham chiếu cũ",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "API-003",
+    "tiêu đề": "Route handler feedback và consultation nuốt lỗi trả về success giả khi backend API gặp sự cố",
+    "mức độ": "P1",
+    "loại": "đúng đắn",
+    "vị trí": "apps/web/src/app/api/feedback/route.ts:42",
+    "bằng chứng": "Khối catch(fetchErr) trả về NextResponse.json({ success: true, message: 'Cảm ơn bạn đã gửi phản hồi...' }) dù backend không hề nhận được dữ liệu",
+    "tái hiện": "Khi tắt backend API (port 4000 tắt), gửi form phản hồi hoặc tư vấn, giao diện web báo thành công nhưng dữ liệu bị hủy bỏ hoàn toàn",
+    "tác động": "Mất khách hàng tiềm năng (lead loss) và đánh mất ý kiến đóng góp của người dùng mà không có cơ chế lưu trữ thay thế",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Trả về mã lỗi HTTP 503 hoặc lưu trữ tạm vào local queue/file outbox trước khi báo thành công",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  }
+]

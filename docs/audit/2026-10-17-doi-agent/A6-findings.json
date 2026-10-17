@@ -1,0 +1,47 @@
+[
+  {
+    "id": "BIZ-001",
+    "tiêu đề": "Thanh điều hướng Admin vẫn hiển thị Duyệt gói thành viên và Mùa cao điểm dù đã ngừng bán gói",
+    "mức độ": "P1",
+    "loại": "chính sách",
+    "vị trí": "apps/web/src/app/admin/layout.tsx:184",
+    "bằng chứng": "AdminLayout khai báo 2 nav items: /admin/duyet-goi và /admin/mua-cao-diem. Trong khi backend membership.service.ts:186 đã ném lỗi ngừng bán gói thành viên theo mô hình môi giới 40%",
+    "tái hiện": "Đăng nhập admin vào http://localhost:3000/admin, menu bên trái vẫn có mục 'Duyệt gói thành viên' và 'Mùa cao điểm (Surge)'",
+    "tác động": "Gây mâu thuẫn nghiệp vụ và nhầm lẫn cho quản trị viên khi bấm duyệt các gói đã ngừng cung cấp",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Ghi nhận vào danh sách quyết định chủ dự án (mục 14) để ẩn hoặc dỡ bỏ hai mục này khỏi thanh điều hướng",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định ẩn hay giữ trang duyệt gói)"
+  },
+  {
+    "id": "BIZ-002",
+    "tiêu đề": "Tồn tại các tuyến đường mua bán và tra cứu giá nhà đất ngoài mô hình cốt lõi chỉ cho thuê",
+    "mức độ": "P2",
+    "loại": "chính sách",
+    "vị trí": "apps/web/src/app/mua-ban/page.tsx:1",
+    "bằng chứng": "/mua-ban redirect về /thue; /du-an và /gia-nha-dat hiển thị ComingSoonNotice",
+    "tái hiện": "Truy cập /mua-ban tự nhảy sang /thue; truy cập /du-an thấy thông báo Sắp ra mắt",
+    "tác động": "Lưu lại dấu vết mô hình mua bán cũ, chưa đồng nhất triệt để với định vị 'chỉ cho thuê' theo quy tắc R6",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Ghi nhận vào mục 14 để chủ dự án chốt giữ ComingSoon cho tương lai hay loại bỏ hoàn toàn",
+    "làn xử lý": "F3",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định giữ hay gỡ route mua bán)"
+  },
+  {
+    "id": "BIZ-003",
+    "tiêu đề": "Tỷ lệ phí môi giới 40% bị gõ cứng rải rác nhiều tệp thay vì dùng hằng số tập trung tại @qns/shared",
+    "mức độ": "P2",
+    "loại": "đúng đắn",
+    "vị trí": "apps/web/src/components/OwnerBrokerTermsGate.tsx:137",
+    "bằng chứng": "OwnerBrokerTermsGate.tsx gõ chữ cứng '40%'; MembershipPricingClient.tsx gõ cứng 'Phí Dịch Vụ 40%'; commissions/utils/commission-calculator.ts gõ 'x 40%'",
+    "tái hiện": "Tìm kiếm chuỗi '40%' trong repo ghi nhận 12 tệp độc lập có chứa giá trị",
+    "tác động": "Nếu trong tương lai chủ dự án điều chỉnh chính sách phí sẽ gặp rủi ro sửa thiếu gây lệch số liệu giữa điều khoản pháp lý và tính toán",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Định nghĩa BROKERAGE_COMMISSION_RATE = 0.40 và BROKERAGE_COMMISSION_PERCENT = 40 trong @qns/shared",
+    "làn xử lý": "F1",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  }
+]

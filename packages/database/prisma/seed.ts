@@ -13,6 +13,17 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // R4: Kiểm tra an toàn bắt buộc trước khi seed — Ngăn chặn tuyệt đối seed lên DB chính hoặc production
+  const dbUrl = process.env.DATABASE_URL || '';
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isTestDb = dbUrl.includes('_test') || dbUrl.includes('batdongsan_test');
+
+  if (isProduction || !isTestDb) {
+    console.error('⛔ [R4 BẢO VỆ DỮ LIỆU THẬT] Kịch bản seed chỉ được phép chạy trên database kết thúc bằng "_test" và môi trường development/test');
+    console.error('   DATABASE_URL hiện tại không phải DB test hoặc NODE_ENV=production. Tự hủy thao tác để bảo vệ dữ liệu sản xuất');
+    process.exit(1);
+  }
+
   // ---------- 1. Địa danh hành chính (dữ liệu nền, không phải "dữ liệu BĐS") ----------
   const hcm = await prisma.location.upsert({
     where: { slug: 'ho-chi-minh' },

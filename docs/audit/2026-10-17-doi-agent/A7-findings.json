@@ -1,0 +1,47 @@
+[
+  {
+    "id": "TST-001",
+    "tiêu đề": "CI Pipeline chỉ chạy kiểm tra tĩnh 5 dòng và hoàn toàn bỏ qua toàn bộ 16 bài kiểm thử hành vi runtime",
+    "mức độ": "P1",
+    "loại": "chất lượng",
+    "vị trí": ".github/workflows/ci.yml:87",
+    "bằng chứng": "Bước 'Run Verification Test Suite' tại ci.yml:89 chỉ gọi 'node packages/database/scripts/static-lint-check.js'. Không có bất kỳ lệnh chạy test tích hợp API hay kiểm tra hành vi DB nào được kích hoạt dù CI đã cấp sẵn service PostgreSQL và Redis",
+    "tái hiện": "Đọc tệp .github/workflows/ci.yml kiểm tra danh sách bước chạy",
+    "tác động": "Các lỗi nghiêm trọng ở logic API, authentication hay state machine lọt qua CI mà không bị phát hiện",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Bổ sung bước chạy kiểm thử hành vi tự động trên DB batdongsan_test trong CI",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "TST-002",
+    "tiêu đề": "Hai tệp kiểm thử tĩnh test-wave-2.js và test-wave-4.js bị lỗi do phụ thuộc vào so khớp chuỗi cứng đã lỗi thời",
+    "mức độ": "P2",
+    "loại": "chất lượng",
+    "vị trí": "packages/database/scripts/test-wave-2.js:133",
+    "bằng chứng": "Chạy test-wave-2.js lỗi 'SearchFilterBar phải dùng areaPresets[areaIndex] thay vì AREA_PRESETS'; chạy test-wave-4.js lỗi 'Khi request pending, pricePaid bắt buộc phải ghi bằng 0'",
+    "tái hiện": "Chạy node packages/database/scripts/test-wave-2.js và test-wave-4.js",
+    "tác động": "Gây báo động giả (false alarm) khi kiểm thử, làm giảm độ tin cậy của bộ kiểm thử kiểm tra chất lượng",
+    "độ chắc chắn": "ĐÃ TÁI HIỆN",
+    "đề xuất sửa": "Cập nhật hoặc thay thế các bài kiểm tra tĩnh này bằng test hành vi thực thụ",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "TST-003",
+    "tiêu đề": "Frontend hoàn toàn thiếu hạ tầng kiểm thử tự động e2e và component test",
+    "mức độ": "P2",
+    "loại": "chất lượng",
+    "vị trí": "apps/web/package.json:5",
+    "bằng chứng": "apps/web/package.json không có dependency jest, vitest hay playwright và không có script 'test'",
+    "tái hiện": "Kiểm tra package.json của apps/web thấy thiếu hoàn toàn test runner",
+    "tác động": "Toàn bộ trải nghiệm người dùng, form đăng tin, giỏ phòng đã lưu và bản đồ tương tác phải kiểm thử thủ công bằng mắt",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Thiết lập hạ tầng kiểm thử hành vi T trong giai đoạn C",
+    "làn xử lý": "F5",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  }
+]

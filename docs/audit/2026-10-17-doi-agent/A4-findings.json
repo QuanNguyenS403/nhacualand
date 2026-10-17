@@ -1,0 +1,32 @@
+[
+  {
+    "id": "DAT-001",
+    "tiêu đề": "Kịch bản seed.ts thiếu cơ chế bảo vệ tự hủy khi chạy trên môi trường production hoặc DB chính",
+    "mức độ": "P0",
+    "loại": "dữ liệu",
+    "vị trí": "packages/database/prisma/seed.ts:1",
+    "bằng chứng": "seed.ts không kiểm tra NODE_ENV === 'production', không kiểm tra tên database kết thúc bằng '_test', và chứa các lệnh deleteMany dọn sạch dữ liệu cũ trước khi nạp 154 phòng trọ mẫu",
+    "tái hiện": "Chạy lệnh npx ts-node prisma/seed.ts trong môi trường có kết nối DB thật, toàn bộ dữ liệu thật sẽ bị xóa và thay thế bằng dữ liệu seed mẫu",
+    "tác động": "Mất trắng toàn bộ dữ liệu tin đăng thật của người dùng và chủ nhà nếu lệnh seed bị kích hoạt nhầm trên production",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Bổ sung ngay ở đầu seed.ts: if (process.env.NODE_ENV === 'production' || !process.env.DATABASE_URL?.includes('_test')) { throw new Error('SEED CHỈ ĐƯỢC CHẠY TRÊN DB _test!'); }",
+    "làn xử lý": "F1",
+    "phụ thuộc": "",
+    "cần chủ dự án": "không"
+  },
+  {
+    "id": "DAT-002",
+    "tiêu đề": "Tồn tại 13 model trong schema Prisma là mã chết không được đọc hoặc ghi ở bất kỳ đâu",
+    "mức độ": "P2",
+    "loại": "dữ liệu",
+    "vị trí": "packages/database/prisma/schema.prisma:1",
+    "bằng chứng": "inv-models.csv ghi nhận 13 models (DepositRecord, Payment, PaymentAllocation, Dispute, ConsentRecord, HandoverRecord, Introduction, RentalRequest, AgreementUnit, AgencyProfile, PriceIndex, SavedSearch, ListingUniversity) có read_count = 0 và write_count = 0",
+    "tái hiện": "grep toàn bộ apps/api/src và apps/web/src với prisma.<modelName> trả về 0 kết quả",
+    "tác động": "Gây hiểu lầm hệ thống vẫn đang quản lý cọc/thanh toán/mua bán trong khi nghiệp vụ cốt lõi theo R6 là chỉ môi giới cho thuê và không giữ tiền",
+    "độ chắc chắn": "ĐÃ ĐỌC MÃ",
+    "đề xuất sửa": "Ghi nhận vào danh sách quyết định chủ dự án (mục 14) để quyết định giữ lưu trữ hay tạo migration dọn dẹp",
+    "làn xử lý": "F1",
+    "phụ thuộc": "",
+    "cần chủ dự án": "có (quyết định xóa model mã chết)"
+  }
+]
