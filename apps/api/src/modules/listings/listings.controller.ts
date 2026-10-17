@@ -105,9 +105,12 @@ export class ListingsController {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       try {
-        const decoded = this.jwtService.decode(token) as any;
-        if (decoded?.sub) {
-          currentUserId = BigInt(decoded.sub);
+        const accessSecret = process.env.JWT_ACCESS_SECRET;
+        if (accessSecret) {
+          const payload = this.jwtService.verify(token, { secret: accessSecret }) as any;
+          if (payload?.sub) {
+            currentUserId = BigInt(payload.sub);
+          }
         }
       } catch {
         // Token không hợp lệ thì coi như khách vãng lai

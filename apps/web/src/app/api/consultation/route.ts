@@ -49,12 +49,11 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(data);
     } catch (fetchErr) {
-      // Fallback nếu backend API tạm thời không phản hồi
-      console.warn('[Consultation API Route] Backend API chưa sẵn sàng, lưu log cục bộ:', fetchErr);
-      return NextResponse.json({
-        success: true,
-        message: 'Yêu cầu tư vấn của bạn đã được gửi thành công, chúng tôi sẽ liên hệ trong thời gian sớm nhất',
-      });
+      console.error('[Consultation API Route] Không thể kết nối tới backend API:', fetchErr);
+      return NextResponse.json(
+        { message: 'Hệ thống tiếp nhận tư vấn đang bận, vui lòng thử lại sau' },
+        { status: 503 },
+      );
     }
   } catch (err: any) {
     return NextResponse.json(

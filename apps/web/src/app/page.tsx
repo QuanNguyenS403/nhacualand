@@ -86,21 +86,14 @@ export default async function HomePage() {
   const cleanStudio = (studioListings?.items || []).filter((it) => !isTestListing(it));
   const cleanSpace = (spaceListings?.items || []).filter((it) => !isTestListing(it));
 
-  function mergeHomeListings<T extends { slug: string }>(apiItems: T[], demoItems: T[]): T[] {
-    const map = new Map<string, T>();
-    for (const it of apiItems) {
-      if (it && it.slug) map.set(it.slug, it);
-    }
-    for (const it of demoItems) {
-      if (it && it.slug && !map.has(it.slug)) map.set(it.slug, it);
-    }
-    return Array.from(map.values());
+  function resolveHomeListings<T extends { slug: string }>(apiItems: T[], demoItems: T[]): T[] {
+    return apiItems.length > 0 ? apiItems : demoItems;
   }
 
-  const roomItems = mergeHomeListings(cleanRoom, DEMO_ROOM_RENT_LISTINGS);
-  const aptItems = mergeHomeListings(cleanApt, DEMO_CAN_HO_RENT_LISTINGS);
-  const studioItems = mergeHomeListings(cleanStudio, DEMO_STUDIO_RENT_LISTINGS);
-  const spaceItems = mergeHomeListings(cleanSpace, DEMO_SPACE_RENT_LISTINGS);
+  const roomItems = resolveHomeListings(cleanRoom, DEMO_ROOM_RENT_LISTINGS);
+  const aptItems = resolveHomeListings(cleanApt, DEMO_CAN_HO_RENT_LISTINGS);
+  const studioItems = resolveHomeListings(cleanStudio, DEMO_STUDIO_RENT_LISTINGS);
+  const spaceItems = resolveHomeListings(cleanSpace, DEMO_SPACE_RENT_LISTINGS);
 
   return (
     <div>

@@ -109,22 +109,11 @@ export default async function ThuePage({ searchParams }: Props) {
 
   const cleanItems = (items || []).filter((it) => !isTestListing(it));
 
-  // Gộp danh mục đầy đủ: Đảm bảo toàn bộ phòng từ DB và toàn bộ phòng demo chuẩn (từ trang chủ)
-  // đều xuất hiện tại trang "tìm phòng" là chính, không bị thiếu bất kỳ phòng nào
-  const mergedMap = new Map<string, (typeof fallbackListings)[number]>();
-  for (const item of cleanItems) {
-    if (item?.slug) {
-      mergedMap.set(item.slug, item);
-    }
-  }
-  for (const item of fallbackListings) {
-    if (item?.slug && !mergedMap.has(item.slug)) {
-      mergedMap.set(item.slug, item);
-    }
-  }
+  // Chỉ dùng fallbackListings khi API gặp sự cố kỹ thuật (isApiError)
+  const baseItems = isApiError ? fallbackListings : cleanItems;
 
   // Tự động loại bỏ triệt để mọi bài đăng phòng đã cho thuê hoặc đã gỡ
-  let displayItems = Array.from(mergedMap.values()).filter((it) => {
+  let displayItems = baseItems.filter((it) => {
     const st = ((it as any).status || 'active').toLowerCase();
     return st !== 'rented' && st !== 'removed';
   });

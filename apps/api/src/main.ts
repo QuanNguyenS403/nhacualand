@@ -1,7 +1,9 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { assertRequiredSecrets } from './common/config/assert-env';
@@ -17,7 +19,15 @@ async function bootstrap() {
   // JWT secret mặc định (đã fix trong đợt audit 01/09/2026) tại common/config/assert-env.ts.
   assertRequiredSecrets();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // SEC-004: Cấu hình trust proxy để ThrottlerGuard và Logger nhận diện đúng IP thật từ Cloudflare (CF-Connecting-IP)
+  app.set('trust proxy', 1);
+
+  // SEC-006: Middleware Helmet thiết lập các tiêu đề HTTP bảo mật chuẩn
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
 
   const defaultOrigins = 'http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,https://qnsbroker.com,https://www.qnsbroker.com,https://nhacualand.com,https://www.nhacualand.com,https://api.nhacualand.com';
   const allowedOrigins = (process.env.CORS_ORIGINS || `${process.env.NEXT_PUBLIC_SITE_URL || ''},${defaultOrigins}`)
