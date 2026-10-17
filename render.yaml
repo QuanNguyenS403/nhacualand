@@ -1,7 +1,7 @@
 # ====================================================================
-# Render Blueprint Specification (render.yaml)
-# Hướng dẫn: Đẩy repo lên GitHub, vào Render Dashboard chọn "New +" > "Blueprint"
-# Hoặc tạo Web Service thủ công như trong ảnh hướng dẫn
+# Render Blueprint Specification (render.yaml) — NHACUALAND
+# Nền tảng tìm phòng trọ, căn hộ, studio cho thuê minh bạch chi phí
+# Triển khai gộp 1 Web Service duy nhất trên Render (thay thế hoàn toàn Cloudflare Tunnel)
 # ====================================================================
 
 version: "1"
@@ -16,10 +16,10 @@ databases:
 
 services:
   # ------------------------------------------------------------------
-  # DỊCH VỤ DUY NHẤT: GỘP CẢ BACKEND API VÀ FRONTEND WEB (qns_broker)
+  # DỊCH VỤ DUY NHẤT: GỘP CẢ BACKEND API VÀ FRONTEND WEB (nhacualand)
   # ------------------------------------------------------------------
   - type: web
-    name: qns-broker
+    name: nhacualand
     runtime: node
     region: singapore
     plan: starter
@@ -46,21 +46,21 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGINS
-        value: "https://nhacualand.com,https://www.nhacualand.com,https://qns-broker.onrender.com,http://localhost:3000"
+        value: "https://nhacualand.com,https://www.nhacualand.com,https://nhacualand.onrender.com,http://localhost:3000"
       - key: ADMIN_PHONE
         value: "0981753082"
       - key: ADMIN_BOOTSTRAP_SECRET
-        value: ae45fa53647fdc8811164f26ad6ebda9275b379a0a092a739351c80f11fd357e
+        generateCryptoKey: true
       - key: ADMIN_BOOTSTRAP_PHONE
         value: "0981753082"
       - key: ADMIN_BOOTSTRAP_PASSWORD
-        value: Quannguyenkay6@
+        sync: false
       - key: ADMIN_BOOTSTRAP_FULLNAME
-        value: "Nguyễn Đức Quân"
+        value: "Chủ nhà"
       - key: ADMIN_MFA_ENFORCED
         value: "false"
       - key: ADMIN_MFA_SECRET
-        value: QnsAdminMfa2026!
+        generateCryptoKey: true
       - key: ADMIN_NOTIFICATION_EMAIL
         value: ducquan16102006@gmail.com
       - key: MAIL_DRIVER

@@ -156,6 +156,21 @@ const nextConfig = {
         destination: '/thue',
         permanent: true,
       },
+      {
+        source: '/du-an',
+        destination: '/thue',
+        permanent: true,
+      },
+      {
+        source: '/gia-nha-dat',
+        destination: '/thue',
+        permanent: true,
+      },
+      {
+        source: '/gia-thanh-vien',
+        destination: '/thue',
+        permanent: true,
+      },
     ];
   },
   async headers() {

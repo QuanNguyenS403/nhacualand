@@ -18,7 +18,6 @@ interface AdminUser {
 interface BadgeCounts {
   pendingListings: number;
   newReports: number;
-  pendingMemberships: number;
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [badges, setBadges] = useState<BadgeCounts>({ pendingListings: 0, newReports: 0, pendingMemberships: 0 });
+  const [badges, setBadges] = useState<BadgeCounts>({ pendingListings: 0, newReports: 0 });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Xác thực quyền admin CHỈ MỘT LẦN khi vào khu vực /admin
@@ -63,23 +62,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     async function loadBadges() {
       try {
-        const [dashRes, memRes] = await Promise.all([
-          authFetch('/admin/dashboard'),
-          authFetch('/admin/membership-requests?status=pending').catch(() => null),
-        ]);
-
-        let pendingMembershipsCount = 0;
-        if (memRes && memRes.ok) {
-          const memData = await memRes.json();
-          pendingMembershipsCount = memData.pagination?.total ?? memData.items?.length ?? 0;
-        }
-
+        const dashRes = await authFetch('/admin/dashboard');
         if (dashRes.ok && !cancelled) {
           const dashData = await dashRes.json();
           setBadges({
             pendingListings: dashData.stats?.pendingListingsCount ?? 0,
             newReports: dashData.stats?.newReportsCount ?? 0,
-            pendingMemberships: pendingMembershipsCount,
           });
         }
       } catch {
@@ -181,27 +169,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       badgeColor: 'bg-rose-500 text-white',
     },
     {
-      href: '/admin/duyet-goi',
-      label: 'Duyệt gói thành viên',
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      ),
-      badge: badges.pendingMemberships > 0 ? badges.pendingMemberships : null,
-      badgeColor: 'bg-brand text-white',
-    },
-    {
-      href: '/admin/mua-cao-diem',
-      label: 'Mùa cao điểm (Surge)',
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      badge: null,
-    },
-    {
       href: '/admin/leads',
       label: 'Quản lý Lead khách thuê',
       icon: (
@@ -257,7 +224,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-base tracking-tight text-white leading-tight">
-                QNS<span className="text-amber-400 font-semibold">.Admin</span>
+                NHACUALAND<span className="text-amber-400 font-semibold">.Admin</span>
               </span>
               <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                 Trung tâm Quản trị

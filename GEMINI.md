@@ -61,9 +61,13 @@ Nếu `skills/*.md` mâu thuẫn với `CLAUDE.md`, **ưu tiên `CLAUDE.md`** v�
 - Nếu chạy trong sandbox/CI bị chặn domain `binaries.prisma.sh`, lệnh `prisma generate`/`migrate` sẽ báo lỗi 403 — đây là giới hạn mạng, KHÔNG phải lỗi code. Xem `TRANG-THAI-TRIEN-KHAI.md § Giới hạn môi trường` để biết cách xác minh code vẫn đúng bằng `tsc --noEmit` dù chưa generate được.
 
 ## 8. Quy chuẩn Giao diện & Văn phong Nghiêm ngặt (Học từ /learn)
+- **Thương hiệu chính thức**: NHACUALAND (tên miền `nhacualand.com`)
 - **Tuyệt đối không thêm dấu chấm vào cuối câu**: Áp dụng triệt để cho toàn bộ nội dung người dùng nhìn thấy (tiêu đề trang, meta description, thông báo lỗi, popup alert, modal, nhãn nút bấm)
-- **Tiêu đề Hero H1**: Luôn phân tách 2 dòng ngữ nghĩa rõ ràng ("QNS BROKER -" và "rõ chi phí ngay từ đầu"), với line-height `leading-[1.15] md:leading-[1.18]` và khoảng đệm `mt-0.5 sm:mt-0.5` vừa vặn thuận mắt, các dòng dịch sát nhau hài hòa, không dính chữ cái và không dãn xa
-- **Thông tin liên hệ trung tâm**: Mọi thông tin Hotline, Email, Địa chỉ, Thời gian làm việc phải tham chiếu duy nhất từ `SITE_CONFIG` (`hotline: 0981 753 082`, `email: contact@qns.com`, `address: Thành phố Hà Nội`, `workingHours: 24/7`)
+- **Tiêu đề Hero H1**: Luôn phân tách 2 dòng ngữ nghĩa rõ ràng ("NHACUALAND -" và "rõ chi phí ngay từ đầu"), với line-height `leading-[1.15] md:leading-[1.18]` và khoảng đệm `mt-0.5 sm:mt-0.5` vừa vặn thuận mắt, các dòng dịch sát nhau hài hòa, không dính chữ cái và không dãn xa
+- **Thông tin liên hệ trung tâm**: Mọi thông tin Hotline, Email, Địa chỉ, Thời gian làm việc phải tham chiếu duy nhất từ `SITE_CONFIG` (`hotline: 0981 753 082`, `email: contact@nhacualand.com`, `address: Thành phố Hà Nội`, `workingHours: 24/7`)
+- **Mô hình kinh doanh**: 100% chuyên biệt cho thuê (phòng trọ, chung cư mini, studio, căn hộ, mặt bằng kinh doanh). Người thuê 0 đồng, chủ nhà trả phí thành công 40%, không nhận/giữ tiền cọc trên web
+- **Môi trường triển khai**: Triển khai chính thức trên nền tảng đám mây Render (render.com) gộp 1 Web Service duy nhất (`nhacualand`). Loại bỏ hoàn toàn Cloudflare Tunnel
 - **Tìm kiếm thông minh**: Thanh tìm kiếm Hero phải luôn hỗ trợ cả tiếng Việt có dấu và không dấu (diacritics-insensitive) kèm highlight chính xác từ khóa
 - **Cơ chế Rà soát Tự động (Audit Harness)**: Khi nhận nhiệm vụ rà soát, AI agent phải tự động kích hoạt quy trình kiểm tra 6 cổng (Skill 06) và tự động khắc phục độc lập mọi lỗi sai phát hiện được
+
 
