@@ -1,17 +1,29 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { authFetch, clearTokens, getAccessToken } from '@/lib/auth-client';
 import { QnsLogo } from '@/components/QnsLogo';
 import { SecurityAnnouncementBar } from './SecurityAnnouncementBar';
-import { FeedbackModal } from './FeedbackModal';
-import { ConsultationModal } from './ConsultationModal';
-import { SelectedRoomsModal } from './SelectedRoomsModal';
-import { AuthModal } from './AuthModal';
 import { getSelectedRooms, subscribeSelectedRooms, SelectedRoomItem } from '@/lib/selected-rooms';
 import { triggerPageLoading } from '@/lib/nav-utils';
+
+const FeedbackModal = dynamic(() => import('./FeedbackModal').then((module) => module.FeedbackModal), {
+  ssr: false,
+});
+const ConsultationModal = dynamic(
+  () => import('./ConsultationModal').then((module) => module.ConsultationModal),
+  { ssr: false },
+);
+const SelectedRoomsModal = dynamic(
+  () => import('./SelectedRoomsModal').then((module) => module.SelectedRoomsModal),
+  { ssr: false },
+);
+const AuthModal = dynamic(() => import('./AuthModal').then((module) => module.AuthModal), {
+  ssr: false,
+});
 
 interface CurrentUser {
   id: string;
@@ -562,46 +574,51 @@ export function Header() {
       )}
 
       {/* Các Modal tiện ích (Khớp hình ảnh cung cấp) */}
-      <FeedbackModal
-        isOpen={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-      />
+      {feedbackOpen && (
+        <FeedbackModal isOpen onClose={() => setFeedbackOpen(false)} />
+      )}
 
-      <ConsultationModal
-        isOpen={consultationOpen}
-        onClose={() => setConsultationOpen(false)}
-        initialReason={consultationPreload.reason}
-        initialDescription={consultationPreload.description}
-        selectedRoomIds={consultationPreload.selectedRoomIds}
-      />
+      {consultationOpen && (
+        <ConsultationModal
+          isOpen
+          onClose={() => setConsultationOpen(false)}
+          initialReason={consultationPreload.reason}
+          initialDescription={consultationPreload.description}
+          selectedRoomIds={consultationPreload.selectedRoomIds}
+        />
+      )}
 
-      <SelectedRoomsModal
-        isOpen={selectedRoomsOpen}
-        onClose={() => setSelectedRoomsOpen(false)}
-        onOpenConsultationWithRooms={(rooms) => {
-          setConsultationPreload({
-            reason: 'Xem phòng trực tiếp',
-            description: `Tôi muốn đặt lịch xem các phòng đã chọn:\n${rooms.map((r) => `- ${r.title} (${r.formattedPrice || ''})`).join('\n')}`,
-            selectedRoomIds: rooms.map((r) => String(r.id)),
-          });
-          setConsultationOpen(true);
-        }}
-      />
+      {selectedRoomsOpen && (
+        <SelectedRoomsModal
+          isOpen
+          onClose={() => setSelectedRoomsOpen(false)}
+          onOpenConsultationWithRooms={(rooms) => {
+            setConsultationPreload({
+              reason: 'Xem phòng trực tiếp',
+              description: `Tôi muốn đặt lịch xem các phòng đã chọn:\n${rooms.map((r) => `- ${r.title} (${r.formattedPrice || ''})`).join('\n')}`,
+              selectedRoomIds: rooms.map((r) => String(r.id)),
+            });
+            setConsultationOpen(true);
+          }}
+        />
+      )}
 
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        onSuccess={() => {
-          setAuthModalOpen(false);
-          try {
-            const cached = localStorage.getItem('user');
-            if (cached) setUser(JSON.parse(cached));
-          } catch {}
-          router.push('/dang-tin');
-        }}
-        title="Đăng nhập để đăng tin"
-        subtitle="Vui lòng đăng nhập hoặc đăng ký tài khoản bằng Google để tiếp tục đến mục đăng tin"
-      />
+      {authModalOpen && (
+        <AuthModal
+          isOpen
+          onClose={() => setAuthModalOpen(false)}
+          onSuccess={() => {
+            setAuthModalOpen(false);
+            try {
+              const cached = localStorage.getItem('user');
+              if (cached) setUser(JSON.parse(cached));
+            } catch {}
+            router.push('/dang-tin');
+          }}
+          title="Đăng nhập để đăng tin"
+          subtitle="Vui lòng đăng nhập hoặc đăng ký tài khoản bằng Google để tiếp tục đến mục đăng tin"
+        />
+      )}
     </header>
   );
 }

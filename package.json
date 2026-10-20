@@ -31,7 +31,9 @@
     "test:wave0": "node packages/database/scripts/test-wave-0.js",
     "test:wave1": "node packages/database/scripts/test-wave-1.js",
     "test:wave2": "node packages/database/scripts/test-wave-2.js",
-    "test:wave3": "node packages/database/scripts/test-wave-3.js"
+    "test:wave3": "node packages/database/scripts/test-wave-3.js",
+    "build:web": "turbo run build --filter=@batdongsan/web",
+    "pages:build": "pnpm --filter @batdongsan/web build"
   },
   "devDependencies": {
     "prisma": "^5.19.1",

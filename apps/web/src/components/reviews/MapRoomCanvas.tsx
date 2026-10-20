@@ -119,6 +119,7 @@ export function MapRoomCanvas({
       zoom: 13,
       zoomControl: false,
     });
+    map.attributionControl?.setPrefix(false);
 
     // Lớp Google Maps Road Tiles
     const googleTileLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -412,9 +413,22 @@ export function MapRoomCanvas({
           {isLocatingUser ? (
             <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
           ) : (
-            <svg className="w-6 h-6 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.071 7.071l-1.414-1.414M8.343 8.343L6.929 6.929m12.142 0l-1.414 1.414M8.343 15.657l-1.414 1.414" />
-              <circle cx="12" cy="12" r="3" strokeWidth={2} />
+            <svg
+              className="w-6 h-6 text-slate-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" strokeWidth={1.75} />
+              <path
+                d="m15.5 8.5-2.25 4.75L8.5 15.5l2.25-4.75L15.5 8.5Z"
+                fill="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+              />
+              <path d="M12 2v2m0 16v2m10-10h-2M4 12H2" strokeLinecap="round" strokeWidth={1.5} />
             </svg>
           )}
         </button>
