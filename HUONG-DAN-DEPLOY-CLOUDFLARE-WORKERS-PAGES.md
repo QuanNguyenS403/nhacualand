@@ -36,6 +36,9 @@ Phương án này đưa toàn bộ giao diện Next.js lên mạng lưới Edge 
 
 ### Các bước bạn cần thực hiện:
 
+> [!WARNING]
+> **Phải tạo dự án ở tab "Pages", không phải tab "Workers".** Nếu tạo bằng Workers Builds, lệnh deploy mặc định `npx wrangler deploy` sẽ thất bại với thông báo `It looks like you've run a Workers-specific command in a Pages project` (vì `wrangler.toml` khai báo `pages_build_output_dir`). Cách khắc phục: xoá dự án Workers và tạo lại dự án Pages, hoặc đổi Deploy command thành `npx wrangler pages deploy apps/web/.vercel/output/static --project-name=nhacualand`
+
 #### Bước 2.1: Đẩy mã nguồn mới nhất lên GitHub / GitLab
 Đảm bảo mã nguồn trên máy của bạn đã được commit và push lên repository từ xa:
 ```bash
@@ -61,10 +64,11 @@ Tại màn hình cấu hình, điền chính xác các mục sau:
   ```bash
   pnpm run pages:build
   ```
-- **Build output directory**:
+- **Build output directory** (phải đúng như dưới đây, KHÔNG dùng `apps/web/.next`):
   ```text
-  apps/web/.next
+  apps/web/.vercel/output/static
   ```
+- Lưu ý: file `wrangler.toml` ở thư mục gốc đã khai báo sẵn đường dẫn này, Cloudflare ưu tiên file đó, nhưng vẫn nên điền đúng ở đây để tránh lệch
 
 #### Bước 2.4: Khai báo biến môi trường (Environment variables)
 Mở rộng mục **Environment variables (advanced)** và thêm các khóa sau:
@@ -75,7 +79,7 @@ Mở rộng mục **Environment variables (advanced)** và thêm các khóa sau:
 | `PNPM_VERSION` | `9.15.9` | Trình quản lý gói pnpm |
 | `NEXT_PUBLIC_SITE_URL` | `https://nhacualand.com` | Tên miền chính thức của website |
 | `NEXT_PUBLIC_API_URL` | `https://api.nhacualand.com` | Đường dẫn đến Backend API |
-| `INTERNAL_API_URL` | `https://api.nhacualand.com` | URL gọi nội bộ lúc SSR |
+| `INTERNAL_API_URL` | `https://api.nhacualand.com` | BẮT BUỘC khi build: được ghi cứng vào quy tắc chuyển tiếp API, thiếu thì mọi API trỏ về 127.0.0.1 và hỏng |
 
 #### Bước 2.5: Nhấp "Save and Deploy"
 - Cloudflare sẽ tự động kéo mã nguồn về, cài đặt pnpm và build trang web

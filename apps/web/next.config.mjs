@@ -16,6 +16,14 @@ if (process.env.NODE_ENV === 'production') {
 }
 loadEnv({ path: join(__dirname, '..', '..', '.env') });
 
+// Trên Cloudflare Pages (biến CF_PAGES=1) các quy tắc rewrites bên dưới được "đóng cứng" vào bản build.
+// Nếu quên khai báo INTERNAL_API_URL, toàn bộ API sẽ trỏ về 127.0.0.1:4000 và hỏng sau khi deploy thành công.
+// Vì vậy: khi build trên Cloudflare mà thiếu biến này thì dùng địa chỉ API chính thức và in cảnh báo rõ ràng.
+if (process.env.CF_PAGES && !process.env.INTERNAL_API_URL) {
+  process.env.INTERNAL_API_URL = 'https://api.nhacualand.com';
+  console.warn('[nhacualand] CẢNH BÁO: chưa khai báo INTERNAL_API_URL trên Cloudflare Pages, tạm dùng https://api.nhacualand.com. Hãy khai báo biến này trong Settings > Variables and secrets');
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
