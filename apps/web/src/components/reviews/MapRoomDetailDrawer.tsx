@@ -6,6 +6,12 @@ import type { MapRoom, CommunityReviewPin } from '@/lib/map-rooms-data';
 import { fetchListingBySlug, formatPrice, type Listing } from '@/lib/api';
 import { extractListingFurnitureList } from '@/lib/furniture-utils';
 import { ContactBrokerModal } from '@/components/ContactBrokerModal';
+import {
+  isRoomSelected,
+  addSelectedRoom,
+  removeSelectedRoom,
+  subscribeSelectedRooms,
+} from '@/lib/selected-rooms';
 
 interface MapRoomDetailDrawerProps {
   room: MapRoom | null;
@@ -27,6 +33,20 @@ export function MapRoomDetailDrawer({
   const [fullListing, setFullListing] = useState<Listing | null>(null);
   const [loadingListing, setLoadingListing] = useState(false);
   const [listingNotice, setListingNotice] = useState<string | null>(null);
+  const [selected, setSelected] = useState(false);
+
+  useEffect(() => {
+    if (room?.id) {
+      setSelected(isRoomSelected(room.id));
+    } else {
+      setSelected(false);
+    }
+    return subscribeSelectedRooms(() => {
+      if (room?.id) {
+        setSelected(isRoomSelected(room.id));
+      }
+    });
+  }, [room?.id]);
 
   // Khi room thay đổi, reset ảnh và tải chi tiết tin đăng thật từ API
   useEffect(() => {
@@ -354,22 +374,55 @@ export function MapRoomDetailDrawer({
         )}
       </div>
 
-      {/* Footer Actions: Đặt lịch xem & Xem bài chi tiết */}
-      <div className="shrink-0 bg-white border-t border-slate-100 p-3 sm:p-3.5 flex items-center gap-2.5">
+      {/* Footer Actions: Chọn phòng, Đặt lịch xem & Xem bài chi tiết */}
+      <div className="shrink-0 bg-white border-t border-slate-100 p-3 sm:p-3.5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (!room) return;
+            if (selected) {
+              removeSelectedRoom(room.id);
+              setSelected(false);
+            } else {
+              addSelectedRoom({
+                id: String(room.id),
+                title: displayTitle,
+                slug: targetSlug,
+                price: Number(fullListing?.price || room.price),
+                formattedPrice: displayPrice,
+                address: displayAddress,
+                coverImage: displayImages[0] || '',
+              });
+              setSelected(true);
+            }
+          }}
+          className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl border transition-all cursor-pointer shrink-0 flex items-center justify-center ${
+            selected
+              ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-2xs'
+              : 'bg-slate-50 text-slate-600 border-slate-200 hover:text-rose-500 hover:bg-slate-100'
+          }`}
+          title={selected ? 'Bỏ chọn phòng này' : 'Lưu vào phòng đã chọn'}
+          aria-label={selected ? 'Bỏ chọn phòng này' : 'Lưu vào phòng đã chọn'}
+        >
+          <svg className="w-4 h-4" fill={selected ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+        </button>
+
         <Link
           href={`/tin/${targetSlug}`}
-          className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors border border-slate-200"
+          className="flex-1 py-2 sm:py-2.5 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors border border-slate-200 truncate"
         >
-          Xem bài chi tiết →
+          Xem chi tiết →
         </Link>
 
         {!isPending && (
           <button
             type="button"
             onClick={() => setIsBookingModalOpen(true)}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-brand to-amber-400 text-slate-950 font-bold text-xs text-center transition-all shadow-md hover:brightness-105"
+            className="flex-1 py-2 sm:py-2.5 px-3 rounded-xl bg-gradient-to-r from-brand to-amber-400 text-slate-950 font-bold text-xs text-center transition-all shadow-md hover:brightness-105 cursor-pointer truncate"
           >
-            Đặt lịch xem phòng
+            Đặt lịch xem
           </button>
         )}
       </div>

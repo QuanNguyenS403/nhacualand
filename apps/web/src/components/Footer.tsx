@@ -110,15 +110,47 @@ export function Footer() {
             <h3 className="mb-2 sm:mb-2.5 text-xs sm:text-sm font-semibold tracking-wide text-white">
               Liên hệ
             </h3>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-white/90">
-              <svg className="h-4 w-4 shrink-0 text-white/80" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-              </svg>
-              <span className="select-text cursor-default">
-                {SITE_CONFIG.supportEmail}
-              </span>
-            </div>
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-white/90">
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                </svg>
+                <a
+                  href={`tel:${SITE_CONFIG.hotline.replace(/\s+/g, '')}`}
+                  className="hover:underline font-semibold text-white"
+                >
+                  Hotline: {SITE_CONFIG.hotline}
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 shrink-0 text-white/80" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2 22l5.197-1.306A9.954 9.954 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
+                </svg>
+                <a
+                  href={`https://zalo.me/${SITE_CONFIG.zalo.replace(/\s+/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline text-white/90"
+                >
+                  Zalo: {SITE_CONFIG.zalo}
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 shrink-0 text-white/80" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                  <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                </svg>
+                <span className="select-text cursor-default">
+                  {SITE_CONFIG.supportEmail}
+                </span>
+              </li>
+              <li className="flex items-center gap-2 text-white/80">
+                <svg className="h-4 w-4 shrink-0 text-white/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.742 11.742 0 001.04.573l.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
+                </svg>
+                <span>{SITE_CONFIG.address} ({SITE_CONFIG.workingHours})</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

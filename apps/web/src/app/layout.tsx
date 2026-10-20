@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { TopProgressBar } from '@/components/TopProgressBar';
+import { FloatingCustomerHub } from '@/components/FloatingCustomerHub';
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         <Header />
         <main className="flex-1">{children}</main>
+        <FloatingCustomerHub />
         <Footer />
       </body>
     </html>

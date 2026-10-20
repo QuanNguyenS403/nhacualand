@@ -1,8 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Listing, formatPrice } from '@/lib/api';
 import { DEFAULT_ROOM_FALLBACK_IMAGES } from '@/lib/image-compressor';
+import {
+  isRoomSelected,
+  addSelectedRoom,
+  removeSelectedRoom,
+  subscribeSelectedRooms,
+} from '@/lib/selected-rooms';
 
 function formatTimeAgo(dateStr: string | null | undefined): string {
   if (!dateStr) return '';
@@ -22,6 +29,34 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const rawTitle = listing.title ?? 'Phòng cho thuê';
   const displayTitle = rawTitle.replace(/^\[MẪU\]\s*/i, '').replace(/\[MẪU\]/gi, '').trim();
   const nearestUni = listing.nearbyUniversities?.[0];
+  const [selected, setSelected] = useState(false);
+
+  useEffect(() => {
+    setSelected(isRoomSelected(listing.id));
+    return subscribeSelectedRooms(() => {
+      setSelected(isRoomSelected(listing.id));
+    });
+  }, [listing.id]);
+
+  function handleToggleSelect(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (selected) {
+      removeSelectedRoom(listing.id);
+      setSelected(false);
+    } else {
+      addSelectedRoom({
+        id: String(listing.id),
+        title: displayTitle,
+        slug: listing.slug,
+        price: Number(listing.price),
+        formattedPrice: formatPrice(listing.price),
+        address: listing.addressDetail || listing.location?.name || '',
+        coverImage: cover,
+      });
+      setSelected(true);
+    }
+  }
 
   return (
     <Link href={`/tin/${listing.slug}`} className="listing-card group flex flex-col justify-between">
@@ -52,12 +87,39 @@ export function ListingCard({ listing }: { listing: Listing }) {
             </div>
           )}
 
+          {/* Nút Chọn phòng / Lưu phòng nhanh */}
+          <button
+            type="button"
+            onClick={handleToggleSelect}
+            className={`absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-all shadow-md cursor-pointer ${
+              selected
+                ? 'bg-rose-500 text-white scale-105 ring-2 ring-white/80'
+                : 'bg-white/90 text-slate-600 hover:bg-white hover:text-rose-500 hover:scale-105 backdrop-blur-xs'
+            }`}
+            title={selected ? 'Bỏ chọn phòng này' : 'Chọn phòng để đặt lịch xem'}
+            aria-label={selected ? 'Bỏ chọn phòng này' : 'Chọn phòng để đặt lịch xem'}
+          >
+            <svg
+              className="h-4.5 w-4.5"
+              fill={selected ? 'currentColor' : 'none'}
+              viewBox="0 0 24 24"
+              strokeWidth={selected ? 0 : 2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+              />
+            </svg>
+          </button>
+
           {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
 
           {/* Số lượng ảnh */}
           {(listing.images?.length ?? 0) > 1 && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm pointer-events-none">
               <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5M4.5 3v18m15-18v18" />
               </svg>
@@ -68,7 +130,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
 
         {/* Nội dung card */}
         <div className="p-4 sm:p-4.5">
-          {/* Giá thuê tháng (Đã loại bỏ số diện tích 74m², 45m², 28m² theo yêu cầu) */}
+          {/* Giá thuê tháng */}
           <div className="flex items-baseline gap-2">
             <span className="text-lg sm:text-xl font-bold text-brand">
               {formatPrice(listing.price)}

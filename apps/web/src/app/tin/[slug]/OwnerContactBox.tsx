@@ -1,12 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AuthModal } from '@/components/AuthModal';
 import { ContactBrokerModal } from '@/components/ContactBrokerModal';
-import { formatExactPrice } from '@/lib/api';
+import { formatExactPrice, formatPrice } from '@/lib/api';
 import { LandlordAvatar } from '@/components/QnsLogo';
-
-import Link from 'next/link';
+import { RevealPhoneButton } from './RevealPhoneButton';
+import { SITE_CONFIG } from '@/lib/constants';
+import {
+  isRoomSelected,
+  addSelectedRoom,
+  removeSelectedRoom,
+  subscribeSelectedRooms,
+} from '@/lib/selected-rooms';
 
 interface OwnerContactBoxProps {
   listingId: string;
@@ -72,6 +79,30 @@ export function OwnerContactBox({
 }: OwnerContactBoxProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selected, setSelected] = useState(false);
+
+  useEffect(() => {
+    setSelected(isRoomSelected(listingId));
+    return subscribeSelectedRooms(() => {
+      setSelected(isRoomSelected(listingId));
+    });
+  }, [listingId]);
+
+  function handleToggleSelect() {
+    if (selected) {
+      removeSelectedRoom(listingId);
+      setSelected(false);
+    } else {
+      addSelectedRoom({
+        id: String(listingId),
+        title: listingTitle,
+        price: price ? Number(price) : undefined,
+        formattedPrice: price ? formatPrice(price) : undefined,
+        address: addressDetail || locationName || '',
+      });
+      setSelected(true);
+    }
+  }
 
   const formattedPriceText = price ? `${formatExactPrice(price)}/tháng` : 'Liên hệ';
   const maskedAddress = formatMaskedAddress(addressDetail, locationName);
@@ -201,14 +232,47 @@ export function OwnerContactBox({
               </div>
             </div>
 
-            {/* Nút hành động Đặt lịch xem phòng */}
-            <button
-              type="button"
-              onClick={() => setIsContactModalOpen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-700 text-white font-bold py-3 px-4 text-sm sm:text-base transition-all shadow-sm active:scale-[0.99]"
-            >
-              <span>Đặt lịch xem phòng</span>
-            </button>
+            {/* Nút hành động Đặt lịch xem phòng & Hiện số điện thoại */}
+            <div className="space-y-2.5 pt-1">
+              <RevealPhoneButton
+                listingId={listingId}
+                onRequireAuth={() => setIsAuthModalOpen(true)}
+              />
+
+              <button
+                type="button"
+                onClick={() => setIsContactModalOpen(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-700 text-white font-bold py-3 px-4 text-sm sm:text-base transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+              >
+                <span>Đặt lịch xem phòng</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleSelect}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs sm:text-sm font-semibold transition-all border cursor-pointer ${
+                  selected
+                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <svg className="w-4 h-4" fill={selected ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+                <span>{selected ? 'Đã lưu trong phòng đã chọn' : 'Lưu vào phòng đã chọn'}</span>
+              </button>
+            </div>
+
+            {/* Hotline hỗ trợ 24/7 */}
+            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500">
+              <span>Hotline hỗ trợ 24/7</span>
+              <a
+                href={`tel:${SITE_CONFIG.hotline.replace(/\s+/g, '')}`}
+                className="font-bold text-brand hover:underline"
+              >
+                {SITE_CONFIG.hotline}
+              </a>
+            </div>
           </div>
         )}
       </div>

@@ -1,6 +1,31 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (18/10/2026 — XÓA BỎ HOÀN TOÀN 4 DÒNG CHỮ MÔ TẢ CHUYÊN MỤC BẤT ĐỘNG SẢN):**
+**Việc vừa hoàn thành (20/10/2026 — ĐỒNG BỘ TOÀN DIỆN WEBSITE TRÊN MÁY TÍNH VÀ ĐIỆN THOẠI CHO KHÁCH HÀNG):**
+- **Đồng bộ hóa 100% giao diện, frontend và toàn bộ hệ thống vận hành phục vụ khách hàng trên máy tính giống như trên điện thoại**:
+  1. **Đồng bộ thanh Header & Điều hướng Máy tính (`Header.tsx`)**:
+     - Bổ sung trực tiếp nút `"Các phòng đã chọn"` kèm huy hiệu (badge) đếm số lượng thời gian thực `selectedRoomsCount` và mở modal `SelectedRoomsModal`
+     - Bổ sung trực tiếp nút `"Cần tư vấn"` trên thanh header bar máy tính mở modal `ConsultationModal`
+     - Đồng bộ tiện ích khách hàng hiển thị ngay trên thanh điều hướng, giúp khách hàng trên máy tính có trải nghiệm 1 chạm tương đương như trên menu điện thoại
+  2. **Thêm nút "Chọn phòng" (Lưu phòng nhanh) trên thẻ tin (`ListingCard.tsx`)**:
+     - Tích hợp nút trái tim/bookmark tương tác độc lập trên góc ảnh của mỗi thẻ phòng
+     - Đồng bộ hai chiều với kho lưu trữ `selected-rooms.ts` (`addSelectedRoom` / `removeSelectedRoom`), cập nhật ngay lập tức huy hiệu số lượng trên toàn hệ thống
+  3. **Đồng bộ trang chi tiết tin (`OwnerContactBox.tsx` & `MobileStickyContactBar.tsx`)**:
+     - Bổ sung nút `RevealPhoneButton` ("Bấm để hiện số người dẫn xem" / "0981 753 082 • Gọi người dẫn xem") ngay trên khung liên hệ cột phải của máy tính (`OwnerContactBox`)
+     - Bổ sung nút "Lưu vào phòng đã chọn" và hiển thị Hotline hỗ trợ 24/7 trực tiếp từ `SITE_CONFIG`
+     - Nâng cấp `MobileStickyContactBar`: luôn hiện trên điện thoại, đồng thời tự động trượt lên cố định ở đáy màn hình máy tính khi người dùng cuộn trang qua khối liên hệ chính, tích hợp nút Lưu phòng, Gọi điện và Đặt lịch xem
+  4. **Triển khai Cụm tiện ích khách hàng nổi toàn diện (`FloatingCustomerHub.tsx` & `layout.tsx`)**:
+     - Tích hợp cụm nút nổi cố định góc dưới bên phải màn hình: Nút Các phòng đã chọn (kèm badge), Nút Cần tư vấn, Nút Chat Zalo, Nút Gọi Hotline 24/7 (`0981 753 082`), và Nút Cuộn lên đầu trang (Back to top)
+     - Đảm bảo khách hàng ở bất kỳ trang nào đều có thể kết nối hỗ trợ 24/7 tức thì
+  5. **Đồng bộ Bản đồ & Đánh giá (`MapRoomDetailDrawer.tsx`)**:
+     - Bổ sung nút "Lưu vào phòng đã chọn" ngay trong thanh hành động đáy của drawer chi tiết phòng trên bản đồ Google Maps
+  6. **Đồng bộ thông tin liên hệ chuẩn tại Chân trang (`Footer.tsx`)**:
+     - Cập nhật đầy đủ Hotline `0981 753 082 (24/7)`, Zalo `0981 753 082`, Email, Địa chỉ và Thời gian làm việc tham chiếu duy nhất từ `SITE_CONFIG`
+  7. **Kiểm thử & Rà soát chất lượng**:
+     - Chạy `tsc --noEmit` trên cả `apps/web` và `apps/api` đạt mã **Exit Code 0**
+     - Đóng gói sản phẩm `next build` thành công 100% với 35/35 routes
+     - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (18/10/2026 — XÓA BỎ HOÀN TOÀN 4 DÒNG CHỮ MÔ TẢ CHUYÊN MỤC BẤT ĐỘNG SẢN):**
 - **Xóa bỏ triệt để 4 dòng chữ mô tả chuyên mục theo đúng yêu cầu người dùng**:
   1. `"Giá tốt từ 1.5 - 4 triệu/tháng, gần các trường đại học, giờ giấc tự do"`
   2. `"Đầy đủ nội thất, view thoáng mát, an ninh cho người đi làm & gia đình"`
