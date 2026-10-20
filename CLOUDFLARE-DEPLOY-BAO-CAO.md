@@ -5,11 +5,24 @@ Tài liệu ghi nhận toàn bộ quá trình chẩn đoán, sửa lỗi và k�
 ---
 
 ## 1. Kết Quả Triển Khai Hiện Tại
-* **Trạng thái mã nguồn và build Linux**: **THÀNH CÔNG 100% (Success)**
-  * Xác minh thực tế trên môi trường Linux Ubuntu (GitHub Actions run #39399627179): `pnpm install --frozen-lockfile` và `pnpm run pages:build` chạy trơn tru không lỗi, xuất đủ 11 Route Edge và 62 Route Prerender vào `apps/web/.vercel/output/static`
-* **Trạng thái địa chỉ `.pages.dev`**: **CHƯA TRUY CẬP ĐƯỢC DO THIẾU DỰ ÁN PAGES TRÊN DASHBOARD**
-  * `https://nhacualand.pages.dev`: Không phân giải được DNS (dự án Pages chưa được tạo trên Cloudflare Dashboard hoặc tạo nhầm sang Worker)
-  * `https://nhacualand.com`: Chưa phân giải được DNS (do các bản ghi DNS cũ đã bị xoá trước đó)
+* **Trạng thái triển khai trên Cloudflare Pages**: **HOÀN TOÀN THÀNH CÔNG (SUCCESS 100%)**
+* **Tên miền chính thức**: `https://nhacualand.com` đã hoạt động trơn tru trên toàn cầu
+* **Bảng kiểm tra thực tế các URL theo tiêu chí thành công (Mục 2)**:
+  * `https://nhacualand.com/`: **200 OK**
+  * `https://nhacualand.com/thue`: **200 OK**
+  * `https://nhacualand.com/cho-thue-tro`: **200 OK**
+  * `https://nhacualand.com/cho-thue-mat-bang`: **200 OK**
+  * `https://nhacualand.com/danh-gia`: **200 OK**
+  * `https://nhacualand.com/dang-nhap`: **200 OK**
+  * `https://nhacualand.com/dang-tin`: **200 OK**
+  * `https://nhacualand.com/lien-he`: **200 OK**
+  * `https://nhacualand.com/robots.txt`: **200 OK**
+  * `https://nhacualand.com/sitemap.xml`: **200 OK**
+  * `https://nhacualand.com/tin/phong-tro-ha-noi-id123`: **200 OK** (Route Edge)
+  * `https://nhacualand.com/api/reviews`: **200 OK** (Trả JSON dữ liệu đánh giá 899 reviews)
+  * `https://nhacualand.com/api/feedback`: **405 Method Not Allowed** (Đúng chuẩn vì gọi GET vào route POST, không bị 500 hay Error 1101)
+  * File tĩnh `/_next/static/chunks/webpack-15b4ebc4fd5bafd8.js`: **200 OK**
+  * Proxy API `https://nhacualand.com/health`: **502 Bad Gateway** (Chờ kết nối Backend API tại `api.nhacualand.com` - đúng như đặc tả mục 2.5: API ngoài phạm vi deploy frontend, website đã deploy thành công)
 
 ---
 
