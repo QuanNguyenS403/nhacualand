@@ -210,6 +210,12 @@ const nextConfig = {
     ];
   },
   webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@/data': join(__dirname, 'src', 'data'),
+      '../../data/nhaminhbach-reviews-899.json': join(__dirname, 'src', 'data', 'nhaminhbach-reviews-899.json'),
+      '../data/nhaminhbach-reviews-899.json': join(__dirname, 'src', 'data', 'nhaminhbach-reviews-899.json'),
+    };
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
