@@ -1,5 +1,5 @@
 import type { ListingMapPin } from '@qns/shared';
-import rawReviewsData from '../../data/nhaminhbach-reviews-899.json';
+import rawReviewsData from '../data/nhaminhbach-reviews-899.json';
 import { removeDiacritics } from './reviews-types';
 import { ALL_DEMO_LISTINGS } from './demo-data';
 

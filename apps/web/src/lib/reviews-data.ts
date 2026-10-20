@@ -1,4 +1,4 @@
-import rawReviewsData from '../../data/nhaminhbach-reviews-899.json';
+import rawReviewsData from '../data/nhaminhbach-reviews-899.json';
 import {
   ReviewItem,
   TransparencyStats,
