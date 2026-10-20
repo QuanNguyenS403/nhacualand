@@ -40,6 +40,16 @@ Tài liệu ghi nhận toàn bộ quá trình chẩn đoán, sửa lỗi và k�
   ```
 * **Nguyên nhân**: Thêm `wrangler` vào `devDependencies` trong `package.json` nhưng chưa cập nhật `pnpm-lock.yaml`, khiến máy chủ CI Cloudflare với cờ `--frozen-lockfile` từ chối cài đặt
 
+### Lần 4: Lệnh build bị Cloudflare tự điền "npx next build"
+* **Dòng log thực tế**:
+  ```text
+  16:34:43.622 Executing user command: npx next build
+  16:34:45.672 sh: 1: next: not found
+  16:34:45.686 Failed: Error while executing user command. Exited with error code: 127
+  ```
+* **Nguyên nhân**: Khi tạo dự án hoặc chọn preset Next.js, Cloudflare Pages tự động điền sẵn ô Build command là `npx next build`. Do đây là monorepo, thư viện `next` nằm ở `apps/web` chứ không nằm ở gốc, đồng thời Cloudflare Pages bắt buộc phải dùng `@cloudflare/next-on-pages` (`pnpm run pages:build`) xuất ra `apps/web/.vercel/output/static` thì mới chạy được trên Edge
+* **Cách sửa**: Sửa lại trường **Build command** thành `pnpm run pages:build` và trường **Build output directory** thành `apps/web/.vercel/output/static` trong Cloudflare Pages Build settings
+
 ---
 
 ## 3. Các Thay Đổi Đã Thực Hiện Trong Mã Nguồn
@@ -60,6 +70,7 @@ Tài liệu ghi nhận toàn bộ quá trình chẩn đoán, sửa lỗi và k�
 * **Lần 3 (15:38)**: Build runner báo `ERR_PNPM_OUTDATED_LOCKFILE` -> Xác định lệch devDependencies
 * **Lần 4 (16:15)**: Gỡ bỏ `wrangler`, đồng bộ lockfile, push commit `e3dea3a` -> Xoá sổ triệt để lỗi lockfile
 * **Lần 5 (16:18)**: Tạo nhánh `deploy/cloudflare-fix`, chạy workflow Ubuntu Linux trên GitHub Actions -> Toàn bộ tiến trình build `@cloudflare/next-on-pages` thành công 100%
+* **Lần 6 (16:34)**: Cloudflare chạy lệnh `npx next build` và báo `sh: 1: next: not found` -> Do ô Build command đang để mặc định của preset thay vì `pnpm run pages:build`
 
 ---
 
