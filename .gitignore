@@ -43,7 +43,7 @@ dist/
 .env
 apps/api/uploads/
 packages/database/prisma/generated/
-data/
+!apps/web/data/
 backup/
 cloudflared.exe
 *.exe
