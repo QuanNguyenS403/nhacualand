@@ -33,7 +33,7 @@
     "test:wave2": "node packages/database/scripts/test-wave-2.js",
     "test:wave3": "node packages/database/scripts/test-wave-3.js",
     "build:web": "turbo run build --filter=@batdongsan/web",
-    "pages:build": "pnpm --filter @batdongsan/web build"
+    "pages:build": "pnpm --filter @qns/shared build && pnpm --filter @batdongsan/web pages:build"
   },
   "devDependencies": {
     "prisma": "^5.19.1",

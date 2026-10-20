@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -13,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000';
-    const clientIp = req.headers.get('x-forwarded-for') || req.ip || '';
+    const clientIp = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || '';
 
     try {
       const apiRes = await fetch(`${apiUrl}/leads/feedback`, {

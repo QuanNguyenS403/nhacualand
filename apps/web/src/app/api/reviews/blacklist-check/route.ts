@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkBlacklist } from '@/lib/reviews-data';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
   try {

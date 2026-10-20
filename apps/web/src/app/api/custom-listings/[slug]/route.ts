@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 function goneResponse() {
   return NextResponse.json(
     {

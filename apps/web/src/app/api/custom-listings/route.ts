@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 /**
  * Tuyến API lưu trữ tin đăng cục bộ vào file json cũ đã bị vô hiệu hóa vĩnh viễn (410 Gone).
  * Toàn bộ tin đăng được quản lý và kiểm duyệt trực tiếp tại máy chủ API NestJS.
