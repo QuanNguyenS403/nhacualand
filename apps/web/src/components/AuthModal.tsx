@@ -81,14 +81,15 @@ export function AuthModal({
     onClose();
   }
 
-  async function handleGoogleLogin(credential: string) {
+  async function handleGoogleLogin(authData: { credential?: string; accessToken?: string } | string) {
     setError(null);
     setLoading(true);
     try {
+      const payload = typeof authData === 'string' ? { credential: authData } : authData;
       const res = await sendAuthRequest('/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.accessToken) {

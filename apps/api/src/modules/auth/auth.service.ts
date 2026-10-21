@@ -287,15 +287,72 @@ export class AuthService {
     };
   }
 
-  async googleLogin(dto: GoogleLoginDto) {
-    let googleUser;
+  async verifyGoogleAccessToken(accessToken: string) {
+    if (!accessToken) {
+      throw new BadRequestException('Thiếu Google access token');
+    }
+
     try {
-      googleUser = await this.verifyGoogleIdToken(dto.credential);
+      const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        this.logger.error(`Google userinfo failed (${res.status}): ${errorText}`);
+        throw new UnauthorizedException('Không thể lấy thông tin xác thực từ Google');
+      }
+
+      const payload = (await res.json()) as any;
+      if (!payload || !payload.sub) {
+        throw new UnauthorizedException('Dữ liệu tài khoản Google không hợp lệ (thiếu sub identifier)');
+      }
+
+      if (!payload.email || (payload.email_verified !== true && payload.email_verified !== 'true')) {
+        throw new UnauthorizedException('Email tài khoản Google chưa được xác thực (email_verified=false)');
+      }
+
+      const canonicalEmail = canonicalizeEmail(payload.email);
+
+      return {
+        sub: payload.sub as string,
+        email: payload.email as string,
+        canonicalEmail,
+        name: payload.name || payload.email.split('@')[0] || '',
+        picture: payload.picture || '',
+      };
     } catch (err: any) {
-      googleUser = this.decodeGoogleIdTokenFallback(dto.credential);
-      if (!googleUser) {
+      if (err instanceof UnauthorizedException || err instanceof BadRequestException) {
         throw err;
       }
+      this.logger.error(`Lỗi xác thực Google Access Token: ${err.message}`);
+      throw new UnauthorizedException(`Xác thực Google Access Token thất bại: ${err.message}`);
+    }
+  }
+
+  async googleLogin(dto: GoogleLoginDto) {
+    if (!dto.credential && !dto.accessToken) {
+      throw new BadRequestException('Thiếu thông tin xác thực Google');
+    }
+
+    let googleUser;
+    if (dto.accessToken) {
+      googleUser = await this.verifyGoogleAccessToken(dto.accessToken);
+    } else if (dto.credential) {
+      try {
+        googleUser = await this.verifyGoogleIdToken(dto.credential);
+      } catch (err: any) {
+        googleUser = this.decodeGoogleIdTokenFallback(dto.credential);
+        if (!googleUser) {
+          throw err;
+        }
+      }
+    }
+
+    if (!googleUser) {
+      throw new UnauthorizedException('Không thể xác thực thông tin tài khoản Google');
     }
 
     let user =
