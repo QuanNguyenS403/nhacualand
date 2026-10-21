@@ -106,6 +106,26 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
+  /**
+   * Sinh số điện thoại định danh an toàn (syntheticPhone) cho người dùng đăng ký qua Email/Google.
+   * Ràng buộc: DB User.phone có kiểu VarChar(15) và @unique.
+   * Cơ chế: Tạo số ngẫu nhiên 11 chữ số với tiền tố an toàn, tự động thử lại tối đa 5 lần nếu phát hiện trùng lặp.
+   */
+  private async generateUniqueSyntheticPhone(prefix = '099'): Promise<string> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const randomPart = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const candidate = `${prefix}${randomPart}`;
+      const exists = await this.prisma.user.findUnique({
+        where: { phone: candidate },
+        select: { id: true },
+      });
+      if (!exists) {
+        return candidate;
+      }
+    }
+    return `${prefix}${Date.now().toString().slice(-6)}${Math.floor(10 + Math.random() * 90)}`;
+  }
+
   async registerEmail(dto: RegisterEmailDto) {
     const raw = dto.email.trim().toLowerCase();
     const canonical = canonicalizeEmail(raw);
@@ -123,7 +143,7 @@ export class AuthService {
       throw new ConflictException('Email này đã được đăng ký, vui lòng đăng nhập');
     }
 
-    const syntheticPhone = `099${Date.now().toString().slice(-7)}`;
+    const syntheticPhone = await this.generateUniqueSyntheticPhone('099');
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     try {
@@ -307,7 +327,7 @@ export class AuthService {
       return this.issueTokens(user);
     }
 
-    const syntheticPhone = `098${Date.now().toString().slice(-7)}`;
+    const syntheticPhone = await this.generateUniqueSyntheticPhone('099');
     try {
       user = await this.prisma.user.create({
         data: {

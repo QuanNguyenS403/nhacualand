@@ -13,8 +13,24 @@ type ViewMode = 'login' | 'register' | 'forgot';
 
 function formatFriendlyError(err: unknown): string {
   const msg = (err as Error)?.message || 'Vui lòng kiểm tra lại thông tin hoặc thử lại';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network') || msg.includes('ENOTFOUND')) {
+  if (
+    msg.includes('Failed to fetch') ||
+    msg.includes('NetworkError') ||
+    msg.includes('network') ||
+    msg.includes('ENOTFOUND') ||
+    msg.includes('Load failed')
+  ) {
     return 'Không thể kết nối đến máy chủ, vui lòng kiểm tra lại kết nối mạng';
+  }
+  if (
+    msg.includes('1033') ||
+    msg.includes('530') ||
+    msg.includes('502') ||
+    msg.includes('504') ||
+    msg.includes('bảo trì') ||
+    msg.includes('Argo Tunnel')
+  ) {
+    return 'Hệ thống đang bảo trì máy chủ, vui lòng quay lại sau ít phút';
   }
   if (msg.includes('Đã có lỗi xảy ra') || msg.includes('thử lại sau')) {
     return 'Không thể hoàn tất yêu cầu lúc này, vui lòng kiểm tra lại thông tin hoặc thử lại';
@@ -74,6 +90,9 @@ function DangNhapContent() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.accessToken) {
+        if (res.status === 530 || res.status >= 500) {
+          throw new Error('Hệ thống đang bảo trì máy chủ, vui lòng quay lại sau ít phút');
+        }
         throw new Error(data?.message || 'Không thể xác thực thông tin tài khoản Google, vui lòng thử lại');
       }
 
@@ -105,6 +124,9 @@ function DangNhapContent() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.accessToken) {
+        if (res.status === 530 || res.status >= 500) {
+          throw new Error('Hệ thống đang bảo trì máy chủ, vui lòng quay lại sau ít phút');
+        }
         throw new Error(data?.message || 'Email hoặc mật khẩu không chính xác');
       }
 
@@ -144,7 +166,11 @@ function DangNhapContent() {
         if (res.status === 409) {
           throw new Error('Email này đã được đăng ký, vui lòng đăng nhập');
         }
-        throw new Error(data?.message || 'Không thể đăng ký tài khoản lúc này, vui lòng thử lại');
+        if (res.status === 530 || res.status >= 500) {
+          throw new Error('Hệ thống đang bảo trì máy chủ, vui lòng quay lại sau ít phút');
+        }
+        const messageText = Array.isArray(data?.message) ? data.message[0] : data?.message;
+        throw new Error(messageText || 'Không thể đăng ký tài khoản lúc này, vui lòng thử lại');
       }
 
       setTokens(data.accessToken, data.refreshToken, data.user);
