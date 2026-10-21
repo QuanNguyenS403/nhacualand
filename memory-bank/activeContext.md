@@ -1,6 +1,25 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (21/10/2026 — XÁC MINH TOÀN DIỆN DỊCH VỤ CLOUDFLARE TUNNEL HOẠT ĐỘNG 100%):**
+**Việc vừa hoàn thành (21/10/2026 — LOẠI BỎ TRIỆT ĐỂ GỢI Ý CÁ NHÂN HÓA TÀI KHOẢN VÀ CHUYỂN SANG NÚT GOOGLE ĐỒNG NHẤT):**
+- **Loại bỏ triệt để giao diện gợi ý cá nhân hóa ("Tiếp tục bằng tên Quân" / email cá nhân)**:
+  - Khắc phục lo ngại hiển thị nhầm thông tin tài khoản cá nhân cho khách hàng trên toàn bộ hệ thống
+  - Loại bỏ hoàn toàn phương thức `window.google.accounts.id.renderButton` (vốn tự động đọc cookie trình duyệt và ép hiển thị tên/email cá nhân của người đang ngồi máy vào trong iframe)
+  - Loại bỏ hoàn toàn cơ chế gọi `window.google.accounts.id.prompt()` tự động (Google One Tap), triệt tiêu hoàn toàn banner popup gợi ý tài khoản cá nhân
+- **Chuyển sang nút chuẩn thương hiệu thuần React đồng nhất cho 100% người dùng**:
+  - Nút hiển thị cố định và thống nhất: `"Tiếp tục với Google"` (hoặc `"Đăng ký với Google"` ở tab đăng ký) kèm logo Google 4 màu sắc nét
+  - Tuyệt đối không bao giờ hiển thị tên hoặc email của bất kỳ người dùng nào trên giao diện web
+- **Tích hợp luồng Google OAuth2 Token Client với `prompt: 'select_account'`**:
+  - Khi người dùng click nút, kích hoạt `google.accounts.oauth2.initTokenClient` mở cửa sổ popup chính thức của Google
+  - Tham số `prompt: 'select_account'` đảm bảo Google luôn yêu cầu người dùng tự chọn tài khoản Google của chính họ (hoặc đăng nhập tài khoản khác), không tự ý gán hay hiển thị trước
+- **Nâng cấp Backend NestJS hỗ trợ xác thực linh hoạt**:
+  - Cập nhật `GoogleLoginDto` hỗ trợ cả `credential` (ID Token) và `accessToken` (OAuth2 Access Token)
+  - Bổ sung hàm `verifyGoogleAccessToken` trong `AuthService`, tự động lấy và đối soát thông tin tài khoản qua Google Userinfo API chính thức (`https://www.googleapis.com/oauth2/v3/userinfo`), đảm bảo bảo mật và tính toàn vẹn 100%
+- **Kiểm thử & Đóng gói chất lượng**:
+  - Chạy `tsc --noEmit` trên `apps/web` và `apps/api` đạt mã **Exit Code 0**
+  - Đóng gói `nest build` và `next build` thành công 100% toàn bộ 35 routes
+  - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (21/10/2026 — XÁC MINH TOÀN DIỆN DỊCH VỤ CLOUDFLARE TUNNEL HOẠT ĐỘNG 100%):**
 - **Kiểm tra trạng thái Windows Service `cloudflared`**:
   - Dịch vụ Windows Service `cloudflared` đang ở trạng thái `STATE: 4 RUNNING` với Tunnel ID mới `60c935e3-03d3-411f-b703-c3eb5c172399`
 - **Xác thực kết nối Cloudflare Edge và API công khai**:
