@@ -1964,3 +1964,4 @@
 - Wave 0, Wave 1, Wave 2, Wave 3, Wave 4 đã hoàn thành 100% và được kiểm thử tự động xác minh.
 - Chuẩn bị commit và push trực tiếp Wave 4 lên `origin/main`.
 - Tiếp tục chuyển ngay sang Wave 5 (Reliability, Outbox, SEO, Accessibility và Mobile).
+- **Fix UI (Bản đồ Đăng tin)**: Đã cô lập stacking context (`z-0 isolate`) cho GoogleMapAddressPicker, MapRoomCanvas và `.leaflet-container` để tránh đè layer lên sticky header khi cuộn trang.

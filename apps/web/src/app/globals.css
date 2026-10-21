@@ -219,5 +219,10 @@
     animation: marquee-scroll 40s linear infinite;
     will-change: transform;
   }
+
+  /* Đảm bảo toàn bộ pane và control của Leaflet không đè lên header và modal khi cuộn trang */
+  .leaflet-container {
+    isolation: isolate;
+  }
 }
 

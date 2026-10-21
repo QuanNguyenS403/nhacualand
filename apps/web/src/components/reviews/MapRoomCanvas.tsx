@@ -374,7 +374,7 @@ export function MapRoomCanvas({
   };
 
   return (
-    <div className="relative w-full h-full bg-slate-100 overflow-hidden">
+    <div className="relative z-0 isolate w-full h-full bg-slate-100 overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0 w-full h-full" />
 
       {/* Huy hiệu tổng số phòng */}

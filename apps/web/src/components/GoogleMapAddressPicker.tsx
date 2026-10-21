@@ -564,7 +564,7 @@ export function GoogleMapAddressPicker({
   }, [lat, lng, address, activeLat, activeLng, mapType]);
 
   return (
-    <div className="space-y-4 rounded-2xl border border-surface-border bg-slate-50/70 p-4 sm:p-5 shadow-sm">
+    <div className="relative z-0 isolate space-y-4 rounded-2xl border border-surface-border bg-slate-50/70 p-4 sm:p-5 shadow-sm">
       {/* Header khu vực nhập địa chỉ & Google Maps */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-border/70 pb-3">
         <div>
@@ -699,7 +699,7 @@ export function GoogleMapAddressPicker({
         </div>
 
         {/* Khung bản đồ Leaflet Google Maps tương tác to rõ ràng */}
-        <div className="relative h-[440px] sm:h-[520px] md:h-[580px] w-full overflow-hidden rounded-2xl border border-surface-border bg-slate-200 shadow-md">
+        <div className="relative z-0 isolate h-[440px] sm:h-[520px] md:h-[580px] w-full overflow-hidden rounded-2xl border border-surface-border bg-slate-200 shadow-md">
           {/* Huy hiệu hướng dẫn chấm vị trí nổi trên đầu bản đồ */}
           <div className="absolute top-2.5 left-2.5 right-2.5 sm:right-auto z-20 pointer-events-none">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/20">
