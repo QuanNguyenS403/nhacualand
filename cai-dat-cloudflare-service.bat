@@ -30,8 +30,8 @@ if not exist "%~dp0cloudflared.exe" (
     echo [1/3] Da tim thay file cloudflared.exe tai thu muc
 )
 
-:: 3. Token Tunnel (Tu dashboard Cloudflare Zero Trust: Networks -> Tunnels)
-set "DEFAULT_TOKEN=eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiYThlNGRkOGEtNzVjYy00NjE3LThiYTAtNWRhNzNhNTM1MTE4IiwicyI6IlpHUTFNR0kzTURjdFl6RXhaaTAwTmpsbUxUZzVZelF0TVRVNFpqbGlaalV6TXprMyJ9"
+:: 3. Token Tunnel (Tu dashboard Cloudflare Zero Trust: Networks -> Tunnels, Tunnel ID: 60c935e3-03d3-411f-b703-c3eb5c172399)
+set "DEFAULT_TOKEN=eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiNjBjOTM1ZTMtMDNkMy00MTFmLWI3MDMtYzNlYjVjMTcyMzk5IiwicyI6Ill6YzBZVEl4WmpVdE9ESmhOeTAwTlRFd0xUbGxaRE10WWpWaU5XSTVORFk1WXpOak0yWXlPR1ZtTmpFdE56Qm1NQzAwTlRabExXSmpObU10WmpsbVlUaGlOekZpT1dNeCJ9"
 
 echo.
 echo [2/3] Xac nhan Tunnel Token:

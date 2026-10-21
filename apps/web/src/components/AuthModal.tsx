@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import GoogleSignInButton from './GoogleSignInButton';
-import { setTokens } from '@/lib/auth-client';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
-  ? process.env.NEXT_PUBLIC_API_URL
-  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+import { setTokens, sendAuthRequest } from '@/lib/auth-client';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -89,7 +85,7 @@ export function AuthModal({
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/auth/google`, {
+      const res = await sendAuthRequest('/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential }),
@@ -120,7 +116,7 @@ export function AuthModal({
       const cleanEmail = email.trim().toLowerCase();
       const cleanPassword = password.trim();
 
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await sendAuthRequest('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -157,9 +153,12 @@ export function AuthModal({
     try {
       const cleanEmail = email.trim().toLowerCase();
       const cleanPassword = password.trim();
-      const cleanFullName = fullName.trim() || cleanEmail.split('@')[0];
+      let cleanFullName = fullName.trim() || cleanEmail.split('@')[0];
+      if (cleanFullName.length < 2) {
+        cleanFullName = 'Người dùng';
+      }
 
-      const res = await fetch(`${API_URL}/auth/register-email`, {
+      const res = await sendAuthRequest('/auth/register-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

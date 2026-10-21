@@ -1,6 +1,56 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (20/10/2026 — ĐỒNG BỘ TOÀN DIỆN WEBSITE TRÊN MÁY TÍNH VÀ ĐIỆN THOẠI CHO KHÁCH HÀNG):**
+**Việc vừa hoàn thành (21/10/2026 — XÁC MINH TOÀN DIỆN DỊCH VỤ CLOUDFLARE TUNNEL HOẠT ĐỘNG 100%):**
+- **Kiểm tra trạng thái Windows Service `cloudflared`**:
+  - Dịch vụ Windows Service `cloudflared` đang ở trạng thái `STATE: 4 RUNNING` với Tunnel ID mới `60c935e3-03d3-411f-b703-c3eb5c172399`
+- **Xác thực kết nối Cloudflare Edge và API công khai**:
+  - `https://api.nhacualand.com/listings`: Phản hồi **HTTP 200 OK** trọn vẹn, mã lỗi Cloudflare 1033 đã được triệt tiêu hoàn toàn
+  - Cổng Backend API 4000 (`0.0.0.0:4000`) và Web 3000 (`0.0.0.0:3000`) đều đang lắng nghe ổn định
+  - Trang chủ công khai `https://nhacualand.com` phản hồi **HTTP 200 OK**
+  - Mọi yêu cầu xác thực Đăng ký / Đăng nhập (Google Sign-In và Email thủ công) từ Internet và Local đều được định tuyến thông suốt vào Backend NestJS và ghi nhận chính xác vào CSDL PostgreSQL
+- **Tuân thủ quy chuẩn**:
+  - Tuân thủ nghiêm ngặt quy tắc **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (21/10/2026 — CẬP NHẬT TUNNEL TOKEN MỚI VÀO SCRIPT CÀI ĐẶT DỊCH VỤ CLOUDFLARE TUNNEL):**
+- **Cập nhật Tunnel Token mới vào `cai-dat-cloudflare-service.bat`**:
+  - Đã thay thế thành công chuỗi Tunnel Token mới của Cloudflare Zero Trust vào biến `DEFAULT_TOKEN`
+  - Token mới: `eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiNjBjOTM1ZTMtMDNkMy00MTFmLWI3MDMtYzNlYjVjMTcyMzk5IiwicyI6Ill6YzBZVEl4WmpVdE9ESmhOeTAwTlRFd0xUbGxaRE10WWpWaU5XSTVORFk1WXpOak0yWXlPR1ZtTmpFdE56Qm1NQzAwTlRabExXSmpObU10WmpsbVlUaGlOekZpT1dNeCJ9` (Tunnel ID: `60c935e3-03d3-411f-b703-c3eb5c172399`)
+  - Đã sao chép sẵn tệp thực thi `cloudflared.exe` vào thư mục gốc dự án để script có thể chạy trực tiếp ngay mà không cần tải lại
+  - Đã kiểm tra kết nối thử nghiệm của token mới tới Cloudflare Edge thành công (kết nối trực tiếp tới node `sin20` qua giao thức `quic`)
+- **Tuân thủ quy chuẩn**:
+  - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (21/10/2026 — KHẮC PHỤC TOÀN DIỆN LỖI ĐĂNG KÝ/ĐĂNG NHẬP GOOGLE & THỦ CÔNG, ĐỒNG BỘ CƠ SỞ DỮ LIỆU):**
+- **Chuẩn hóa nút Google Sign-In theo đúng quy chuẩn Google Branding sau khi người dùng verify branding thành công**:
+  - Gỡ bỏ hoàn toàn kỹ thuật hack lớp phủ `opacity-0` và ép CSS iframe trong `GoogleSignInButton.tsx` (nguyên nhân khiến Google GSI kích hoạt cơ chế chống clickjacking và từ chối bật popup xác thực tài khoản)
+  - Sử dụng trực tiếp `window.google.accounts.id.renderButton` chuẩn của Google hiển thị tự nhiên, sắc nét, đầy đủ logo và nhãn "Tiếp tục với Google" tiếng Việt
+  - Tích hợp khung hiển thị fallback đồng bộ, chống giật layout (zero CLS) và hỗ trợ xử lý khi script Google đang tải
+- **Khắc phục triệt để lỗi kết nối Endpoint API và định tuyến mạng**:
+  - Xây dựng cơ chế `getApiBaseUrl()` và `sendAuthRequest()` trong `lib/auth-client.ts`, tự động kết nối cổng API 4000 khi chạy trên môi trường local (`localhost` / `127.0.0.1`) thay vì cố kết nối ra ngoài internet qua tunnel đang bảo trì
+  - Bổ sung cơ chế fallback tự động chuyển đổi thông minh giữa subdomain API và endpoint cùng domain khi gặp sự cố mạng (530/502/1033)
+  - Đồng bộ logic tại `dang-nhap/page.tsx`, `dang-tin/page.tsx`, `AuthModal.tsx` và `lib/api.ts`
+- **Khẳng định và đồng bộ hệ thống ghi nhận tài khoản vào CSDL PostgreSQL (Supabase)**:
+  - Cả 2 luồng Google OAuth và Đăng ký thủ công qua Email đều đã được kiểm thử thực tế và ghi nhận thành công vào CSDL
+  - Cập nhật tài khoản Admin ID 1 trong CSDL bổ sung email `ducquan16102006@gmail.com` và họ tên `Chủ nhà`, đảm bảo khi Admin đăng nhập bằng Google hay mật khẩu đều lập tức được phân quyền quản trị chính xác
+  - Chạy `tsc --noEmit` trên cả `apps/web` và `apps/api` đạt mã **Exit Code 0**
+  - Đóng gói `next build` thành công 100% toàn bộ routes
+  - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (21/10/2026 — LOẠI BỎ CÁC SECTION TIỆN ÍCH KHÁCH HÀNG & NÚT NỔI LIÊN HỆ THEO 2 ẢNH CUNG CẤP):**
+- **Loại bỏ chính xác và triệt để 2 section theo đúng 2 ảnh cung cấp của người dùng, không tự ý loại bỏ thêm phần nào khác**:
+  1. **Ảnh 1 — Cụm 2 nút trên thanh Header bar (`Header.tsx`)**:
+     - Xóa bỏ nút `"Phòng đã chọn"` (icon bookmark) và nút `"Cần tư vấn"` (icon tai nghe) khỏi thanh điều hướng máy tính
+     - Khôi phục cấu trúc thanh action bên phải về nguyên bản tinh gọn chỉ gồm nút `+ Đăng tin` và menu người dùng
+  2. **Ảnh 2 — Cụm nút nổi bên góc phải màn hình (`FloatingCustomerHub.tsx` & `layout.tsx`)**:
+     - Xóa bỏ hoàn toàn cụm tiện ích nổi `FloatingCustomerHub` khỏi `apps/web/src/app/layout.tsx` và xóa bỏ tệp `FloatingCustomerHub.tsx`
+     - Triệt tiêu hoàn toàn nút icon tai nghe (Cần tư vấn), nút Zalo xanh và nút gọi điện thoại xanh lá cây (Hotline), bảo vệ tuyệt đối không công khai số điện thoại ra ngoài cho khách hàng
+  3. **Kiểm thử & Rà soát chất lượng**:
+     - Chạy `tsc --noEmit` trên cả `apps/web` và `apps/api` đạt mã **Exit Code 0**
+     - Đóng gói sản phẩm `next build` sạch lỗi
+     - Giữ nguyên toàn bộ các tính năng, khối và section khác của hệ thống theo đúng yêu cầu nghiêm ngặt của người dùng
+     - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (20/10/2026 — ĐỒNG BỘ TOÀN DIỆN WEBSITE TRÊN MÁY TÍNH VÀ ĐIỆN THOẠI CHO KHÁCH HÀNG):**
 - **Đồng bộ hóa 100% giao diện, frontend và toàn bộ hệ thống vận hành phục vụ khách hàng trên máy tính giống như trên điện thoại**:
   1. **Đồng bộ thanh Header & Điều hướng Máy tính (`Header.tsx`)**:
      - Bổ sung trực tiếp nút `"Các phòng đã chọn"` kèm huy hiệu (badge) đếm số lượng thời gian thực `selectedRoomsCount` và mở modal `SelectedRoomsModal`

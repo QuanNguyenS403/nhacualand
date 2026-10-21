@@ -223,43 +223,7 @@ export function Header() {
         </nav>
 
         {/* Actions bên phải — Luôn hiển thị tức thì 100% đồng bộ với trang */}
-        <div className="flex items-center gap-2 sm:gap-2.5" suppressHydrationWarning>
-          {/* Nút Các phòng đã chọn — Đồng bộ tức thì cả trên máy tính */}
-          <button
-            type="button"
-            onClick={() => setSelectedRoomsOpen(true)}
-            className="relative hidden sm:inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ring-1 ring-white/20"
-            aria-label="Các phòng đã chọn"
-            title="Xem các phòng đã chọn"
-          >
-            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-            </svg>
-            <span className="hidden xl:inline">Phòng đã chọn</span>
-            {selectedRoomsCount > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/50">
-                {selectedRoomsCount > 9 ? '9+' : selectedRoomsCount}
-              </span>
-            )}
-          </button>
-
-          {/* Nút Cần tư vấn — Mở form tư vấn trực tiếp */}
-          <button
-            type="button"
-            onClick={() => {
-              setConsultationPreload({ reason: 'Khác' });
-              setConsultationOpen(true);
-            }}
-            className="hidden md:inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ring-1 ring-white/20"
-            aria-label="Cần tư vấn"
-            title="Yêu cầu tư vấn tìm phòng miễn phí"
-          >
-            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75v3.75a3 3 0 01-3 3h-1.5a1.5 1.5 0 01-1.5-1.5v-3.75a1.5 1.5 0 011.5-1.5h3v-.75a8.25 8.25 0 10-16.5 0v.75h3a1.5 1.5 0 011.5 1.5V17.25a1.5 1.5 0 01-1.5 1.5h-1.5a3 3 0 01-3-3V12z" />
-            </svg>
-            <span className="hidden xl:inline">Cần tư vấn</span>
-          </button>
-
+        <div className="flex items-center gap-2.5 sm:gap-3" suppressHydrationWarning>
           {/* Nút + Đăng tin — Đồng bộ tức thì cùng trang */}
           <Link
             href="/dang-tin"

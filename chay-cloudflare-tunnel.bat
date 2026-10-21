@@ -20,7 +20,8 @@ if not exist "%~dp0cloudflared.exe" (
     echo -> Da tai cloudflared.exe thanh cong
 )
 
-set "DEFAULT_TOKEN=eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiYThlNGRkOGEtNzVjYy00NjE3LThiYTAtNWRhNzNhNTM1MTE4IiwicyI6IlpHUTFNR0kzTURjdFl6RXhaaTAwTmpsbUxUZzVZelF0TVRVNFpqbGlaalV6TXprMyJ9"
+:: Tunnel ID: 60c935e3-03d3-411f-b703-c3eb5c172399
+set "DEFAULT_TOKEN=eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiNjBjOTM1ZTMtMDNkMy00MTFmLWI3MDMtYzNlYjVjMTcyMzk5IiwicyI6Ill6YzBZVEl4WmpVdE9ESmhOeTAwTlRFd0xUbGxaRE10WWpWaU5XSTVORFk1WXpOak0yWXlPR1ZtTmpFdE56Qm1NQzAwTlRabExXSmpObU10WmpsbVlUaGlOekZpT1dNeCJ9"
 
 echo [THONG TIN] Dang ket noi Tunnel toi Cloudflare Network...
 echo - Nhan Ctrl+C de dung tunnel bat cu luc nao.

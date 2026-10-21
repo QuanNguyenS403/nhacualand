@@ -2,12 +2,24 @@
  * auth-client.ts — fetch có gắn sẵn Bearer accessToken, tự động thử làm mới token khi hết hạn.
  */
 
-const envApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-const API_URL = envApiUrl
-  ? envApiUrl
-  : (typeof window !== 'undefined'
-      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : '')
-      : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''));
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    // Khi đang chạy kiểm thử trên máy local (localhost hoặc 127.0.0.1), luôn kết nối trực tiếp cổng API local (4000)
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:4000';
+    }
+  }
+
+  const envApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (envApiUrl) return envApiUrl;
+
+  return typeof window === 'undefined'
+    ? (process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000')
+    : '';
+}
+
+export const API_URL = getApiBaseUrl();
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -87,13 +99,49 @@ export function isLoggedIn(): boolean {
   return !!getAccessToken();
 }
 
+/**
+ * Gửi yêu cầu xác thực an toàn (đăng nhập, đăng ký, Google OAuth)
+ * Tự động chuyển đổi thông minh giữa API Server và Endpoint dự phòng nếu gặp lỗi kết nối hoặc bảo trì
+ */
+export async function sendAuthRequest(path: string, options: RequestInit = {}): Promise<Response> {
+  const isClient = typeof window !== 'undefined';
+  const baseUrl = getApiBaseUrl();
+  const primaryUrl = `${baseUrl}${path}`;
+
+  try {
+    const res = await fetch(primaryUrl, options);
+    // Nếu gặp lỗi gateway 530, 502, 504 hoặc Cloudflare Tunnel 1033 từ tên miền api con
+    if (
+      (res.status === 530 || res.status === 502 || res.status === 504) &&
+      baseUrl &&
+      isClient &&
+      !baseUrl.includes(window.location.host)
+    ) {
+      try {
+        const fallbackRes = await fetch(path, options);
+        if (fallbackRes.ok || (fallbackRes.status >= 400 && fallbackRes.status < 500)) {
+          return fallbackRes;
+        }
+      } catch {}
+    }
+    return res;
+  } catch (err) {
+    if (baseUrl && isClient && !baseUrl.includes(window.location.host)) {
+      try {
+        return await fetch(path, options);
+      } catch {}
+    }
+    throw err;
+  }
+}
+
 /** Gọi /auth/refresh bằng refreshToken hiện có. Trả về accessToken mới, hoặc null nếu thất bại. */
 async function tryRefreshToken(): Promise<string | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
   try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    const res = await sendAuthRequest('/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -113,7 +161,8 @@ async function tryRefreshToken(): Promise<string | null> {
  */
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const isClient = typeof window !== 'undefined';
-  const primaryUrl = `${API_URL}${path}`;
+  const baseUrl = getApiBaseUrl();
+  const primaryUrl = `${baseUrl}${path}`;
 
   const doFetch = (token: string | null, customUrl?: string) =>
     fetch(customUrl || primaryUrl, {

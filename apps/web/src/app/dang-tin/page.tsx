@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authFetch, getAccessToken, setTokens, parseGoogleJwt } from '@/lib/auth-client';
+import { authFetch, getAccessToken, setTokens, parseGoogleJwt, sendAuthRequest, getApiBaseUrl } from '@/lib/auth-client';
 import { GoogleMapAddressPicker, type SelectedUniversityDistance } from '@/components/GoogleMapAddressPicker';
 import { compressImage } from '@/lib/image-compressor';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
@@ -18,9 +18,7 @@ interface LocationItem {
   parentId: number | null;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined
-  ? process.env.NEXT_PUBLIC_API_URL
-  : (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '');
+const API_URL = getApiBaseUrl();
 
 export default function DangTinPage() {
   const router = useRouter();
@@ -94,7 +92,7 @@ export default function DangTinPage() {
 
   async function handleGoogleLoginSuccess(credential: string) {
     try {
-      const res = await fetch(`${API_URL}/auth/google`, {
+      const res = await sendAuthRequest('/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential }),

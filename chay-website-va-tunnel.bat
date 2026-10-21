@@ -30,7 +30,8 @@ if %errorlevel% equ 0 (
     ) else (
         if exist "%~dp0cloudflared.exe" (
             echo -> Dang khoi chay Cloudflare Tunnel ket noi toi Cloudflare Edge
-            start "Cloudflare Tunnel" /min "%~dp0cloudflared.exe" tunnel run --token eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiYThlNGRkOGEtNzVjYy00NjE3LThiYTAtNWRhNzNhNTM1MTE4IiwicyI6IlpHUTFNR0kzTURjdFl6RXhaaTAwTmpsbUxUZzVZelF0TVRVNFpqbGlaalV6TXprMyJ9
+            :: Tunnel ID: 60c935e3-03d3-411f-b703-c3eb5c172399
+            start "Cloudflare Tunnel" /min "%~dp0cloudflared.exe" tunnel run --token eyJhIjoiNzU3MDcwMTE0ZWM1NTA3MTY2OWJhNmM5OWUxOTk2ZGQiLCJ0IjoiNjBjOTM1ZTMtMDNkMy00MTFmLWI3MDMtYzNlYjVjMTcyMzk5IiwicyI6Ill6YzBZVEl4WmpVdE9ESmhOeTAwTlRFd0xUbGxaRE10WWpWaU5XSTVORFk1WXpOak0yWXlPR1ZtTmpFdE56Qm1NQzAwTlRabExXSmpObU10WmpsbVlUaGlOekZpT1dNeCJ9
         ) else (
             echo [CHU Y] Chua tim thay cloudflared.exe. Ban co the chay cai-dat-cloudflare-service.bat
         )
