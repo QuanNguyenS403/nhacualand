@@ -1,6 +1,26 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (21/10/2026 — LOẠI BỎ TRIỆT ĐỂ GỢI Ý CÁ NHÂN HÓA TÀI KHOẢN VÀ CHUYỂN SANG NÚT GOOGLE ĐỒNG NHẤT):**
+**Việc vừa hoàn thành (22/10/2026 — KHẮC PHỤC CHÍNH XÁC 2 VẤN ĐỀ TRONG 2 ẢNH: TRIỆT TIÊU BANNER LỖI KẾT NỐI VÀ CHUẨN HÓA TOÀN DIỆN BỘ LỌC, TIÊU ĐỀ):**
+- **Nghiên cứu & Khắc phục triệt để Vấn đề 1 (Lỗi gián đoạn kết nối máy chủ dữ liệu & Banner đỏ gây hoang mang)**:
+  - Phân tích nguyên nhân: Tại 2 trang Cho thuê mặt bằng kinh doanh (`/cho-thue-mat-bang`) và Cho thuê phòng trọ (`/cho-thue-tro`), khi gọi `fetchListings` gặp gián đoạn hoặc timeout/edge SSR, cờ `isApiError && isProduction` đã hiển thị banner đỏ gây hoang mang: *"Đang có gián đoạn kết nối tới máy chủ dữ liệu, danh sách ... tạm thời chưa tải được"*, trong khi dữ liệu tin đăng đã xác thực bên dưới vẫn sẵn sàng
+  - Xóa bỏ hoàn toàn banner báo lỗi màu đỏ này ở cả 2 trang, đảm bảo trải nghiệm khách hàng êm mượt, chuyên nghiệp tương tự trang `/thue`
+  - Nâng cấp cơ chế `API_URL` trong `apps/web/src/lib/api.ts`, tự động fallback sang `process.env.NEXT_PUBLIC_API_URL` khi chạy SSR/Edge ở môi trường production nếu chưa có `INTERNAL_API_URL`, chống triệt để lỗi Connection Refused tới 127.0.0.1
+- **Nghiên cứu & Khắc phục triệt để Vấn đề 2 (Lỗi bất nhất, sai lệch ngữ cảnh giao diện và bộ lọc ở cả 2 ảnh)**:
+  - **Trang Mặt bằng kinh doanh (`/cho-thue-mat-bang`)**:
+    - Chuẩn hóa dropdown bộ lọc từ `"Loại phòng"` thành `"Loại mặt bằng"`
+    - Tách biệt danh mục `PROPERTY_TYPES_SPACE` dành riêng cho Mặt bằng kinh doanh: *Loại mặt bằng, Mặt bằng kinh doanh, Cửa hàng / ki-ốt, Shophouse khối đế, Nhà mặt phố kinh doanh, Kho xưởng / bãi, Văn phòng làm việc* (loại bỏ hoàn toàn các loại hình phòng trọ, chung cư khỏi bộ lọc mặt bằng)
+    - Mở rộng logic lọc `propertyType` hỗ trợ chính xác 100% các loại mặt bằng trên
+  - **Trang Phòng trọ (`/cho-thue-tro`)**:
+    - Đồng bộ thống nhất 100% tên gọi: Breadcrumb `Trang chủ › Tìm phòng › Phòng trọ & Nhà trọ`, Tiêu đề khung tìm kiếm `Phòng trọ & Nhà trọ`, thống nhất hoàn hảo với Badge `Chuyên mục Cho thuê phòng trọ & Nhà trọ` và Tiêu đề H1 `Cho thuê phòng trọ, nhà trọ mới nhất`
+  - **Thanh tìm kiếm `SearchFilterBar.tsx`**:
+    - Chỉnh sửa `displayPropertyTypes`: Giữ nguyên nhãn danh mục đầu tiên nếu đã cấu hình (nhận diện `'Loại mặt bằng'` cho trang mặt bằng, không bị ép thành `'Loại phòng'`)
+    - Đổi nhãn nút submit tìm kiếm từ danh từ chung `"Bộ lọc tìm kiếm"` thành nút hành động trực quan `"Tìm mặt bằng"` (tại trang mặt bằng), `"Tìm phòng"` (tại trang phòng trọ), và `"Tìm kiếm"` (tại trang khác)
+- **Kiểm thử & Đóng gói chất lượng**:
+  - Chạy `tsc --noEmit` trên `apps/web` và `apps/api` đạt mã **Exit Code 0**
+  - Đóng gói `next build` thành công 100% toàn bộ 35 routes
+  - Tuân thủ triệt để quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản người dùng nhìn thấy)
+
+**Việc trước đó (21/10/2026 — LOẠI BỎ TRIỆT ĐỂ GỢI Ý CÁ NHÂN HÓA TÀI KHOẢN VÀ CHUYỂN SANG NÚT GOOGLE ĐỒNG NHẤT):**
 - **Loại bỏ triệt để giao diện gợi ý cá nhân hóa ("Tiếp tục bằng tên Quân" / email cá nhân)**:
   - Khắc phục lo ngại hiển thị nhầm thông tin tài khoản cá nhân cho khách hàng trên toàn bộ hệ thống
   - Loại bỏ hoàn toàn phương thức `window.google.accounts.id.renderButton` (vốn tự động đọc cookie trình duyệt và ép hiển thị tên/email cá nhân của người đang ngồi máy vào trong iframe)

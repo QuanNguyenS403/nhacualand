@@ -129,7 +129,7 @@ export function SearchFilterBar({
     const group = initialParams.categoryGroup;
     if (group === 'thue_can_ho') return 'Chung cư';
     if (group === 'thue_studio') return 'Chung cư mini (CCMN)';
-    if (group === 'thue_tro' || basePath === '/cho-thue-tro') return 'Phòng trọ sinh viên';
+    if (group === 'thue_tro' || basePath === '/cho-thue-tro') return 'Phòng trọ & Nhà trọ';
     if (group === 'thue_mat_bang' || basePath === '/cho-thue-mat-bang') return 'Mặt bằng kinh doanh';
     if (propertyType) {
       const match = availablePropertyTypes.find((p) => p.value === propertyType);
@@ -141,9 +141,10 @@ export function SearchFilterBar({
   const sectionSubtitle = propSubtitle || '';
 
 
-  // Nhãn rút gọn cho các dropdown mặc định
+  // Nhãn rút gọn cho các dropdown mặc định (nhận diện Loại mặt bằng nếu ở trang mặt bằng hoặc có cấu hình riêng)
+  const defaultFirstTypeLabel = basePath === '/cho-thue-mat-bang' ? 'Loại mặt bằng' : 'Loại phòng';
   const displayPropertyTypes = availablePropertyTypes.map((t, idx) =>
-    idx === 0 ? { ...t, label: 'Loại phòng' } : t,
+    idx === 0 ? { ...t, label: t.label || defaultFirstTypeLabel } : t,
   );
 
   function handleFilter(
@@ -550,7 +551,7 @@ export function SearchFilterBar({
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <span>Bộ lọc tìm kiếm</span>
+                <span>{basePath === '/cho-thue-mat-bang' ? 'Tìm mặt bằng' : basePath === '/cho-thue-tro' ? 'Tìm phòng' : 'Tìm kiếm'}</span>
               </>
             )}
           </button>

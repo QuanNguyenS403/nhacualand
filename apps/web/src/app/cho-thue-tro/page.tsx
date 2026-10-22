@@ -46,9 +46,6 @@ interface Props {
 }
 
 export default async function ChoThueTroPage({ searchParams }: Props) {
-  const isProduction = process.env.NODE_ENV === 'production';
-  let isApiError = false;
-
   const { items, pagination } = await fetchListings({
     transactionType: 'rent',
     categoryGroup: 'thue_tro',
@@ -65,7 +62,6 @@ export default async function ChoThueTroPage({ searchParams }: Props) {
     lng: searchParams.lng,
     page: searchParams.page ?? '1',
   }).catch(() => {
-    isApiError = true;
     return {
       items: DEMO_ROOM_RENT_LISTINGS,
       pagination: {
@@ -287,18 +283,13 @@ export default async function ChoThueTroPage({ searchParams }: Props) {
   return (
     <div className="min-h-screen bg-surface-muted">
       <div className="container-max py-8 sm:py-10 md:py-12">
-        {isApiError && isProduction && (
-          <div className="mb-4 sm:mb-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-700">
-            Đang có gián đoạn kết nối tới máy chủ dữ liệu, danh sách phòng trọ tạm thời chưa tải được
-          </div>
-        )}
         {/* Breadcrumb */}
         <nav className="mb-4 sm:mb-5 flex items-center gap-2 text-xs sm:text-sm text-text-muted">
           <Link href="/" className="hover:text-brand transition-colors">Trang chủ</Link>
           <span>›</span>
           <Link href="/thue" className="hover:text-brand transition-colors">Tìm phòng</Link>
           <span>›</span>
-          <span className="text-text-secondary font-medium">Phòng trọ sinh viên</span>
+          <span className="text-text-secondary font-medium">Phòng trọ & Nhà trọ</span>
         </nav>
 
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">

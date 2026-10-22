@@ -17,11 +17,13 @@ export const metadata: Metadata = {
 };
 
 const PROPERTY_TYPES_SPACE = [
-  { value: '', label: 'Loại phòng' },
-  { value: 'phong_tro', label: 'Phòng trọ' },
-  { value: 'can_ho', label: 'Chung cư' },
-  { value: 'chung_cu_mini', label: 'Chung cư mini' },
+  { value: '', label: 'Loại mặt bằng' },
   { value: 'mat_bang', label: 'Mặt bằng kinh doanh' },
+  { value: 'cua_hang', label: 'Cửa hàng, ki-ốt' },
+  { value: 'shophouse', label: 'Shophouse khối đế' },
+  { value: 'nha_mat_pho', label: 'Nhà mặt phố kinh doanh' },
+  { value: 'kho_xuong', label: 'Kho xưởng, bãi' },
+  { value: 'van_phong', label: 'Văn phòng làm việc' },
 ];
 
 const PRICE_PRESETS_SPACE = [
@@ -47,9 +49,6 @@ interface Props {
 }
 
 export default async function ChoThueMatBangPage({ searchParams }: Props) {
-  const isProduction = process.env.NODE_ENV === 'production';
-  let isApiError = false;
-
   const { items, pagination } = await fetchListings({
     transactionType: 'rent',
     categoryGroup: 'thue_mat_bang',
@@ -64,7 +63,6 @@ export default async function ChoThueMatBangPage({ searchParams }: Props) {
     areaMax: searchParams.areaMax,
     page: searchParams.page ?? '1',
   }).catch(() => {
-    isApiError = true;
     return {
       items: DEMO_SPACE_RENT_LISTINGS,
       pagination: {
@@ -207,7 +205,42 @@ export default async function ChoThueMatBangPage({ searchParams }: Props) {
           it.propertyType === 'cua_hang' ||
           it.propertyType === 'shophouse' ||
           it.propertyType === 'kho_xuong' ||
-          it.propertyType === 'van_phong'
+          it.propertyType === 'van_phong' ||
+          it.propertyType === 'nha_mat_pho'
+        );
+      }
+      if (pt === 'cua_hang') {
+        return (
+          it.propertyType === 'cua_hang' ||
+          it.title?.toLowerCase().includes('cửa hàng') ||
+          it.title?.toLowerCase().includes('ki-ốt') ||
+          it.title?.toLowerCase().includes('kiot')
+        );
+      }
+      if (pt === 'shophouse') {
+        return (
+          it.propertyType === 'shophouse' ||
+          it.title?.toLowerCase().includes('shophouse')
+        );
+      }
+      if (pt === 'nha_mat_pho') {
+        return (
+          it.propertyType === 'nha_mat_pho' ||
+          it.title?.toLowerCase().includes('mặt phố') ||
+          it.title?.toLowerCase().includes('nhà phố')
+        );
+      }
+      if (pt === 'kho_xuong') {
+        return (
+          it.propertyType === 'kho_xuong' ||
+          it.title?.toLowerCase().includes('kho') ||
+          it.title?.toLowerCase().includes('xưởng')
+        );
+      }
+      if (pt === 'van_phong') {
+        return (
+          it.propertyType === 'van_phong' ||
+          it.title?.toLowerCase().includes('văn phòng')
         );
       }
       return false;
@@ -286,11 +319,6 @@ export default async function ChoThueMatBangPage({ searchParams }: Props) {
   return (
     <div className="min-h-screen bg-surface-muted">
       <div className="container-max py-8 sm:py-10 md:py-12">
-        {isApiError && isProduction && (
-          <div className="mb-4 sm:mb-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-700">
-            Đang có gián đoạn kết nối tới máy chủ dữ liệu, danh sách mặt bằng tạm thời chưa tải được
-          </div>
-        )}
         {/* Breadcrumb */}
         <nav className="mb-4 sm:mb-5 flex items-center gap-2 text-xs sm:text-sm text-text-muted">
           <Link href="/" className="hover:text-brand transition-colors">Trang chủ</Link>

@@ -7,8 +7,12 @@ const rawApiUrl = isLocalhost
   ? 'http://localhost:4000'
   : (envApiUrl || (process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''));
 
+const defaultInternalUrl = process.env.NODE_ENV === 'production'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'https://api.nhacualand.com')
+  : 'http://127.0.0.1:4000';
+
 const API_URL = typeof window === 'undefined'
-  ? (process.env.INTERNAL_API_URL || 'http://127.0.0.1:4000')
+  ? (process.env.INTERNAL_API_URL || defaultInternalUrl)
   : rawApiUrl;
 
 export interface UniversityItem {
