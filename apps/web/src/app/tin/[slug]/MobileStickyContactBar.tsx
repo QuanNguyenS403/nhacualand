@@ -3,9 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ContactBrokerModal } from '@/components/ContactBrokerModal';
-import { RevealPhoneButton } from './RevealPhoneButton';
-import { AuthModal } from '@/components/AuthModal';
-import { SITE_CONFIG } from '@/lib/constants';
 import {
   isRoomSelected,
   addSelectedRoom,
@@ -29,8 +26,6 @@ export function MobileStickyContactBar({
   isRented = false,
 }: MobileStickyContactBarProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [phone, setPhone] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [selected, setSelected] = useState(false);
 
@@ -70,8 +65,6 @@ export function MobileStickyContactBar({
     }
   }
 
-  const activePhone = phone || SITE_CONFIG.hotline;
-
   return (
     <>
       {/* Sticky Bottom Bar: luôn hiện trên mobile, và tự động hiện mượt mà trên máy tính khi cuộn trang */}
@@ -97,7 +90,7 @@ export function MobileStickyContactBar({
             </p>
           </div>
 
-          {/* Cụm nút CTA bên phải: Lưu phòng, Hiện số điện thoại, Đặt lịch */}
+          {/* Cụm nút CTA bên phải: Lưu phòng, Đặt lịch */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Nút lưu phòng */}
             <button
@@ -115,24 +108,6 @@ export function MobileStickyContactBar({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
               </svg>
             </button>
-
-            {phone ? (
-              <a
-                href={`tel:${activePhone.replace(/\s+/g, '')}`}
-                aria-label={`Gọi điện cho người dẫn xem theo số ${activePhone}`}
-                className="flex items-center justify-center rounded-xl bg-slate-900 px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-slate-800 active:scale-95 transition-all"
-              >
-                <span>{activePhone}</span>
-              </a>
-            ) : (
-              <div className="scale-90 sm:scale-100 origin-right">
-                <RevealPhoneButton
-                  listingId={listingId}
-                  onPhoneRevealed={setPhone}
-                  onRequireAuth={() => setIsAuthModalOpen(true)}
-                />
-              </div>
-            )}
 
             {isRented ? (
               <Link
@@ -154,13 +129,6 @@ export function MobileStickyContactBar({
           </div>
         </div>
       </div>
-
-      {/* Modal xác thực nếu cần đăng nhập khi xem số */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => setIsAuthModalOpen(false)}
-      />
 
       {/* Modal đặt lịch xem phòng */}
       <ContactBrokerModal

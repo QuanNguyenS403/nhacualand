@@ -6,8 +6,6 @@ import { AuthModal } from '@/components/AuthModal';
 import { ContactBrokerModal } from '@/components/ContactBrokerModal';
 import { formatExactPrice, formatPrice } from '@/lib/api';
 import { LandlordAvatar } from '@/components/QnsLogo';
-import { RevealPhoneButton } from './RevealPhoneButton';
-import { SITE_CONFIG } from '@/lib/constants';
 import {
   isRoomSelected,
   addSelectedRoom,
@@ -232,13 +230,8 @@ export function OwnerContactBox({
               </div>
             </div>
 
-            {/* Nút hành động Đặt lịch xem phòng & Hiện số điện thoại */}
+            {/* Nút hành động Đặt lịch xem phòng & Lưu phòng */}
             <div className="space-y-2.5 pt-1">
-              <RevealPhoneButton
-                listingId={listingId}
-                onRequireAuth={() => setIsAuthModalOpen(true)}
-              />
-
               <button
                 type="button"
                 onClick={() => setIsContactModalOpen(true)}
@@ -261,17 +254,6 @@ export function OwnerContactBox({
                 </svg>
                 <span>{selected ? 'Đã lưu trong phòng đã chọn' : 'Lưu vào phòng đã chọn'}</span>
               </button>
-            </div>
-
-            {/* Hotline hỗ trợ 24/7 */}
-            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500">
-              <span>Hotline hỗ trợ 24/7</span>
-              <a
-                href={`tel:${SITE_CONFIG.hotline.replace(/\s+/g, '')}`}
-                className="font-bold text-brand hover:underline"
-              >
-                {SITE_CONFIG.hotline}
-              </a>
             </div>
           </div>
         )}
