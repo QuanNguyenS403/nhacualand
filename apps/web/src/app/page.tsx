@@ -122,38 +122,32 @@ export default async function HomePage() {
 
             {/* Search bar & Tabs */}
             <div className="mt-4 sm:mt-5 mx-auto max-w-[44rem]">
-              {/* Tabs chuyên mục thuê */}
+              {/* 4 Tab chọn phân khúc ngay phía trên thanh tìm kiếm */}
               <div className="mb-0 flex justify-center">
-                <div className="inline-flex rounded-t-xl overflow-hidden border-b-0 flex-wrap shadow-sm">
+                <div className="inline-flex rounded-t-xl overflow-hidden border border-b-0 border-surface-border bg-slate-50/90 shadow-2xs flex-wrap">
                   <Link
-                    href="/"
-                    className="bg-brand text-white px-3.5 sm:px-4.5 py-1.5 sm:py-2 text-xs sm:text-[13px] font-semibold border-x border-t border-brand rounded-tl-xl hover:bg-brand-700 transition-colors"
-                  >
-                    Trang chủ
-                  </Link>
-                  <Link
-                    href="/thue?categoryGroup=thue_can_ho"
-                    className="bg-white px-3.5 sm:px-4.5 py-1.5 sm:py-2 text-xs sm:text-[13px] font-semibold text-brand border-r border-t border-surface-border hover:bg-slate-50 transition-colors"
-                  >
-                    Chung cư
-                  </Link>
-                  <Link
-                    href="/thue?categoryGroup=thue_studio"
-                    className="bg-slate-50 px-3.5 sm:px-4.5 py-1.5 sm:py-2 text-xs sm:text-[13px] font-medium text-text-secondary border-r border-t border-surface-border hover:bg-white hover:text-brand transition-colors"
-                  >
-                    Chung cư mini
-                  </Link>
-                  <Link
-                    href="/cho-thue-tro"
-                    className="bg-slate-50 px-3.5 sm:px-4.5 py-1.5 sm:py-2 text-xs sm:text-[13px] font-medium text-text-secondary border-r border-t border-surface-border hover:bg-white hover:text-brand transition-colors"
+                    href="/thue?categoryGroup=thue_phong_tro&propertyType=phong_tro"
+                    className="px-3.5 sm:px-5 py-2 text-xs sm:text-[13px] font-semibold text-text-secondary hover:text-brand hover:bg-white transition-all border-r border-surface-border"
                   >
                     Phòng trọ SV
                   </Link>
                   <Link
-                    href="/cho-thue-mat-bang"
-                    className="bg-slate-50 px-3.5 sm:px-4.5 py-1.5 sm:py-2 text-xs sm:text-[13px] font-medium text-text-secondary border-r border-t border-surface-border rounded-tr-xl hover:bg-white hover:text-brand transition-colors"
+                    href="/thue?categoryGroup=thue_ccmn&propertyType=ccmn"
+                    className="px-3.5 sm:px-5 py-2 text-xs sm:text-[13px] font-semibold text-text-secondary hover:text-brand hover:bg-white transition-all border-r border-surface-border"
                   >
-                    Mặt bằng kinh doanh
+                    Chung cư mini
+                  </Link>
+                  <Link
+                    href="/thue?categoryGroup=thue_can_ho&propertyType=can_ho"
+                    className="px-3.5 sm:px-5 py-2 text-xs sm:text-[13px] font-semibold text-text-secondary hover:text-brand hover:bg-white transition-all border-r border-surface-border"
+                  >
+                    Chung cư
+                  </Link>
+                  <Link
+                    href="/thue?categoryGroup=thue_mat_bang&propertyType=mat_bang"
+                    className="px-3.5 sm:px-5 py-2 text-xs sm:text-[13px] font-semibold text-text-secondary hover:text-brand hover:bg-white transition-all"
+                  >
+                    Mặt bằng KD
                   </Link>
                 </div>
               </div>

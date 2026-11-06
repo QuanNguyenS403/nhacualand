@@ -1031,6 +1031,10 @@ export class ListingsService {
           addressDetail: dto.addressDetail,
           lat: dto.lat,
           lng: dto.lng,
+          videoUrl: dto.videoUrl,
+          floorplanImageUrl: dto.floorplanImageUrl,
+          segmentAttributes: dto.segmentAttributes,
+          posterRole: dto.posterRole,
           status: ListingStatus.pending,
           ...(dto.universityDistances?.length
             ? {

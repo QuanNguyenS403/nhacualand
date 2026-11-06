@@ -136,4 +136,23 @@ export class CreateListingDto {
   @Min(-180, { message: 'Kinh độ phải từ -180 đến 180.' })
   @Max(180, { message: 'Kinh độ phải từ -180 đến 180.' })
   lng?: number;
+
+  @ApiPropertyOptional({ description: 'URL video thực tế căn phòng/mặt bằng' })
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
+
+  @ApiPropertyOptional({ description: 'URL ảnh bản vẽ mặt bằng / sơ đồ bố trí' })
+  @IsOptional()
+  @IsString()
+  floorplanImageUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Thông số kỹ thuật & pháp lý chuyên biệt từng phân khúc' })
+  @IsOptional()
+  segmentAttributes?: Record<string, any>;
+
+  @ApiPropertyOptional({ example: 'chinh_chu', description: 'chinh_chu | tham_dinh_nhacualand | don_vi_van_hanh' })
+  @IsOptional()
+  @IsString()
+  posterRole?: string;
 }

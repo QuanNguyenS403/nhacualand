@@ -525,6 +525,30 @@ export function MapFloatingSearchBar({ onSearch, totalFilteredCount }: MapFloati
             </svg>
           </button>
         </div>
+
+        {/* HÀNG 3: Thanh lọc nhanh theo Loại hình ngay trên giao diện bản đồ */}
+        <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {PROPERTY_TYPES.map((pt) => {
+            const isSelected = loaiPhong === pt.value;
+            return (
+              <button
+                key={pt.value}
+                type="button"
+                onClick={() => {
+                  setLoaiPhong(pt.value);
+                  handleApplyFilter(undefined, undefined, pt.value);
+                }}
+                className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-semibold transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-brand text-white shadow-xs'
+                    : 'bg-white/90 text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-brand'
+                }`}
+              >
+                {pt.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* POPUP 1: LỊCH SỬ TÌM KIẾM (Hiển thị khi focus ô tìm kiếm) */}

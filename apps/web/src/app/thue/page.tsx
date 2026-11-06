@@ -275,6 +275,202 @@ export default async function ThuePage({ searchParams }: Props) {
     );
   }
 
+  // ── Bộ lọc nâng cao đa phân khúc (Dynamic Filter Extensions) ──
+  if (searchParams.hasVideo === 'true') {
+    displayItems = displayItems.filter((it) => Boolean(it.videoUrl));
+  }
+
+  if (searchParams.areaRange) {
+    const range = searchParams.areaRange;
+    displayItems = displayItems.filter((it) => {
+      const a = Number(it.areaM2) || 0;
+      if (range === '<20') return a < 20;
+      if (range === '20-30') return a >= 20 && a <= 30;
+      if (range === '>30') return a > 30;
+      if (range === '<45') return a < 45;
+      if (range === '45-70') return a >= 45 && a <= 70;
+      if (range === '70-100') return a >= 70 && a <= 100;
+      if (range === '>100') return a > 100;
+      if (range === '<50') return a < 50;
+      if (range === '50-100') return a >= 50 && a <= 100;
+      if (range === '100-200') return a >= 100 && a <= 200;
+      if (range === '>200') return a > 200;
+      return true;
+    });
+  }
+
+  if (searchParams.projectName) {
+    const pName = searchParams.projectName.toLowerCase();
+    displayItems = displayItems.filter((it) => {
+      const proj = it.project?.name?.toLowerCase() || '';
+      const segProj = ((it.segmentAttributes as any)?.project_name || '').toLowerCase();
+      const title = it.title.toLowerCase();
+      return proj.includes(pName) || segProj.includes(pName) || title.includes(pName);
+    });
+  }
+
+  if (searchParams.bedrooms) {
+    const br = searchParams.bedrooms.toLowerCase();
+    displayItems = displayItems.filter((it) => {
+      const segBr = ((it.segmentAttributes as any)?.bedrooms || '').toLowerCase();
+      if (br === 'studio') {
+        return it.bedrooms === 0 || it.propertyType === 'studio' || segBr.includes('studio') || it.title.toLowerCase().includes('studio');
+      }
+      if (br === '1pn') {
+        return it.bedrooms === 1 || segBr.includes('1pn');
+      }
+      if (br === '2pn') {
+        return it.bedrooms === 2 || segBr.includes('2pn');
+      }
+      if (br === '3pn+' || br === '3pn') {
+        return (it.bedrooms != null && it.bedrooms >= 3) || segBr.includes('3pn') || segBr.includes('4pn');
+      }
+      return false;
+    });
+  }
+
+  if (searchParams.furnishing) {
+    const f = searchParams.furnishing.toLowerCase();
+    displayItems = displayItems.filter((it) => {
+      const segF = ((it.segmentAttributes as any)?.furnishing_status || '').toLowerCase();
+      const desc = (it.description || '').toLowerCase();
+      if (f === 'full') return segF.includes('full') || desc.includes('full nội thất') || desc.includes('full đồ');
+      if (f === 'co_ban') return segF.includes('cơ bản') || desc.includes('cơ bản');
+      if (f === 'trong') return segF.includes('trống') || desc.includes('nhà trống');
+      return true;
+    });
+  }
+
+  if (searchParams.balconyDirection) {
+    const bd = searchParams.balconyDirection.toLowerCase();
+    displayItems = displayItems.filter((it) => {
+      const segBd = ((it.segmentAttributes as any)?.balcony_direction || '').toLowerCase();
+      return segBd.includes(bd);
+    });
+  }
+
+  if (searchParams.hasCarParking === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return Boolean((it.segmentAttributes as any)?.car_parking_available) || Boolean((it as any).amenities?.parkingSpace);
+    });
+  }
+
+  if (searchParams.mgmtFeeIncluded === 'true') {
+    displayItems = displayItems.filter((it) => {
+      const fee = (it.segmentAttributes as any)?.management_fee;
+      return fee === 'Đã bao gồm' || (typeof fee === 'string' && fee.toLowerCase().includes('đã bao gồm'));
+    });
+  }
+
+  if (searchParams.foreignerEligible === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return Boolean((it.segmentAttributes as any)?.foreigner_eligible) || Boolean((it as any).amenities?.foreigner);
+    });
+  }
+
+  if (searchParams.frontage) {
+    const ft = searchParams.frontage;
+    displayItems = displayItems.filter((it) => {
+      const w = Number((it.segmentAttributes as any)?.frontage_width_m) || 0;
+      if (ft === '< 4m') return w > 0 && w < 4;
+      if (ft === '4m – 6m') return w >= 4 && w <= 6;
+      if (ft === '6m – 8m') return w > 6 && w <= 8;
+      if (ft === '> 8m') return w > 8;
+      return true;
+    });
+  }
+
+  if (searchParams.businessType) {
+    const bt = searchParams.businessType.toLowerCase();
+    displayItems = displayItems.filter((it) => {
+      const allowed: string[] = (it.segmentAttributes as any)?.allowed_business_types || [];
+      const joined = allowed.join(' ').toLowerCase() + ' ' + (it.description || '').toLowerCase();
+      if (bt === 'fnb') return joined.includes('f&b') || joined.includes('nhà hàng') || joined.includes('bếp');
+      if (bt === 'cafe') return joined.includes('cafe') || joined.includes('trà sữa') || joined.includes('đồ uống');
+      if (bt === 'thoi_trang') return joined.includes('thời trang') || joined.includes('showroom') || joined.includes('cửa hàng');
+      if (bt === 'van_phong') return joined.includes('văn phòng') || joined.includes('công ty');
+      if (bt === 'spa') return joined.includes('spa') || joined.includes('thẩm mỹ') || joined.includes('làm đẹp');
+      return true;
+    });
+  }
+
+  if (searchParams.floorsCount) {
+    const fc = searchParams.floorsCount;
+    displayItems = displayItems.filter((it) => {
+      const segFc = ((it.segmentAttributes as any)?.floors_count || '').toLowerCase();
+      if (fc === 'tang_tret') return segFc.includes('trệt') || segFc.includes('tầng 1');
+      if (fc === 'thong_san') return segFc.includes('thông sàn') || segFc.includes('2 tầng');
+      if (fc === 'nguyen_can') return segFc.includes('nguyên căn') || segFc.includes('nhiều tầng');
+      return true;
+    });
+  }
+
+  if (searchParams.pccc === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return Boolean((it.segmentAttributes as any)?.fire_safety_certificate) || Boolean((it.segmentAttributes as any)?.fire_safety_equipped) || Boolean((it as any).amenities?.pccc);
+    });
+  }
+
+  if (searchParams.vat === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return Boolean((it.segmentAttributes as any)?.vat_invoice_supported) || (it.description || '').toLowerCase().includes('vat');
+    });
+  }
+
+  if (searchParams.wideSidewalk === 'true') {
+    displayItems = displayItems.filter((it) => {
+      const sw = Number((it.segmentAttributes as any)?.sidewalk_width_m) || 0;
+      return sw >= 3 || (it.description || '').toLowerCase().includes('vỉa hè');
+    });
+  }
+
+  if (searchParams.privateEntrance === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return Boolean((it.segmentAttributes as any)?.independent_entrance) || (it.description || '').toLowerCase().includes('lối đi riêng');
+    });
+  }
+
+  if (searchParams.rentFree === 'true') {
+    displayItems = displayItems.filter((it) => {
+      const days = Number((it.segmentAttributes as any)?.rent_free_fitout_days) || 0;
+      return days > 0 || (it.description || '').toLowerCase().includes('thi công');
+    });
+  }
+
+  if (searchParams.hasBalconyWindow === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return (
+        Boolean((it as any).amenities?.balcony) ||
+        Boolean((it as any).amenities?.banCong) ||
+        Boolean((it as any).amenities?.window) ||
+        Boolean((it.segmentAttributes as any)?.has_balcony_window) ||
+        Boolean((it.segmentAttributes as any)?.hasBalconyWindow)
+      );
+    });
+  }
+
+  if (searchParams.hasElevator === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return (
+        Boolean((it as any).amenities?.elevator) ||
+        Boolean((it as any).amenities?.thangMay) ||
+        Boolean((it.segmentAttributes as any)?.has_elevator) ||
+        Boolean((it.segmentAttributes as any)?.hasElevator)
+      );
+    });
+  }
+
+  if (searchParams.freeTime === 'true') {
+    displayItems = displayItems.filter((it) => {
+      return (
+        Boolean((it as any).amenities?.freeTime) ||
+        Boolean((it as any).amenities?.gioTuDo) ||
+        (it.segmentAttributes as any)?.curfew_policy === 'tu_do' ||
+        Boolean((it.segmentAttributes as any)?.freeTime)
+      );
+    });
+  }
+
   const totalCount = displayItems.length;
   const currentPage = Math.max(1, Number(searchParams.page) || 1);
   const pageSize = 20;

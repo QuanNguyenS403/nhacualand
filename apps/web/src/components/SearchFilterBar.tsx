@@ -16,7 +16,7 @@ interface UniversityOption {
 }
 
 interface SearchFilterBarProps {
-  basePath: string; // '/thue', '/cho-thue-tro', '/cho-thue-mat-bang'
+  basePath: string;
   transactionType?: 'rent';
   initialParams?: { [key: string]: string | undefined };
   propertyTypes?: { value: string; label: string }[];
@@ -30,23 +30,23 @@ interface SearchFilterBarProps {
 
 // 4 loại phòng chuẩn theo đúng yêu cầu: Phòng trọ, Chung cư, Chung cư mini, Mặt bằng kinh doanh
 export const PROPERTY_TYPES_STANDARD = [
-  { value: '', label: 'Loại phòng' },
-  { value: 'phong_tro', label: 'Phòng trọ' },
-  { value: 'can_ho', label: 'Chung cư' },
+  { value: '', label: 'Tất cả loại hình' },
+  { value: 'phong_tro', label: 'Phòng trọ sinh viên' },
   { value: 'chung_cu_mini', label: 'Chung cư mini' },
+  { value: 'can_ho', label: 'Chung cư' },
   { value: 'mat_bang', label: 'Mặt bằng kinh doanh' },
 ];
 
 export const PROPERTY_TYPES_CAN_HO = PROPERTY_TYPES_STANDARD;
 export const PROPERTY_TYPES_STUDIO = PROPERTY_TYPES_STANDARD;
-const PROPERTY_TYPES = PROPERTY_TYPES_STANDARD;
 
 const DEFAULT_UNIVERSITIES: UniversityOption[] = VIETNAM_UNIVERSITIES;
 
-const MAX_PRICE_LIMIT = 30000000; // 30 triệu VNĐ
-const PRICE_STEP = 500000; // 500.000đ
-
 function formatPriceNumber(num: number): string {
+  if (num >= 1000000000) {
+    const val = num / 1000000000;
+    return val % 1 === 0 ? `${val} tỷ` : `${val.toFixed(1)} tỷ`;
+  }
   if (num >= 1000000) {
     const val = num / 1000000;
     return val % 1 === 0 ? `${val} triệu` : `${val.toFixed(1)} triệu`;
@@ -57,16 +57,27 @@ function formatPriceNumber(num: number): string {
   return '0đ';
 }
 
-function getPriceButtonLabel(min: number, max: number): string {
-  const isMinSet = min > 0;
-  const isMaxSet = max < MAX_PRICE_LIMIT;
-  if (!isMinSet && !isMaxSet) return 'Giá thuê';
-  if (isMinSet && isMaxSet) {
-    return `${formatPriceNumber(min)} – ${formatPriceNumber(max)}`;
-  }
-  if (isMinSet) return `Từ ${formatPriceNumber(min)}`;
-  return `Dưới ${formatPriceNumber(max)}`;
-}
+const APARTMENT_PROJECT_SUGGESTIONS = [
+  'Masteri Thảo Điền',
+  'Vinhomes Central Park',
+  'The Matrix One',
+  'Vinhomes Smart City',
+  'Masteri West Heights',
+  'Sunrise City',
+  'Vinhomes Ocean Park',
+  'Ecopark',
+];
+
+const BALCONY_DIRECTIONS = [
+  'Đông Nam',
+  'Nam',
+  'Đông',
+  'Bắc',
+  'Tây',
+  'Tây Bắc',
+  'Tây Nam',
+  'Đông Bắc',
+];
 
 export function SearchFilterBar({
   basePath,
@@ -80,6 +91,7 @@ export function SearchFilterBar({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // Basic search inputs
   const [keyword, setKeyword] = useState(initialParams.keyword ?? '');
   const [propertyType, setPropertyType] = useState(initialParams.propertyType ?? '');
   const [locationWard, setLocationWard] = useState(
@@ -88,17 +100,40 @@ export function SearchFilterBar({
   const [universitySlug, setUniversitySlug] = useState(
     initialParams.universitySlug ?? ''
   );
-  const [petAllowed, setPetAllowed] = useState(initialParams.petAllowed === 'true');
-  const [electricVehicle, setElectricVehicle] = useState(initialParams.electricVehicle === 'true');
 
-  // Khoảng giá với thanh kéo (Price Range Slider)
+  // Dynamic Segment determination
+  const effectiveType = propertyType || (
+    initialParams.categoryGroup === 'thue_can_ho' ? 'can_ho' :
+    initialParams.categoryGroup === 'thue_studio' ? 'chung_cu_mini' :
+    initialParams.categoryGroup === 'thue_mat_bang' || basePath === '/cho-thue-mat-bang' ? 'mat_bang' :
+    initialParams.categoryGroup === 'thue_tro' || basePath === '/cho-thue-tro' ? 'phong_tro' : ''
+  );
+
+  const isApartment = effectiveType === 'can_ho' || effectiveType === 'chung_cu';
+  const isCommercialSpace = effectiveType === 'mat_bang' || effectiveType === 'mat_bang_kinh_doanh';
+  const isStudentRoomOrMini = !isApartment && !isCommercialSpace;
+
+  // Max price limit based on mode
+  const currentMaxPriceLimit = isCommercialSpace
+    ? 150000000
+    : isApartment
+      ? 60000000
+      : 30000000;
+
+  const currentPriceStep = isCommercialSpace
+    ? 2500000
+    : isApartment
+      ? 1000000
+      : 500000;
+
+  // Price range slider state
   const initialMinPrice = (() => {
     const raw = Number(initialParams.priceMin);
-    return !isNaN(raw) && raw >= 0 && raw <= MAX_PRICE_LIMIT ? raw : 0;
+    return !isNaN(raw) && raw >= 0 && raw <= currentMaxPriceLimit ? raw : 0;
   })();
   const initialMaxPrice = (() => {
     const raw = Number(initialParams.priceMax);
-    return !isNaN(raw) && raw >= 0 && raw <= MAX_PRICE_LIMIT ? raw : MAX_PRICE_LIMIT;
+    return !isNaN(raw) && raw >= 0 && raw <= currentMaxPriceLimit ? raw : currentMaxPriceLimit;
   })();
 
   const [minPrice, setMinPrice] = useState(initialMinPrice);
@@ -106,7 +141,40 @@ export function SearchFilterBar({
   const [isPriceOpen, setIsPriceOpen] = useState(false);
   const pricePopoverRef = useRef<HTMLDivElement>(null);
 
-  // Đóng popover khi click ra ngoài
+  // Area range filter
+  const [areaRange, setAreaRange] = useState(initialParams.areaRange ?? '');
+
+  // Apartment specialized filters
+  const [projectName, setProjectName] = useState(initialParams.projectName ?? '');
+  const [bedrooms, setBedrooms] = useState(initialParams.bedrooms ?? '');
+  const [furnishing, setFurnishing] = useState(initialParams.furnishing ?? '');
+  const [balconyDirection, setBalconyDirection] = useState(initialParams.balconyDirection ?? '');
+  const [hasCarParking, setHasCarParking] = useState(initialParams.hasCarParking === 'true');
+  const [mgmtFeeIncluded, setMgmtFeeIncluded] = useState(initialParams.mgmtFeeIncluded === 'true');
+  const [foreignerEligible, setForeignerEligible] = useState(initialParams.foreignerEligible === 'true');
+
+  // Commercial Space specialized filters
+  const [frontage, setFrontage] = useState(initialParams.frontage ?? '');
+  const [businessType, setBusinessType] = useState(initialParams.businessType ?? '');
+  const [floorsCount, setFloorsCount] = useState(initialParams.floorsCount ?? '');
+  const [pcccCertified, setPcccCertified] = useState(initialParams.pccc === 'true');
+  const [vatSupported, setVatSupported] = useState(initialParams.vat === 'true');
+  const [wideSidewalk, setWideSidewalk] = useState(initialParams.wideSidewalk === 'true');
+  const [privateEntrance, setPrivateEntrance] = useState(initialParams.privateEntrance === 'true');
+  const [rentFreePeriod, setRentFreePeriod] = useState(initialParams.rentFree === 'true');
+
+  // Shared / Student room chips
+  const [petAllowed, setPetAllowed] = useState(initialParams.petAllowed === 'true');
+  const [electricVehicle, setElectricVehicle] = useState(initialParams.electricVehicle === 'true');
+  const [hasBalconyWindow, setHasBalconyWindow] = useState(initialParams.hasBalconyWindow === 'true');
+  const [hasElevator, setHasElevator] = useState(initialParams.hasElevator === 'true');
+  const [freeTime, setFreeTime] = useState(initialParams.freeTime === 'true');
+  const [hasVideo, setHasVideo] = useState(initialParams.hasVideo === 'true');
+
+  // Mobile advanced filter expand state
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Close price popover on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (pricePopoverRef.current && !pricePopoverRef.current.contains(e.target as Node)) {
@@ -121,31 +189,27 @@ export function SearchFilterBar({
     };
   }, [isPriceOpen]);
 
+  // When switching segment, adjust maxPrice if it exceeds limit
+  useEffect(() => {
+    if (maxPrice > currentMaxPriceLimit) {
+      setMaxPrice(currentMaxPriceLimit);
+    }
+  }, [currentMaxPriceLimit, maxPrice]);
+
   const availablePropertyTypes = propPropertyTypes ?? PROPERTY_TYPES_STANDARD;
 
-  // Tính toán Tiêu đề & Subtitle đồng bộ theo các mục ở trang chủ (Chung cư, CCMN, Phòng trọ SV, Mặt bằng)
+  // Section title & subtitle
   const sectionTitle = (() => {
     if (propTitle) return propTitle;
     const group = initialParams.categoryGroup;
-    if (group === 'thue_can_ho') return 'Chung cư';
+    if (group === 'thue_can_ho' || isApartment) return 'Chung cư thương mại & Căn hộ';
     if (group === 'thue_studio') return 'Chung cư mini (CCMN)';
-    if (group === 'thue_tro' || basePath === '/cho-thue-tro') return 'Phòng trọ & Nhà trọ';
-    if (group === 'thue_mat_bang' || basePath === '/cho-thue-mat-bang') return 'Mặt bằng kinh doanh';
-    if (propertyType) {
-      const match = availablePropertyTypes.find((p) => p.value === propertyType);
-      if (match && match.value && match.label) return match.label;
-    }
+    if (group === 'thue_tro' || basePath === '/cho-thue-tro') return 'Phòng trọ & Ký túc xá';
+    if (group === 'thue_mat_bang' || basePath === '/cho-thue-mat-bang' || isCommercialSpace) return 'Mặt bằng kinh doanh & Cửa hàng';
     return 'Bộ lọc tìm kiếm';
   })();
 
   const sectionSubtitle = propSubtitle || '';
-
-
-  // Nhãn rút gọn cho các dropdown mặc định (nhận diện Loại mặt bằng nếu ở trang mặt bằng hoặc có cấu hình riêng)
-  const defaultFirstTypeLabel = basePath === '/cho-thue-mat-bang' ? 'Loại mặt bằng' : 'Loại phòng';
-  const displayPropertyTypes = availablePropertyTypes.map((t, idx) =>
-    idx === 0 ? { ...t, label: t.label || defaultFirstTypeLabel } : t,
-  );
 
   function handleFilter(
     e?: React.FormEvent,
@@ -154,23 +218,61 @@ export function SearchFilterBar({
     if (e) e.preventDefault();
     const params = new URLSearchParams();
 
-    // Giữ nguyên categoryGroup và locationId nếu có
     if (initialParams.locationId) params.set('locationId', initialParams.locationId);
     if (initialParams.categoryGroup) params.set('categoryGroup', initialParams.categoryGroup);
     if (keyword.trim()) params.set('keyword', keyword.trim());
     if (locationWard) params.set('locationSlug', locationWard);
-    if (universitySlug) params.set('universitySlug', universitySlug);
     if (propertyType) params.set('propertyType', propertyType);
-    if (petAllowed) params.set('petAllowed', 'true');
-    if (electricVehicle) params.set('electricVehicle', 'true');
 
+    // University (only in student/mini mode)
+    if (isStudentRoomOrMini && universitySlug) params.set('universitySlug', universitySlug);
+
+    // Common chips
+    if (hasVideo) params.set('hasVideo', 'true');
+
+    // Apartment filters
+    if (isApartment) {
+      if (projectName.trim()) params.set('projectName', projectName.trim());
+      if (bedrooms) params.set('bedrooms', bedrooms);
+      if (furnishing) params.set('furnishing', furnishing);
+      if (balconyDirection) params.set('balconyDirection', balconyDirection);
+      if (hasCarParking) params.set('hasCarParking', 'true');
+      if (mgmtFeeIncluded) params.set('mgmtFeeIncluded', 'true');
+      if (foreignerEligible) params.set('foreignerEligible', 'true');
+      if (petAllowed) params.set('petAllowed', 'true');
+    }
+
+    // Commercial Space filters
+    if (isCommercialSpace) {
+      if (frontage) params.set('frontage', frontage);
+      if (businessType) params.set('businessType', businessType);
+      if (floorsCount) params.set('floorsCount', floorsCount);
+      if (pcccCertified) params.set('pccc', 'true');
+      if (vatSupported) params.set('vat', 'true');
+      if (wideSidewalk) params.set('wideSidewalk', 'true');
+      if (privateEntrance) params.set('privateEntrance', 'true');
+      if (rentFreePeriod) params.set('rentFree', 'true');
+    }
+
+    // Student room / mini filters
+    if (isStudentRoomOrMini) {
+      if (petAllowed) params.set('petAllowed', 'true');
+      if (electricVehicle) params.set('electricVehicle', 'true');
+      if (hasBalconyWindow) params.set('hasBalconyWindow', 'true');
+      if (hasElevator) params.set('hasElevator', 'true');
+      if (freeTime) params.set('freeTime', 'true');
+    }
+
+    // Area range
+    if (areaRange) params.set('areaRange', areaRange);
+
+    // Price range
     const effectiveMin = overridePrices?.min !== undefined ? overridePrices.min : minPrice;
     const effectiveMax = overridePrices?.max !== undefined ? overridePrices.max : maxPrice;
 
     if (effectiveMin > 0) params.set('priceMin', String(effectiveMin));
-    if (effectiveMax < MAX_PRICE_LIMIT) params.set('priceMax', String(effectiveMax));
+    if (effectiveMax < currentMaxPriceLimit) params.set('priceMax', String(effectiveMax));
 
-    // Reset về trang 1 khi lọc mới
     params.set('page', '1');
 
     const targetUrl = `${basePath}?${params.toString()}`;
@@ -185,11 +287,34 @@ export function SearchFilterBar({
     setLocationWard('');
     setUniversitySlug('');
     setPropertyType('');
+    setAreaRange('');
+    setMinPrice(0);
+    setMaxPrice(currentMaxPriceLimit);
+    setIsPriceOpen(false);
+
+    setProjectName('');
+    setBedrooms('');
+    setFurnishing('');
+    setBalconyDirection('');
+    setHasCarParking(false);
+    setMgmtFeeIncluded(false);
+    setForeignerEligible(false);
+
+    setFrontage('');
+    setBusinessType('');
+    setFloorsCount('');
+    setPcccCertified(false);
+    setVatSupported(false);
+    setWideSidewalk(false);
+    setPrivateEntrance(false);
+    setRentFreePeriod(false);
+
     setPetAllowed(false);
     setElectricVehicle(false);
-    setMinPrice(0);
-    setMaxPrice(MAX_PRICE_LIMIT);
-    setIsPriceOpen(false);
+    setHasBalconyWindow(false);
+    setHasElevator(false);
+    setFreeTime(false);
+    setHasVideo(false);
 
     const resetParams = new URLSearchParams();
     if (initialParams.locationId) resetParams.set('locationId', initialParams.locationId);
@@ -202,31 +327,68 @@ export function SearchFilterBar({
     });
   }
 
-  // Đếm số lượng điều kiện lọc đang kích hoạt
+  // Count active filters
   let activeFilterCount = 0;
   if (keyword.trim()) activeFilterCount++;
   if (locationWard) activeFilterCount++;
-  if (universitySlug) activeFilterCount++;
   if (propertyType) activeFilterCount++;
-  if (minPrice > 0 || maxPrice < MAX_PRICE_LIMIT) activeFilterCount++;
-  if (petAllowed) activeFilterCount++;
-  if (electricVehicle) activeFilterCount++;
+  if (isStudentRoomOrMini && universitySlug) activeFilterCount++;
+  if (minPrice > 0 || maxPrice < currentMaxPriceLimit) activeFilterCount++;
+  if (areaRange) activeFilterCount++;
+  if (hasVideo) activeFilterCount++;
 
-  const isPriceActive = minPrice > 0 || maxPrice < MAX_PRICE_LIMIT;
-  const minPercent = (minPrice / MAX_PRICE_LIMIT) * 100;
-  const maxPercent = (maxPrice / MAX_PRICE_LIMIT) * 100;
+  if (isApartment) {
+    if (projectName.trim()) activeFilterCount++;
+    if (bedrooms) activeFilterCount++;
+    if (furnishing) activeFilterCount++;
+    if (balconyDirection) activeFilterCount++;
+    if (hasCarParking) activeFilterCount++;
+    if (mgmtFeeIncluded) activeFilterCount++;
+    if (foreignerEligible) activeFilterCount++;
+    if (petAllowed) activeFilterCount++;
+  } else if (isCommercialSpace) {
+    if (frontage) activeFilterCount++;
+    if (businessType) activeFilterCount++;
+    if (floorsCount) activeFilterCount++;
+    if (pcccCertified) activeFilterCount++;
+    if (vatSupported) activeFilterCount++;
+    if (wideSidewalk) activeFilterCount++;
+    if (privateEntrance) activeFilterCount++;
+    if (rentFreePeriod) activeFilterCount++;
+  } else {
+    if (petAllowed) activeFilterCount++;
+    if (electricVehicle) activeFilterCount++;
+    if (hasBalconyWindow) activeFilterCount++;
+    if (hasElevator) activeFilterCount++;
+    if (freeTime) activeFilterCount++;
+  }
 
-  // Phân chia trường Đại học & Học viện vs Trường Cao đẳng tại Hà Nội
+  const isPriceActive = minPrice > 0 || maxPrice < currentMaxPriceLimit;
+  const minPercent = (minPrice / currentMaxPriceLimit) * 100;
+  const maxPercent = (maxPrice / currentMaxPriceLimit) * 100;
+
+  function getPriceLabel(min: number, max: number): string {
+    const isMinSet = min > 0;
+    const isMaxSet = max < currentMaxPriceLimit;
+    if (!isMinSet && !isMaxSet) return 'Khoảng giá';
+    if (isMinSet && isMaxSet) {
+      return `${formatPriceNumber(min)} – ${formatPriceNumber(max)}`;
+    }
+    if (isMinSet) return `Từ ${formatPriceNumber(min)}`;
+    return `Dưới ${formatPriceNumber(max)}`;
+  }
+
+  // University groupings
   const hanoiUnis = universities.filter((u) => {
     const isHanoi = u.region ? u.region === 'Hà Nội' : true;
-    const isCĐ = u.category === 'cao_dang' || u.name.toLowerCase().includes('cao đẳng');
-    return isHanoi && !isCĐ;
+    const isCD = u.category === 'cao_dang' || u.name.toLowerCase().includes('cao đẳng');
+    return isHanoi && !isCD;
   });
 
   const hanoiColleges = universities.filter((u) => {
     const isHanoi = u.region ? u.region === 'Hà Nội' : true;
-    const isCĐ = u.category === 'cao_dang' || u.name.toLowerCase().includes('cao đẳng');
-    return isHanoi && isCĐ;
+    const isCD = u.category === 'cao_dang' || u.name.toLowerCase().includes('cao đẳng');
+    return isHanoi && isCD;
   });
 
   return (
@@ -234,22 +396,35 @@ export function SearchFilterBar({
       onSubmit={handleFilter}
       className="rounded-2xl md:rounded-[22px] border border-slate-200 bg-white p-4 sm:p-5 md:p-6 shadow-sm transition-shadow hover:shadow-md"
     >
-      {/* Tiêu đề & Subtitle đồng bộ theo các mục trang chủ (Chung cư, CCMN, Phòng trọ SV, Mặt bằng) */}
-      <div className="mb-3.5 sm:mb-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-          {sectionTitle}
-        </h2>
-        {sectionSubtitle ? (
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            {sectionSubtitle}
-          </p>
-        ) : null}
+      {/* Title & Subtitle */}
+      <div className="mb-3.5 sm:mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+            {sectionTitle}
+          </h2>
+          {sectionSubtitle ? (
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">
+              {sectionSubtitle}
+            </p>
+          ) : null}
+        </div>
+
+        {/* Quick segment badge indicator */}
+        <div className="flex items-center gap-1.5 text-xs font-semibold">
+          <span className={`px-2.5 py-1 rounded-full border ${
+            isApartment ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+            isCommercialSpace ? 'bg-amber-50 text-amber-700 border-amber-200' :
+            'bg-brand-50 text-brand-800 border-brand-200'
+          }`}>
+            {isApartment ? 'Chung cư Pro' : isCommercialSpace ? 'Mặt bằng B2B' : 'Phòng trọ & CCMN'}
+          </span>
+        </div>
       </div>
 
-      {/* Hàng tìm kiếm chính: Search, Khu vực, Gần trường ĐH / CĐ, Loại phòng, Khoảng giá & Nút Tìm phòng */}
+      {/* Main Search Row */}
       <div className="grid grid-cols-2 lg:flex lg:items-center gap-2.5 sm:gap-3">
-        {/* Search Input lớn nổi bật */}
-        <div className="relative col-span-2 lg:flex-[1.35] lg:min-w-[195px]">
+        {/* Search input */}
+        <div className="relative col-span-2 lg:flex-[1.3] lg:min-w-[190px]">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -284,8 +459,8 @@ export function SearchFilterBar({
           )}
         </div>
 
-        {/* Dropdown 1: Khu vực — Tất cả các phường thuộc thành phố Hà Nội */}
-        <div className="relative col-span-1 lg:flex-[1.05] lg:min-w-[140px]">
+        {/* Location Dropdown */}
+        <div className="relative col-span-1 lg:flex-[1.05] lg:min-w-[135px]">
           <select
             value={locationWard}
             onChange={(e) => setLocationWard(e.target.value)}
@@ -313,64 +488,115 @@ export function SearchFilterBar({
           </div>
         </div>
 
-        {/* Dropdown 2: Gần trường ĐH / CĐ — Toàn bộ các trường ĐH, Học viện & CĐ tại Hà Nội */}
-        <div className="relative col-span-1 lg:flex-[1.25] lg:min-w-[170px]">
-          <select
-            value={universitySlug}
-            onChange={(e) => setUniversitySlug(e.target.value)}
-            aria-label="Gần trường ĐH / CĐ"
-            className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
-              universitySlug
-                ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
-                : 'border-slate-200 text-slate-700'
-            }`}
-          >
-            <option value="">Gần trường ĐH / CĐ</option>
-            {hanoiUnis.length > 0 && (
-              <optgroup label="── ĐẠI HỌC & HỌC VIỆN TẠI HÀ NỘI ──">
-                {hanoiUnis.map((uni) => (
-                  <option key={uni.slug} value={uni.slug}>
-                    {uni.abbreviation ? `[${uni.abbreviation}] ${uni.name}` : uni.name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-            {hanoiColleges.length > 0 && (
-              <optgroup label="── TRƯỜNG CAO ĐẲNG TẠI HÀ NỘI ──">
-                {hanoiColleges.map((col) => (
-                  <option key={col.slug} value={col.slug}>
-                    {col.abbreviation ? `[${col.abbreviation}] ${col.name}` : col.name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-            {hanoiUnis.length === 0 && hanoiColleges.length === 0 && (
-              universities.map((uni) => (
-                <option key={uni.slug} value={uni.slug}>
-                  {uni.abbreviation ? `[${uni.abbreviation}] ${uni.name}` : uni.name}
-                </option>
-              ))
-            )}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+        {/* Dropdown 2: Gần trường ĐH (Chỉ hiện khi ở chế độ Phòng trọ / CCMN) */}
+        {isStudentRoomOrMini && (
+          <div className="relative col-span-1 lg:flex-[1.25] lg:min-w-[160px]">
+            <select
+              value={universitySlug}
+              onChange={(e) => setUniversitySlug(e.target.value)}
+              aria-label="Gần trường ĐH / CĐ"
+              className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
+                universitySlug
+                  ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
+                  : 'border-slate-200 text-slate-700'
+              }`}
+            >
+              <option value="">Gần trường ĐH / CĐ</option>
+              {hanoiUnis.length > 0 && (
+                <optgroup label="── ĐẠI HỌC & HỌC VIỆN TẠI HÀ NỘI ──">
+                  {hanoiUnis.map((uni) => (
+                    <option key={uni.slug} value={uni.slug}>
+                      {uni.abbreviation ? `[${uni.abbreviation}] ${uni.name}` : uni.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {hanoiColleges.length > 0 && (
+                <optgroup label="── TRƯỜNG CAO ĐẲNG TẠI HÀ NỘI ──">
+                  {hanoiColleges.map((col) => (
+                    <option key={col.slug} value={col.slug}>
+                      {col.abbreviation ? `[${col.abbreviation}] ${col.name}` : col.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Dropdown 3: Loại phòng */}
+        {/* Dropdown: Tên dự án (Chỉ hiện khi ở chế độ Chung cư) */}
+        {isApartment && (
+          <div className="relative col-span-1 lg:flex-[1.25] lg:min-w-[160px]">
+            <select
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
+                projectName
+                  ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
+                  : 'border-slate-200 text-slate-700'
+              }`}
+            >
+              <option value="">Dự án / Tòa nhà</option>
+              {APARTMENT_PROJECT_SUGGESTIONS.map((proj) => (
+                <option key={proj} value={proj}>
+                  {proj}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* Dropdown: Ngành nghề cho phép (Chỉ hiện khi ở chế độ Mặt bằng) */}
+        {isCommercialSpace && (
+          <div className="relative col-span-1 lg:flex-[1.25] lg:min-w-[160px]">
+            <select
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value)}
+              className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
+                businessType
+                  ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
+                  : 'border-slate-200 text-slate-700'
+              }`}
+            >
+              <option value="">Ngành nghề phù hợp</option>
+              <option value="fnb">Được làm F&B / Hàng ăn</option>
+              <option value="cafe">Cafe / Đồ uống</option>
+              <option value="thoi_trang">Thời trang / Showroom</option>
+              <option value="van_phong">Văn phòng công ty</option>
+              <option value="spa">Spa / Thẩm mỹ</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* Dropdown Loại phòng */}
         <div className="relative col-span-1 lg:flex-1 lg:min-w-[130px]">
           <select
             value={propertyType}
-            onChange={(e) => setPropertyType(e.target.value)}
+            onChange={(e) => {
+              setPropertyType(e.target.value);
+            }}
             className={`h-12 w-full appearance-none rounded-xl border bg-white pl-3.5 pr-8 text-sm sm:text-[14.5px] outline-none transition-all duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-slate-300 cursor-pointer text-ellipsis overflow-hidden ${
               propertyType
                 ? 'border-brand/50 text-brand font-medium bg-brand-50/30'
                 : 'border-slate-200 text-slate-700'
             }`}
           >
-            {displayPropertyTypes.map((t) => (
+            {availablePropertyTypes.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
               </option>
@@ -383,8 +609,8 @@ export function SearchFilterBar({
           </div>
         </div>
 
-        {/* Dropdown 3: Giá thuê dạng Thanh Kéo Khoảng Giá (Range Slider Popover) */}
-        <div className="relative col-span-1 lg:flex-1 lg:min-w-[150px]" ref={pricePopoverRef}>
+        {/* Dropdown Giá thuê với Range Slider */}
+        <div className="relative col-span-1 lg:flex-1 lg:min-w-[145px]" ref={pricePopoverRef}>
           <button
             type="button"
             onClick={() => setIsPriceOpen(!isPriceOpen)}
@@ -395,7 +621,7 @@ export function SearchFilterBar({
             }`}
           >
             <span className="truncate pr-1">
-              {getPriceButtonLabel(minPrice, maxPrice)}
+              {getPriceLabel(minPrice, maxPrice)}
             </span>
             <svg
               className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
@@ -410,7 +636,7 @@ export function SearchFilterBar({
             </svg>
           </button>
 
-          {/* Khung Popover Thanh Kéo Khoảng Giá */}
+          {/* Range Slider Popover */}
           {isPriceOpen && (
             <div className="absolute left-0 sm:left-auto right-auto sm:right-0 top-full mt-2 z-40 w-[310px] sm:w-[360px] rounded-2xl bg-white p-4 sm:p-5 shadow-2xl border border-slate-200/90 animate-fade-in">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -420,13 +646,13 @@ export function SearchFilterBar({
                 <span className="text-xs sm:text-sm font-bold text-brand">
                   {isPriceActive
                     ? `${formatPriceNumber(minPrice)} – ${
-                        maxPrice >= MAX_PRICE_LIMIT ? 'Trên 30 triệu' : formatPriceNumber(maxPrice)
+                        maxPrice >= currentMaxPriceLimit ? `Trên ${formatPriceNumber(currentMaxPriceLimit)}` : formatPriceNumber(maxPrice)
                       }`
                     : 'Tất cả mức giá'}
                 </span>
               </div>
 
-              {/* Thanh kéo kép (Dual Range Slider) */}
+              {/* Slider */}
               <div className="pt-5 pb-2">
                 <div className="relative h-2 w-full rounded-full bg-slate-200">
                   <div
@@ -439,52 +665,63 @@ export function SearchFilterBar({
                   <input
                     type="range"
                     min={0}
-                    max={MAX_PRICE_LIMIT}
-                    step={PRICE_STEP}
+                    max={currentMaxPriceLimit}
+                    step={currentPriceStep}
                     value={minPrice}
                     onChange={(e) => {
-                      const val = Math.min(Number(e.target.value), maxPrice - PRICE_STEP);
+                      const val = Math.min(Number(e.target.value), maxPrice - currentPriceStep);
                       setMinPrice(val);
                     }}
-                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-brand [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none"
+                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none"
                     aria-label="Giá tối thiểu"
                   />
                   <input
                     type="range"
                     min={0}
-                    max={MAX_PRICE_LIMIT}
-                    step={PRICE_STEP}
+                    max={currentMaxPriceLimit}
+                    step={currentPriceStep}
                     value={maxPrice}
                     onChange={(e) => {
-                      const val = Math.max(Number(e.target.value), minPrice + PRICE_STEP);
+                      const val = Math.max(Number(e.target.value), minPrice + currentPriceStep);
                       setMaxPrice(val);
                     }}
-                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-brand [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none"
+                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none"
                     aria-label="Giá tối đa"
                   />
                 </div>
 
-                {/* Hiển thị khoảng giá dưới thanh trượt */}
                 <div className="flex items-center justify-between text-[11px] text-slate-400 mt-3 select-none">
                   <span>0đ</span>
-                  <span>10 triệu</span>
-                  <span>20 triệu</span>
-                  <span>30+ triệu</span>
+                  <span>{formatPriceNumber(Math.round(currentMaxPriceLimit / 3))}</span>
+                  <span>{formatPriceNumber(Math.round((currentMaxPriceLimit * 2) / 3))}</span>
+                  <span>{formatPriceNumber(currentMaxPriceLimit)}+</span>
                 </div>
               </div>
 
-              {/* Các mốc giá gợi ý nhanh */}
+              {/* Presets by Mode */}
               <div className="mt-2 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
-                {[
-                  { label: 'Tất cả', min: 0, max: MAX_PRICE_LIMIT },
-                  { label: '< 3 triệu', min: 0, max: 3000000 },
-                  { label: '3 – 5 triệu', min: 3000000, max: 5000000 },
-                  { label: '5 – 10 triệu', min: 5000000, max: 10000000 },
-                  { label: '10 – 20 triệu', min: 10000000, max: 20000000 },
-                  { label: '> 20 triệu', min: 20000000, max: MAX_PRICE_LIMIT },
-                ].map((preset) => {
-                  const isSelected = minPrice === preset.min && maxPrice === preset.max;
-                  return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMinPrice(0);
+                    setMaxPrice(currentMaxPriceLimit);
+                  }}
+                  className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                    minPrice === 0 && maxPrice === currentMaxPriceLimit
+                      ? 'border-brand bg-brand-50 text-brand font-semibold'
+                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Tất cả
+                </button>
+
+                {isCommercialSpace ? (
+                  [
+                    { label: '10 – 20 triệu', min: 10000000, max: 20000000 },
+                    { label: '20 – 40 triệu', min: 20000000, max: 40000000 },
+                    { label: '40 – 70 triệu', min: 40000000, max: 70000000 },
+                    { label: '> 70 triệu', min: 70000000, max: currentMaxPriceLimit },
+                  ].map((preset) => (
                     <button
                       key={preset.label}
                       type="button"
@@ -493,24 +730,71 @@ export function SearchFilterBar({
                         setMaxPrice(preset.max);
                       }}
                       className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
-                        isSelected
+                        minPrice === preset.min && maxPrice === preset.max
                           ? 'border-brand bg-brand-50 text-brand font-semibold'
                           : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
                       {preset.label}
                     </button>
-                  );
-                })}
+                  ))
+                ) : isApartment ? (
+                  [
+                    { label: '5 – 10 triệu', min: 5000000, max: 10000000 },
+                    { label: '10 – 15 triệu', min: 10000000, max: 15000000 },
+                    { label: '15 – 25 triệu', min: 15000000, max: 25000000 },
+                    { label: '25 – 40 triệu', min: 25000000, max: 40000000 },
+                    { label: '> 40 triệu', min: 40000000, max: currentMaxPriceLimit },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setMinPrice(preset.min);
+                        setMaxPrice(preset.max);
+                      }}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                        minPrice === preset.min && maxPrice === preset.max
+                          ? 'border-brand bg-brand-50 text-brand font-semibold'
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))
+                ) : (
+                  [
+                    { label: '< 3 triệu', min: 0, max: 3000000 },
+                    { label: '3 – 5 triệu', min: 3000000, max: 5000000 },
+                    { label: '5 – 10 triệu', min: 5000000, max: 10000000 },
+                    { label: '10 – 15 triệu', min: 10000000, max: 15000000 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setMinPrice(preset.min);
+                        setMaxPrice(preset.max);
+                      }}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                        minPrice === preset.min && maxPrice === preset.max
+                          ? 'border-brand bg-brand-50 text-brand font-semibold'
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))
+                )}
               </div>
 
-              {/* Nút hành động trong popover */}
+              {/* Actions */}
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setMinPrice(0);
-                    setMaxPrice(MAX_PRICE_LIMIT);
+                    setMaxPrice(currentMaxPriceLimit);
                   }}
                   className="text-xs font-medium text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                 >
@@ -531,7 +815,7 @@ export function SearchFilterBar({
           )}
         </div>
 
-        {/* CTA: Nút Bộ lọc tìm kiếm đồng bộ chiều cao và nằm cùng hàng trên desktop */}
+        {/* CTA Button */}
         <div className="col-span-2 lg:col-span-1 lg:shrink-0">
           <button
             type="submit"
@@ -544,72 +828,360 @@ export function SearchFilterBar({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <span>Đang tìm...</span>
+                <span>Đang tìm</span>
               </>
             ) : (
               <>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <span>{basePath === '/cho-thue-mat-bang' ? 'Tìm mặt bằng' : basePath === '/cho-thue-tro' ? 'Tìm phòng' : 'Tìm kiếm'}</span>
+                <span>{isCommercialSpace ? 'Tìm mặt bằng' : isApartment ? 'Tìm căn hộ' : 'Tìm phòng'}</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Khu vực Bộ lọc thêm (Nuôi thú cưng, Sạc xe điện) & Đặt lại (Đã xóa Bao điện nước theo yêu cầu) */}
-      <div className="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
-        {/* Nhóm Bộ lọc thêm: 2 mục Nuôi thú cưng, Sạc xe điện */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-slate-500 whitespace-nowrap">
-            Bộ lọc thêm:
+      {/* ── Sub-Filter Row (Area & Specialized Selectors) ── */}
+      <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center gap-2">
+        {/* Diện tích Filter Chips */}
+        <span className="text-xs font-semibold text-slate-500 mr-1">
+          Diện tích:
+        </span>
+        {(isCommercialSpace ? [
+          { label: '< 50m²', val: '<50' },
+          { label: '50 – 100m²', val: '50-100' },
+          { label: '100 – 200m²', val: '100-200' },
+          { label: '> 200m²', val: '>200' },
+        ] : isApartment ? [
+          { label: '< 45m²', val: '<45' },
+          { label: '45 – 70m²', val: '45-70' },
+          { label: '70 – 100m²', val: '70-100' },
+          { label: '> 100m²', val: '>100' },
+        ] : [
+          { label: '< 20m²', val: '<20' },
+          { label: '20 – 30m²', val: '20-30' },
+          { label: '> 30m²', val: '>30' },
+        ]).map((item) => (
+          <button
+            key={item.val}
+            type="button"
+            onClick={() => setAreaRange(areaRange === item.val ? '' : item.val)}
+            className={`h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+              areaRange === item.val
+                ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+
+        {/* Mode-specific secondary selectors */}
+        {isApartment && (
+          <>
+            <span className="text-slate-300 mx-1">|</span>
+            <span className="text-xs font-semibold text-slate-500 mr-1">Số PN:</span>
+            {['Studio', '1PN', '2PN', '3PN+'].map((pn) => (
+              <button
+                key={pn}
+                type="button"
+                onClick={() => setBedrooms(bedrooms === pn ? '' : pn)}
+                className={`h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                  bedrooms === pn
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {pn}
+              </button>
+            ))}
+
+            <span className="text-slate-300 mx-1 hidden sm:inline">|</span>
+            <select
+              value={furnishing}
+              onChange={(e) => setFurnishing(e.target.value)}
+              className="h-7 sm:h-8 px-2 rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 outline-none hover:bg-slate-100 cursor-pointer"
+            >
+              <option value="">Nội thất</option>
+              <option value="full">Full nội thất</option>
+              <option value="co_ban">Nội thất cơ bản</option>
+              <option value="trong">Nhà trống</option>
+            </select>
+
+            <select
+              value={balconyDirection}
+              onChange={(e) => setBalconyDirection(e.target.value)}
+              className="h-7 sm:h-8 px-2 rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 outline-none hover:bg-slate-100 cursor-pointer"
+            >
+              <option value="">Hướng ban công</option>
+              {BALCONY_DIRECTIONS.map((dir) => (
+                <option key={dir} value={dir}>{dir}</option>
+              ))}
+            </select>
+          </>
+        )}
+
+        {isCommercialSpace && (
+          <>
+            <span className="text-slate-300 mx-1">|</span>
+            <span className="text-xs font-semibold text-slate-500 mr-1">Mặt tiền:</span>
+            {['< 4m', '4m – 6m', '6m – 8m', '> 8m'].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setFrontage(frontage === m ? '' : m)}
+                className={`h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                  frontage === m
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+
+            <span className="text-slate-300 mx-1 hidden sm:inline">|</span>
+            <select
+              value={floorsCount}
+              onChange={(e) => setFloorsCount(e.target.value)}
+              className="h-7 sm:h-8 px-2 rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 outline-none hover:bg-slate-100 cursor-pointer"
+            >
+              <option value="">Số tầng cho thuê</option>
+              <option value="tang_tret">Chỉ tầng trệt (Tầng 1)</option>
+              <option value="thong_san">Thông sàn 1–2 tầng</option>
+              <option value="nguyen_can">Nguyên căn nhiều tầng</option>
+            </select>
+          </>
+        )}
+      </div>
+
+      {/* ── Quick Filter Chips Row ── */}
+      <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+            Tiêu chí ưu tiên:
           </span>
 
-          {/* Mục 1: Nuôi thú cưng */}
+          {/* Video Chip (for all modes) */}
           <button
             type="button"
-            onClick={() => setPetAllowed(!petAllowed)}
-            className={`inline-flex items-center gap-1.5 h-9 rounded-full px-3.5 text-xs sm:text-sm font-medium transition-all duration-150 border cursor-pointer ${
-              petAllowed
-                ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
-                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+            onClick={() => setHasVideo(!hasVideo)}
+            className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+              hasVideo
+                ? 'border-rose-500 bg-rose-50 text-rose-700 font-semibold shadow-xs'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
             }`}
           >
-            {petAllowed && (
-              <svg className="w-3.5 h-3.5 text-brand" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            )}
-            <span>Nuôi thú cưng</span>
+            <span className="text-[11px] font-bold">▶</span>
+            <span>Có Video thực tế</span>
           </button>
 
-          {/* Mục 2: Sạc xe điện */}
-          <button
-            type="button"
-            onClick={() => setElectricVehicle(!electricVehicle)}
-            className={`inline-flex items-center gap-1.5 h-9 rounded-full px-3.5 text-xs sm:text-sm font-medium transition-all duration-150 border cursor-pointer ${
-              electricVehicle
-                ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
-                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
-            }`}
-          >
-            {electricVehicle && (
-              <svg className="w-3.5 h-3.5 text-brand" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            )}
-            <span>Sạc xe điện</span>
-          </button>
+          {/* Mode 1: Student room & CCMN Chips */}
+          {isStudentRoomOrMini && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPetAllowed(!petAllowed)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  petAllowed
+                    ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {petAllowed && <span>✓</span>}
+                <span>Nuôi thú cưng</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setElectricVehicle(!electricVehicle)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  electricVehicle
+                    ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {electricVehicle && <span>✓</span>}
+                <span>Sạc xe điện</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHasBalconyWindow(!hasBalconyWindow)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  hasBalconyWindow
+                    ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {hasBalconyWindow && <span>✓</span>}
+                <span>Ban công/Cửa sổ lớn</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHasElevator(!hasElevator)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  hasElevator
+                    ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {hasElevator && <span>✓</span>}
+                <span>Có thang máy</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFreeTime(!freeTime)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  freeTime
+                    ? 'border-brand bg-brand-50 text-brand font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {freeTime && <span>✓</span>}
+                <span>Giờ giấc tự do</span>
+              </button>
+            </>
+          )}
+
+          {/* Mode 2: Apartment Chips */}
+          {isApartment && (
+            <>
+              <button
+                type="button"
+                onClick={() => setHasCarParking(!hasCarParking)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  hasCarParking
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {hasCarParking && <span>✓</span>}
+                <span>Có suất đỗ ô tô</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMgmtFeeIncluded(!mgmtFeeIncluded)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  mgmtFeeIncluded
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {mgmtFeeIncluded && <span>✓</span>}
+                <span>Bao phí quản lý</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPetAllowed(!petAllowed)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  petAllowed
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {petAllowed && <span>✓</span>}
+                <span>Cho nuôi thú cưng</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setForeignerEligible(!foreignerEligible)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  foreignerEligible
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {foreignerEligible && <span>✓</span>}
+                <span>Cho người nước ngoài</span>
+              </button>
+            </>
+          )}
+
+          {/* Mode 3: Commercial Space Chips */}
+          {isCommercialSpace && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPcccCertified(!pcccCertified)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  pcccCertified
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {pcccCertified && <span>✓</span>}
+                <span>Có nghiệm thu PCCC</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setVatSupported(!vatSupported)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  vatSupported
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {vatSupported && <span>✓</span>}
+                <span>Xuất hóa đơn VAT & GPKD</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWideSidewalk(!wideSidewalk)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  wideSidewalk
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {wideSidewalk && <span>✓</span>}
+                <span>Vỉa hè rộng đỗ xe</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPrivateEntrance(!privateEntrance)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  privateEntrance
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {privateEntrance && <span>✓</span>}
+                <span>Lối đi riêng</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRentFreePeriod(!rentFreePeriod)}
+                className={`inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium transition-all duration-150 border cursor-pointer ${
+                  rentFreePeriod
+                    ? 'border-amber-600 bg-amber-50 text-amber-800 font-semibold shadow-xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {rentFreePeriod && <span>✓</span>}
+                <span>Hỗ trợ ngày thi công (Rent-free)</span>
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Nút Xóa bộ lọc (chỉ hiện khi có filter active) */}
+        {/* Reset Button */}
         {activeFilterCount > 0 && (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end shrink-0">
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-rose-600 transition-colors py-1.5 px-3 rounded-lg hover:bg-rose-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-rose-600 transition-colors py-1 px-2.5 rounded-lg hover:bg-rose-50 cursor-pointer"
               title="Xóa tất cả bộ lọc đang chọn"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">

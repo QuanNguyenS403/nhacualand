@@ -132,6 +132,58 @@ export type AmenityKey = (typeof AMENITY_DEFINITIONS)[number]['key'];
  * Chuyển đổi tiện nghi từ bất kỳ dạng cũ (tiếng Việt hoặc tiếng Anh) sang cấu trúc chuẩn
  */
 export declare function normalizeAmenities(input: Record<string, any> | null | undefined): Record<AmenityKey, boolean>;
+export interface StudentRoomAttributes {
+    nearby_universities?: Array<{
+        name: string;
+        distanceMeters: number;
+        abbreviation?: string;
+    }>;
+    has_mezzanine?: boolean;
+    max_occupants?: number;
+    curfew_policy?: 'tu_do' | 'co_gio_dong_cua' | string;
+    ev_charging?: boolean;
+    pet_friendly?: boolean;
+}
+export interface MiniApartmentAttributes {
+    floor_level?: number;
+    has_elevator?: boolean;
+    has_balcony_window?: boolean;
+    fire_safety_equipped?: boolean;
+    fingerprint_lock?: boolean;
+    service_fee_monthly?: number;
+}
+export interface CommercialApartmentAttributes {
+    project_name?: string;
+    building_block?: string;
+    net_area_m2?: number;
+    gross_area_m2?: number;
+    bedrooms?: 'Studio' | '1PN' | '1PN+' | '2PN' | '3PN' | '4PN+' | string;
+    bathrooms?: '1WC' | '2WC' | '3WC+' | string;
+    furnishing_status?: 'Full nội thất cao cấp' | 'Full nội thất' | 'Nội thất cơ bản' | 'Nhà trống' | string;
+    balcony_direction?: 'Đông' | 'Tây' | 'Nam' | 'Bắc' | 'Đông Nam' | 'Đông Bắc' | 'Tây Nam' | 'Tây Bắc' | string;
+    door_direction?: string;
+    management_fee?: number | string;
+    car_parking_available?: boolean;
+    car_parking_fee?: number;
+    foreigner_eligible?: boolean;
+}
+export interface CommercialSpaceAttributes {
+    frontage_width_m?: number;
+    depth_m?: number;
+    total_usable_area_m2?: number;
+    floors_count?: string;
+    road_width_m?: number;
+    sidewalk_width_m?: number;
+    independent_entrance?: boolean;
+    allowed_business_types?: string[];
+    fire_safety_certificate?: boolean;
+    vat_invoice_supported?: boolean;
+    rent_free_fitout_days?: number;
+    payment_cycle?: string;
+    three_phase_power?: boolean;
+}
+export type SegmentAttributes = StudentRoomAttributes | MiniApartmentAttributes | CommercialApartmentAttributes | CommercialSpaceAttributes | Record<string, any>;
+export type PosterRole = 'chinh_chu' | 'tham_dinh_nhacualand' | 'don_vi_van_hanh' | string;
 export interface ListingMapPin {
     id: string;
     slug: string;
@@ -153,6 +205,11 @@ export interface ListingMapPin {
     waterPriceFlat?: number;
     amenities?: Record<string, boolean>;
     isOwnerPending?: boolean;
+    videoUrl?: string | null;
+    floorplanImageUrl?: string | null;
+    segmentAttributes?: SegmentAttributes | null;
+    posterRole?: PosterRole | null;
+    verifiedBadgeAt?: string | null;
 }
 export interface ListingPublic {
     id: string;
@@ -181,6 +238,11 @@ export interface ListingPublic {
     publishedAt: string | null;
     createdAt: string;
     viewCount: number;
+    videoUrl?: string | null;
+    floorplanImageUrl?: string | null;
+    segmentAttributes?: SegmentAttributes | null;
+    posterRole?: PosterRole | null;
+    verifiedBadgeAt?: string | null;
     images: Array<{
         imageUrl: string;
         sortOrder: number;

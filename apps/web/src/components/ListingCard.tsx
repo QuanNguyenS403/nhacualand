@@ -58,6 +58,56 @@ export function ListingCard({ listing }: { listing: Listing }) {
     }
   }
 
+  const pType = listing.propertyType || 'phong_tro';
+  const seg = (listing.segmentAttributes as any) || {};
+
+  // Xây dựng dòng thông số tóm tắt (Card Meta) động theo loại hình
+  const metaParts: string[] = [];
+  if (pType === 'can_ho') {
+    if (listing.areaM2) metaParts.push(`${listing.areaM2}m²`);
+    if (seg.bedrooms) metaParts.push(`${seg.bedrooms}PN${seg.bathrooms ? ` ${seg.bathrooms}WC` : ''}`);
+    if (seg.furnishing) {
+      metaParts.push(
+        seg.furnishing === 'full'
+          ? 'Full nội thất'
+          : seg.furnishing === 'co_ban'
+            ? 'Nội thất cơ bản'
+            : 'Nhà trống',
+      );
+    }
+    if (seg.projectName) metaParts.push(seg.projectName);
+  } else if (pType === 'mat_bang') {
+    if (listing.areaM2) metaParts.push(`${listing.areaM2}m²`);
+    if (seg.frontageM) metaParts.push(`Mặt tiền ${seg.frontageM}m`);
+    if (seg.floorsCount) metaParts.push(`${seg.floorsCount} tầng`);
+    if (seg.pcccCertified || seg.vatInvoiceAvailable) metaParts.push('PCCC & VAT');
+  } else {
+    // phong_tro hoặc ccmn
+    const am = (listing.amenities as any) || {};
+    if (listing.areaM2) metaParts.push(`${listing.areaM2}m²`);
+    if (seg.hasMezzanine || seg.has_mezzanine || am.gacLung || am.mezzanine) {
+      metaParts.push('Gác lửng');
+    } else if (seg.hasElevator || seg.has_elevator || am.thangMay || am.elevator) {
+      metaParts.push('Thang máy');
+    }
+    if (nearestUni) {
+      metaParts.push(
+        `Gần ${nearestUni.university.abbreviation || nearestUni.university.name}${
+          nearestUni.distanceMeters ? ` (~${nearestUni.distanceMeters}m)` : ''
+        }`,
+      );
+    }
+  }
+
+  const dynamicMetaText = metaParts.join(' • ');
+
+  const isVerifiedBadge = Boolean(
+    listing.verifiedBadgeAt ||
+      (listing as any).isVerified ||
+      listing.posterRole === 'nhacualand_team' ||
+      listing.posterRole === 'verified_owner',
+  );
+
   return (
     <Link href={`/tin/${listing.slug}`} className="listing-card group flex flex-col justify-between">
       <div>
@@ -86,6 +136,24 @@ export function ListingCard({ listing }: { listing: Listing }) {
               </svg>
             </div>
           )}
+
+          {/* Badges trên góc ảnh: Tin xác thực & Có Video */}
+          <div className="absolute top-2.5 left-2.5 z-20 flex flex-col gap-1 items-start">
+            {isVerifiedBadge && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/95 text-white px-2 py-0.5 text-[10.5px] font-bold backdrop-blur-xs shadow-xs">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Tin xác thực</span>
+              </span>
+            )}
+            {listing.videoUrl && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/85 text-white px-2 py-0.5 text-[10.5px] font-bold backdrop-blur-xs shadow-xs">
+                <span className="text-[9px] text-rose-400">▶</span>
+                <span>Có Video</span>
+              </span>
+            )}
+          </div>
 
           {/* Nút Chọn phòng / Lưu phòng nhanh */}
           <button
@@ -143,24 +211,24 @@ export function ListingCard({ listing }: { listing: Listing }) {
             {displayTitle}
           </p>
 
+          {/* Dòng thông số động theo phân khúc (Card Meta) */}
+          {dynamicMetaText ? (
+            <p className="mt-2 text-xs font-medium text-text-secondary line-clamp-1">
+              {dynamicMetaText}
+            </p>
+          ) : null}
+
           {/* Badge khoảng cách tìm kiếm theo địa chỉ nếu có */}
           {listing.distanceText ? (
-            <div className="mt-2.5 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
+            <div className="mt-2 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
               <span>{listing.distanceText}</span>
             </div>
           ) : listing.distanceMeters != null ? (
-            <div className="mt-2.5 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
+            <div className="mt-2 inline-flex items-center rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 border border-brand-200/70">
               <span>
                 {listing.distanceMeters < 1000
                   ? `Cách địa chỉ ~${listing.distanceMeters}m`
                   : `Cách địa chỉ ~${(listing.distanceMeters / 1000).toFixed(1)} km`}
-              </span>
-            </div>
-          ) : nearestUni ? (
-            <div className="mt-2.5 flex items-center text-xs text-brand font-medium truncate">
-              <span className="truncate">
-                Gần {nearestUni.university.abbreviation || nearestUni.university.name}
-                {nearestUni.distanceMeters ? ` (~${nearestUni.distanceMeters}m)` : ''}
               </span>
             </div>
           ) : null}

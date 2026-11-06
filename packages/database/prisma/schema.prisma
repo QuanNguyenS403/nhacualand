@@ -170,6 +170,11 @@ model Listing {
   unit                   RentalUnit?         @relation(fields: [unitId], references: [id], onDelete: SetNull)
   contactAgentId         BigInt?             @map("contact_agent_id")
   contactAgent           AgentProfile?       @relation(fields: [contactAgentId], references: [id], onDelete: SetNull)
+  videoUrl               String?             @map("video_url")
+  floorplanImageUrl      String?             @map("floorplan_image_url")
+  segmentAttributes      Json?               @map("segment_attributes")
+  posterRole             String?             @map("poster_role") @db.VarChar(50)
+  verifiedBadgeAt        DateTime?           @map("verified_badge_at")
   createdAt              DateTime            @default(now()) @map("created_at")
   updatedAt              DateTime            @updatedAt @map("updated_at")
 

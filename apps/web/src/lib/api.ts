@@ -58,6 +58,11 @@ export interface Listing {
   refreshedAt?: string | null;
   createdAt?: string;
   viewCount: number;
+  videoUrl?: string | null;
+  floorplanImageUrl?: string | null;
+  segmentAttributes?: Record<string, any> | null;
+  posterRole?: string | null;
+  verifiedBadgeAt?: string | null;
   images: { imageUrl: string; sortOrder: number }[];
   location: { id: number; name: string; slug: string; level: string };
   project: { id: string; name: string; slug: string } | null;

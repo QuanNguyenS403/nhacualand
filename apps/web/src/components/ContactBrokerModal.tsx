@@ -10,6 +10,12 @@ interface ContactBrokerModalProps {
   onClose: () => void;
   listingId?: string | number;
   listingTitle?: string;
+  priceFormatted?: string;
+  price?: string | number | bigint;
+  locationName?: string;
+  addressDetail?: string | null;
+  propertyType?: string;
+  coverImage?: string;
 }
 
 /**
@@ -82,13 +88,24 @@ export function ContactBrokerModal({
   onClose,
   listingId,
   listingTitle,
+  priceFormatted,
+  price,
+  locationName,
+  addressDetail,
+  propertyType,
+  coverImage,
 }: ContactBrokerModalProps) {
+  const displayPrice = priceFormatted || (price != null ? `${Number(price).toLocaleString('vi-VN')} đ` : undefined);
+  const displayLocation = locationName || (addressDetail ? String(addressDetail) : undefined);
   const [mounted, setMounted] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
   const [preferredTime, setPreferredTime] = useState('sang');
+  const [preferredChannel, setPreferredChannel] = useState<'zalo' | 'phone' | 'sms'>('zalo');
+  const [requireLegalDocs, setRequireLegalDocs] = useState(false);
+  const [requestSimilarRooms, setRequestSimilarRooms] = useState(false);
   const [note, setNote] = useState('');
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -142,6 +159,11 @@ export function ContactBrokerModal({
       }
     }
   };
+
+  const isCommercialOrApartment =
+    propertyType === 'can_ho' ||
+    propertyType === 'mat_bang' ||
+    (listingTitle && (listingTitle.toLowerCase().includes('căn hộ') || listingTitle.toLowerCase().includes('mặt bằng')));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -207,6 +229,40 @@ export function ContactBrokerModal({
       return;
     }
 
+    // Chặn mutation trên dữ liệu mẫu
+    if (rawId.startsWith('demo-')) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('qns_remember_email', cleanEmail);
+          const storedRaw = localStorage.getItem('qns_booked_appointments');
+          const stored = storedRaw ? JSON.parse(storedRaw) : [];
+          stored.unshift({
+            id: `apt_${Date.now()}`,
+            listingId: rawId,
+            listingTitle: listingTitle || 'Phòng cho thuê',
+            fullName: fullName.trim(),
+            phone: cleanPhone,
+            email: cleanEmail,
+            preferredDate,
+            preferredTime,
+            channel: preferredChannel,
+            note: note.trim(),
+            createdAt: new Date().toISOString(),
+          });
+          localStorage.setItem('qns_booked_appointments', JSON.stringify(stored));
+        } catch {}
+      }
+      setSubmitted(true);
+      setSuccessMessage(
+        `Yêu cầu đặt lịch phòng mẫu đã được ghi nhận, chuyên viên NHACUALAND sẽ liên hệ qua ${cleanPhone} để tư vấn phòng thực tế tương tự`
+      );
+      setTimeout(() => {
+        setSubmitted(false);
+        onClose();
+      }, 4000);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -236,9 +292,22 @@ export function ContactBrokerModal({
         ? preferredDate.split('-').reverse().join('/')
         : preferredDate;
 
+      const channelLabel =
+        preferredChannel === 'zalo'
+          ? 'Qua Zalo (Nhanh nhất)'
+          : preferredChannel === 'phone'
+            ? 'Gọi điện trực tiếp'
+            : 'Qua SMS/Email';
+
+      const segmentRequirement = isCommercialOrApartment
+        ? requireLegalDocs ? 'Yêu cầu mang theo bản sao Pháp lý (Sổ hồng / Hồ sơ PCCC / Hợp đồng mẫu)' : null
+        : requestSimilarRooms ? 'Gợi ý thêm 2-3 phòng tương tự trong bán kính 1km' : null;
+
       const fullMessage = [
         preferredDate ? `Ngày mong muốn xem: ${formattedDateVN}` : null,
         `Khung giờ: ${timeSlotText}`,
+        `Kênh xác nhận: ${channelLabel}`,
+        segmentRequirement,
         note.trim() ? `Ghi chú thêm: ${note.trim()}` : null,
       ]
         .filter(Boolean)
@@ -295,7 +364,6 @@ export function ContactBrokerModal({
           success = true;
           respMsg = data.message || '';
         } else if (res.status === 400 || res.status === 422) {
-          // Lỗi validate từ API
           const errorDetail = Array.isArray(data.message) ? data.message.join(', ') : data.message;
           if (errorDetail && !errorDetail.includes('kết nối') && !errorDetail.includes('500')) {
             throw new Error(errorDetail);
@@ -322,6 +390,7 @@ export function ContactBrokerModal({
             email: cleanEmail,
             preferredDate,
             preferredTime: timeSlotText,
+            channel: preferredChannel,
             note: note.trim(),
             createdAt: new Date().toISOString(),
           });
@@ -376,30 +445,66 @@ export function ContactBrokerModal({
       }}
       className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/65 backdrop-blur-xs overflow-y-auto animate-fade-in"
     >
-      <div className="relative w-full max-w-[450px] sm:max-w-[470px] m-auto rounded-2xl sm:rounded-[22px] bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-100 max-h-[92vh] animate-slide-up">
-        {/* Header tinh gọn, chuẩn mực */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 sm:px-6 py-3.5 sm:py-4 bg-slate-50/70 shrink-0">
-          <div className="min-w-0 pr-3">
-            <h2 id="contact-modal-title" className="text-base sm:text-[17px] font-bold text-slate-900 leading-tight">
-              Đặt lịch xem phòng
-            </h2>
-            <p className="text-[12px] text-brand mt-0.5 font-semibold flex items-center gap-1.5">
-              <span>{SITE_CONFIG.agentName}</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-600 font-normal">{SITE_CONFIG.agentRole}</span>
-            </p>
-            {listingTitle && (
-              <p className="text-[11px] sm:text-xs text-slate-400 truncate max-w-[290px] sm:max-w-[340px] mt-0.5 font-medium">{listingTitle}</p>
-            )}
+      <div className="relative w-full max-w-[460px] sm:max-w-[490px] m-auto rounded-2xl sm:rounded-[22px] bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-100 max-h-[94vh] animate-slide-up">
+        {/* Header tinh gọn, chuẩn mực với tóm tắt và Realtime Vacancy Badge */}
+        <div className="border-b border-slate-100 px-5 sm:px-6 py-3.5 bg-slate-50/80 shrink-0 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 pr-2">
+              <h2 id="contact-modal-title" className="text-base sm:text-[17px] font-bold text-slate-900 leading-tight">
+                Đặt lịch xem phòng
+              </h2>
+              <p className="text-[12px] text-brand mt-0.5 font-semibold flex items-center gap-1.5">
+                <span>{SITE_CONFIG.agentName}</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-600 font-normal">{SITE_CONFIG.agentRole}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              aria-label="Đóng hộp thoại liên hệ"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors text-sm font-semibold cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            aria-label="Đóng hộp thoại đặt lịch xem phòng"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors text-sm font-semibold cursor-pointer"
-          >
-            ✕
-          </button>
+
+          {/* Tóm tắt bất động sản & Trạng thái phòng trống thời gian thực */}
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex items-center gap-3 shadow-2xs">
+            {coverImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coverImage}
+                alt="Ảnh đại diện phòng"
+                className="h-12 w-12 rounded-lg object-cover shrink-0 border border-slate-100"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center text-brand shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-900 truncate">
+                {listingTitle || 'Phòng cho thuê trực tiếp'}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                {displayPrice && (
+                  <span className="text-xs font-bold text-brand">{displayPrice}/tháng</span>
+                )}
+                {displayLocation && (
+                  <span className="text-[11px] text-slate-500 truncate">• {displayLocation}</span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Trạng thái: Đang còn trống (Cập nhật hôm nay)</span>
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Form Body kích thước vừa vặn trong màn hình */}
@@ -423,60 +528,61 @@ export function ContactBrokerModal({
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-4 space-y-3.5 overflow-y-auto max-h-[calc(92vh-75px)]">
+          <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-4 space-y-3.5 overflow-y-auto max-h-[calc(94vh-120px)]">
             {errorMessage && (
               <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs sm:text-[13px] text-rose-700 leading-relaxed">
                 {errorMessage}
               </div>
             )}
 
-            {/* Họ & Tên */}
-            <div>
-              <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                Họ và tên của bạn <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Ví dụ: Nguyễn Văn A"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
-              />
-            </div>
+            {/* Họ tên & SĐT */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                  Họ và tên <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nguyễn Văn A"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3 py-2 text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
+                />
+              </div>
 
-            {/* Số điện thoại */}
-            <div>
-              <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                Số điện thoại liên hệ <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                placeholder="Ví dụ: 0981 753 082"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
-              />
+              <div>
+                <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                  Số điện thoại <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="0912345678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3 py-2 text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
+                />
+              </div>
             </div>
 
             {/* Email */}
             <div>
               <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                Email <span className="text-rose-500">*</span>
+                Email nhận xác nhận lịch hẹn <span className="text-rose-500">*</span>
               </label>
               <input
                 type="email"
                 required
-                placeholder="Ví dụ: your-email@gmail.com"
+                placeholder="example@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3 py-2 text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
               />
             </div>
 
-            {/* Ngày & Giờ mong muốn xem phòng */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Ngày xem & Khung giờ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[12px] font-bold text-slate-700 mb-1">
                   Ngày xem phòng <span className="text-rose-500">*</span>
@@ -484,8 +590,8 @@ export function ContactBrokerModal({
                 <input
                   type="date"
                   required
-                  value={preferredDate}
                   min={vnTime.minDate}
+                  value={preferredDate}
                   onChange={(e) => handleDateChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/40 px-3 py-2 text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
                 />
@@ -506,10 +612,93 @@ export function ContactBrokerModal({
                   <option value="chieu" disabled={isAfternoonDisabled}>
                     Chiều (13:30 - 17:30) {isAfternoonDisabled ? '- Đã qua' : ''}
                   </option>
-                  <option value="toi">Tối (18:00 - 20:00)</option>
+                  <option value="toi">Tối (18:00 - 20:30)</option>
                 </select>
               </div>
             </div>
+
+            {/* Lựa chọn Phương thức xác nhận ưu tiên */}
+            <div>
+              <label className="block text-[12px] font-bold text-slate-700 mb-1.5">
+                Phương thức xác nhận ưu tiên
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <label className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-semibold cursor-pointer transition-all ${
+                  preferredChannel === 'zalo'
+                    ? 'border-brand bg-brand-50/70 text-brand font-bold shadow-2xs'
+                    : 'border-slate-200 bg-slate-50/40 text-slate-600 hover:bg-slate-100'
+                }`}>
+                  <input
+                    type="radio"
+                    name="preferredChannel"
+                    value="zalo"
+                    checked={preferredChannel === 'zalo'}
+                    onChange={() => setPreferredChannel('zalo')}
+                    className="sr-only"
+                  />
+                  <span>Qua Zalo (Nhanh nhất)</span>
+                </label>
+                <label className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-semibold cursor-pointer transition-all ${
+                  preferredChannel === 'phone'
+                    ? 'border-brand bg-brand-50/70 text-brand font-bold shadow-2xs'
+                    : 'border-slate-200 bg-slate-50/40 text-slate-600 hover:bg-slate-100'
+                }`}>
+                  <input
+                    type="radio"
+                    name="preferredChannel"
+                    value="phone"
+                    checked={preferredChannel === 'phone'}
+                    onChange={() => setPreferredChannel('phone')}
+                    className="sr-only"
+                  />
+                  <span>Gọi điện trực tiếp</span>
+                </label>
+                <label className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-semibold cursor-pointer transition-all ${
+                  preferredChannel === 'sms'
+                    ? 'border-brand bg-brand-50/70 text-brand font-bold shadow-2xs'
+                    : 'border-slate-200 bg-slate-50/40 text-slate-600 hover:bg-slate-100'
+                }`}>
+                  <input
+                    type="radio"
+                    name="preferredChannel"
+                    value="sms"
+                    checked={preferredChannel === 'sms'}
+                    onChange={() => setPreferredChannel('sms')}
+                    className="sr-only"
+                  />
+                  <span>Qua SMS/Email</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Checkbox Yêu cầu Chuyên biệt hiển thị động theo phân khúc */}
+            {isCommercialOrApartment ? (
+              <div className="flex items-start gap-2.5 rounded-xl border border-blue-200/80 bg-blue-50/50 p-2.5">
+                <input
+                  type="checkbox"
+                  id="lead-legal-docs"
+                  checked={requireLegalDocs}
+                  onChange={(e) => setRequireLegalDocs(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-blue-300 text-brand focus:ring-brand cursor-pointer"
+                />
+                <label htmlFor="lead-legal-docs" className="text-xs text-blue-900 leading-snug cursor-pointer select-none font-medium">
+                  Yêu cầu chuyên viên mang theo bản sao Pháp lý (Sổ hồng / Hồ sơ PCCC / Hợp đồng thuê mẫu) khi đi xem thực tế
+                </label>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-2.5">
+                <input
+                  type="checkbox"
+                  id="lead-similar-rooms"
+                  checked={requestSimilarRooms}
+                  onChange={(e) => setRequestSimilarRooms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-emerald-300 text-brand focus:ring-brand cursor-pointer"
+                />
+                <label htmlFor="lead-similar-rooms" className="text-xs text-emerald-900 leading-snug cursor-pointer select-none font-medium">
+                  Nhờ chuyên viên gợi ý sẵn 2–3 phòng tương tự trong bán kính 1km để kết hợp xem luôn trong 1 buổi
+                </label>
+              </div>
+            )}
 
             {/* Ghi chú thêm */}
             <div>
@@ -560,8 +749,19 @@ export function ContactBrokerModal({
               </label>
             </div>
 
+            {/* Khối Cam kết SLA ngay trước nút gửi */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-[11.5px] leading-relaxed text-amber-900 shadow-2xs">
+              <div className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold shrink-0 mt-0.5 text-sm">⚡</span>
+                <div>
+                  <span className="font-bold text-amber-950">Cam kết phản hồi trong 5 – 15 phút: </span>
+                  <span>Chuyên viên dẫn xem của NHACUALAND sẽ liên hệ xác nhận lịch hẹn và gửi định vị chính xác qua Zalo/SĐT của bạn trong vòng 15 phút. Cam kết <strong className="font-bold">đúng hình ảnh thực tế 100% — Miễn phí dẫn xem — Không thu tiền cọc hộ</strong></span>
+                </div>
+              </div>
+            </div>
+
             {/* Nút hành động */}
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3 pt-1">
               <button
                 type="submit"
                 disabled={loading}

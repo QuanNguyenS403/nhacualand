@@ -16,6 +16,9 @@ interface MobileStickyContactBarProps {
   priceFormatted: string;
   depositFormatted?: string;
   isRented?: boolean;
+  propertyType?: string;
+  locationName?: string;
+  coverImage?: string;
 }
 
 export function MobileStickyContactBar({
@@ -24,6 +27,9 @@ export function MobileStickyContactBar({
   priceFormatted,
   depositFormatted,
   isRented = false,
+  propertyType,
+  locationName,
+  coverImage,
 }: MobileStickyContactBarProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -136,6 +142,10 @@ export function MobileStickyContactBar({
         onClose={() => setIsModalOpen(false)}
         listingId={listingId}
         listingTitle={listingTitle}
+        priceFormatted={priceFormatted}
+        locationName={locationName}
+        propertyType={propertyType}
+        coverImage={coverImage}
       />
     </>
   );

@@ -11,15 +11,13 @@ import { LandlordAvatar } from '@/components/QnsLogo';
 import { MobileStickyContactBar } from './MobileStickyContactBar';
 import { getNearbyUniversities, getGoogleMapsEmbedUrl } from '@/lib/vietnam-universities';
 import { sanitizeListingImages } from '@/lib/image-compressor';
+import { extractListingFurnitureList } from '@/lib/furniture-utils';
 
 interface Props {
   initialListing: Listing | null;
   slug: string;
   similarListings: Listing[];
 }
-
-import { extractListingFurnitureList } from '@/lib/furniture-utils';
-
 
 function formatJoinedDuration(createdAt: string): string {
   const diffDays = Math.max(1, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000));
@@ -40,9 +38,44 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
   );
 }
 
+function SpecItem({
+  label,
+  value,
+  highlight,
+  mono,
+}: {
+  label: string;
+  value?: string | number | null;
+  highlight?: boolean;
+  mono?: boolean;
+}) {
+  if (value == null || value === '') return null;
+  return (
+    <div className="flex flex-col space-y-1 p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/70 hover:border-brand/30 transition-colors">
+      <span className="text-xs text-text-muted font-medium">{label}</span>
+      <span
+        className={`text-sm sm:text-base font-bold truncate ${
+          highlight ? 'text-brand' : 'text-text-primary'
+        } ${mono ? 'font-mono' : ''}`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function getYouTubeEmbedUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i,
+  );
+  return match ? `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0` : null;
+}
+
 export function ListingDetailClientView({ initialListing, slug, similarListings }: Props) {
   const [listing, setListing] = useState<Listing | null>(initialListing);
   const [hydrated, setHydrated] = useState(false);
+  const [floorplanZoom, setFloorplanZoom] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
@@ -152,24 +185,35 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
     return [];
   })();
 
+  const segAttrs = (currentListing.segmentAttributes as any) || {};
+
   const allowsPets = Boolean(
-    currentListing.amenities?.thuCung ||
+    segAttrs.petsAllowed ||
+      currentListing.amenities?.thuCung ||
       currentListing.amenities?.pet ||
       currentListing.amenities?.petsAllowed ||
       currentListing.amenities?.choNuoiThuCung ||
       currentListing.description?.toLowerCase().includes('thú cưng') ||
-      currentListing.description?.toLowerCase().includes('cho nuôi')
+      currentListing.description?.toLowerCase().includes('cho nuôi'),
   );
 
   const allowsEv = Boolean(
-    currentListing.amenities?.xeDien ||
+    segAttrs.hasEvCharging ||
+      currentListing.amenities?.xeDien ||
       currentListing.amenities?.electricVehicle ||
       currentListing.amenities?.sacXeDien ||
       currentListing.description?.toLowerCase().includes('xe điện') ||
-      currentListing.description?.toLowerCase().includes('sạc xe')
+      currentListing.description?.toLowerCase().includes('sạc xe'),
   );
 
   const furnitureList = extractListingFurnitureList(currentListing);
+
+  const pType = currentListing.propertyType || 'phong_tro';
+  const isApartment = pType === 'can_ho';
+  const isCommercial = pType === 'mat_bang';
+  const isRoomOrMini = pType === 'phong_tro' || pType === 'ccmn' || (!isApartment && !isCommercial);
+
+  const youtubeEmbed = getYouTubeEmbedUrl(currentListing.videoUrl);
 
   return (
     <div className="min-h-screen bg-surface-muted">
@@ -238,9 +282,153 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
               </div>
             </div>
 
+            {/* BẢNG THÔNG SỐ CHUYÊN SÂU & PHÁP LÝ (DYNAMIC SPEC GRID) */}
+            <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-text-primary text-lg sm:text-xl flex items-center gap-2">
+                  <svg className="w-5 h-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>
+                    {isApartment
+                      ? 'Thông số Kỹ thuật Căn hộ & Tòa nhà'
+                      : isCommercial
+                        ? 'Thông số Mặt bằng Kinh doanh & Pháp lý'
+                        : 'Thông số Phòng & Tiêu chuẩn Bàn giao'}
+                  </span>
+                </h2>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                  {isApartment ? 'Chung cư' : isCommercial ? 'Mặt bằng KD' : 'Phòng trọ / CCMN'}
+                </span>
+              </div>
+
+              {/* SPEC GRID CHO CHUNG CƯ */}
+              {isApartment && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <SpecItem label="Dự án / Khu đô thị" value={segAttrs.projectName || (currentListing.location?.name ? `Tại ${currentListing.location.name}` : null)} highlight />
+                  <SpecItem label="Tòa / Tầng" value={segAttrs.buildingBlock ? `${segAttrs.buildingBlock}${segAttrs.floorNumber ? ` - Tầng ${segAttrs.floorNumber}` : ''}` : segAttrs.floorNumber ? `Tầng ${segAttrs.floorNumber}` : null} />
+                  <SpecItem label="Diện tích thông thủy" value={segAttrs.netAreaM2 ? `${segAttrs.netAreaM2} m²` : currentListing.areaM2 ? `${currentListing.areaM2} m²` : null} />
+                  <SpecItem label="Thiết kế" value={segAttrs.bedrooms ? `${segAttrs.bedrooms} PN${segAttrs.bathrooms ? ` • ${segAttrs.bathrooms} WC` : ''}` : null} highlight />
+                  <SpecItem label="Tình trạng nội thất" value={segAttrs.furnishing === 'full' ? 'Nội thất đầy đủ (Full)' : segAttrs.furnishing === 'co_ban' ? 'Nội thất cơ bản' : segAttrs.furnishing === 'trong' ? 'Nhà trống' : 'Đầy đủ tiện nghi'} />
+                  <SpecItem label="Hướng ban công" value={segAttrs.balconyDirection ? `Hướng ${segAttrs.balconyDirection}` : null} />
+                  <SpecItem label="Phí quản lý tòa nhà" value={segAttrs.managementFeeIncluded ? 'Đã bao gồm trong giá thuê' : segAttrs.managementFeePerMonth ? `${segAttrs.managementFeePerMonth.toLocaleString('vi-VN')} đ/tháng` : 'Theo biểu phí BQL'} />
+                  <SpecItem label="Chỗ đỗ ô tô" value={segAttrs.hasCarParking ? 'Có slot đỗ ô tô hầm' : 'Chỉ đỗ xe máy'} />
+                  <SpecItem label="Người nước ngoài" value={segAttrs.foreignerEligible ? 'Hỗ trợ đăng ký tạm trú khách nước ngoài' : null} />
+                </div>
+              )}
+
+              {/* SPEC GRID CHO MẶT BẰNG KINH DOANH */}
+              {isCommercial && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <SpecItem label="Mặt tiền x Chiều sâu" value={segAttrs.frontageM ? `${segAttrs.frontageM}m${segAttrs.depthM ? ` x ${segAttrs.depthM}m` : ''}` : null} highlight />
+                  <SpecItem label="Tổng diện tích sàn" value={segAttrs.totalUsableAreaM2 ? `${segAttrs.totalUsableAreaM2} m²` : currentListing.areaM2 ? `${currentListing.areaM2} m²` : null} highlight />
+                  <SpecItem label="Số tầng cho thuê" value={segAttrs.floorsCount ? `${segAttrs.floorsCount} tầng` : '1 tầng trệt'} />
+                  <SpecItem label="Lộ giới đường & Vỉa hè" value={segAttrs.roadWidthM ? `Đường ${segAttrs.roadWidthM}m${segAttrs.sidewalkWidthM ? ` • Vỉa hè ${segAttrs.sidewalkWidthM}m` : ''}` : segAttrs.wideSidewalk ? 'Vỉa hè rộng rãi' : null} />
+                  <SpecItem label="Nguồn điện" value={segAttrs.hasThreePhasePower ? 'Có sẵn điện 3 pha sản xuất' : 'Điện sinh hoạt 1 pha'} />
+                  <SpecItem label="Tiêu chuẩn PCCC" value={segAttrs.pcccCertified ? 'Hệ thống PCCC nghiệm thu chuẩn' : 'Trang bị bình chữa cháy'} highlight />
+                  <SpecItem label="Hóa đơn VAT" value={segAttrs.vatInvoiceAvailable ? 'Hỗ trợ xuất hóa đơn VAT đầy đủ' : 'Thỏa thuận trực tiếp'} />
+                  <SpecItem label="Lối đi" value={segAttrs.privateEntrance ? 'Lối đi riêng biệt 100%' : 'Chung cổng chính'} />
+                  <SpecItem label="Miễn phí thi công (Rent-free)" value={segAttrs.rentFreeDays ? `${segAttrs.rentFreeDays} ngày setup` : 'Thương lượng theo hợp đồng'} />
+                  <SpecItem label="Kỳ thanh toán & Cọc" value={segAttrs.paymentCycleMonths ? `Đóng ${segAttrs.paymentCycleMonths} tháng/lần • Cọc ${segAttrs.depositMonths || 2} tháng` : null} />
+                  {segAttrs.suitableBusinessTypes && (
+                    <div className="col-span-2 sm:col-span-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-xs">
+                      <span className="text-text-muted font-medium">Ngành nghề phù hợp: </span>
+                      <span className="font-semibold text-slate-900">{segAttrs.suitableBusinessTypes}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SPEC GRID CHO PHÒNG TRỌ / CCMN */}
+              {isRoomOrMini && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <SpecItem label="Diện tích phòng" value={currentListing.areaM2 ? `${currentListing.areaM2} m²` : null} highlight />
+                  <SpecItem label="Gác lửng" value={segAttrs.hasMezzanine || segAttrs.has_mezzanine ? 'Có gác lửng cao ráo' : 'Không gác'} />
+                  <SpecItem label="Thang máy" value={segAttrs.hasElevator || segAttrs.has_elevator || currentListing.amenities?.thangMay ? 'Có thang máy' : 'Thang bộ'} />
+                  <SpecItem label="Cửa sổ / Ban công" value={segAttrs.hasBalconyWindow || segAttrs.has_balcony_window || currentListing.amenities?.banCong ? 'Có ban công / Cửa sổ thoáng' : null} />
+                  <SpecItem label="Giờ giấc" value={segAttrs.freeTime || segAttrs.gioTuDo || currentListing.amenities?.gioTuDo ? 'Tự do 24/7 không chung chủ' : 'Giờ giấc linh hoạt'} />
+                  <SpecItem label="Khóa cổng" value={segAttrs.smartLock || segAttrs.fingerprint_lock || currentListing.amenities?.khoaVanTay ? 'Khóa vân tay / Thẻ từ an toàn' : 'Khóa số an ninh'} />
+                  <SpecItem label="Sạc xe điện" value={allowsEv ? 'Hỗ trợ sạc xe điện' : null} />
+                  <SpecItem label="Nuôi thú cưng" value={allowsPets ? 'Cho phép nuôi thú cưng' : null} />
+                </div>
+              )}
+            </div>
+
+            {/* VIDEO THỰC TẾ (NẾU CÓ) */}
+            {currentListing.videoUrl && (
+              <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-text-primary text-lg sm:text-xl flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                      ▶
+                    </span>
+                    <span>Video thực tế không gian</span>
+                  </h2>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                    Video quay thực tế 100%
+                  </span>
+                </div>
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-surface-border bg-black shadow-md">
+                  {youtubeEmbed ? (
+                    <iframe
+                      src={youtubeEmbed}
+                      title={`Video thực tế ${displayTitle}`}
+                      className="h-full w-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full object-contain"
+                      src={currentListing.videoUrl}
+                    >
+                      Trình duyệt không hỗ trợ phát video
+                    </video>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* BẢN VẼ MẶT BẰNG & SƠ ĐỒ BỐ TRÍ (NẾU CÓ) */}
+            {currentListing.floorplanImageUrl && (
+              <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-text-primary text-lg sm:text-xl flex items-center gap-2">
+                    <svg className="w-5 h-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    </svg>
+                    <span>Sơ đồ mặt bằng & Bản vẽ bố trí (Floorplan)</span>
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setFloorplanZoom(!floorplanZoom)}
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                  >
+                    {floorplanZoom ? 'Thu nhỏ' : 'Phóng to'}
+                  </button>
+                </div>
+                <div
+                  className={`w-full overflow-hidden rounded-xl border border-surface-border bg-slate-50 flex items-center justify-center transition-all ${
+                    floorplanZoom ? 'max-h-[850px] p-2' : 'max-h-[480px] p-4'
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentListing.floorplanImageUrl}
+                    alt={`Bản vẽ sơ đồ bố trí ${displayTitle}`}
+                    className="max-h-[600px] w-auto object-contain cursor-zoom-in rounded-lg shadow-2xs"
+                    onClick={() => setFloorplanZoom(!floorplanZoom)}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Khối Thông tin dịch vụ */}
             <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card">
-              <h2 className="mb-4 sm:mb-5 font-bold text-text-primary text-lg sm:text-xl">Thông tin dịch vụ</h2>
+              <h2 className="mb-4 sm:mb-5 font-bold text-text-primary text-lg sm:text-xl">Thông tin dịch vụ & Chi phí</h2>
               <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-2 md:grid-cols-4">
                 <InfoRow
                   label="Tình trạng phòng"
@@ -298,7 +486,7 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
 
             {/* Khối Nội Thất */}
             <div className="rounded-2xl border border-surface-border bg-white p-5 sm:p-6 md:p-7 shadow-card space-y-3.5 sm:space-y-4">
-              <h2 className="font-bold text-text-primary text-lg sm:text-xl">Nội Thất</h2>
+              <h2 className="font-bold text-text-primary text-lg sm:text-xl">Nội Thất & Tiện Nghi</h2>
               <div className="flex flex-wrap gap-2.5 sm:gap-3">
                 {furnitureList.map((item) => (
                   <span
@@ -452,23 +640,28 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
             )}
           </div>
 
-          {/* Cột phải — Sidebar người đăng */}
+          {/* Cột phải — Sidebar người đăng với Nhãn Thẩm định 45 ngày & Tham chiếu giá thị trường */}
           <aside>
             <div className="sticky top-20 space-y-5">
               <OwnerContactBox
                 listingId={currentListing.id}
                 listingTitle={displayTitle}
                 price={currentListing.price}
+                areaM2={currentListing.areaM2}
+                propertyType={currentListing.propertyType}
                 addressDetail={currentListing.addressDetail}
                 locationName={currentListing.location?.name}
                 createdAt={currentListing.createdAt}
                 refreshedAt={currentListing.refreshedAt}
                 ownerName={cleanOwnerName}
                 ownerAvatarUrl={currentListing.owner?.avatarUrl}
-                ownerPostCount={507}
+                ownerPostCount={(currentListing as any).ownerPostCount ?? 1}
                 contactPhone={(currentListing as any).contactPhone}
                 contactAgent={(currentListing as any).contactAgent}
                 isRented={(currentListing.status || '').toLowerCase() === 'rented'}
+                posterRole={currentListing.posterRole}
+                verifiedBadgeAt={currentListing.verifiedBadgeAt}
+                coverImage={sanitizedImages[0]?.imageUrl}
               />
             </div>
           </aside>
@@ -482,6 +675,9 @@ export function ListingDetailClientView({ initialListing, slug, similarListings 
         priceFormatted={formatExactPrice(currentListing.price)}
         depositFormatted={currentListing.depositAmount ? formatExactPrice(currentListing.depositAmount) : undefined}
         isRented={(currentListing.status || '').toLowerCase() === 'rented'}
+        propertyType={currentListing.propertyType}
+        locationName={currentListing.location?.name}
+        coverImage={sanitizedImages[0]?.imageUrl}
       />
     </div>
   );

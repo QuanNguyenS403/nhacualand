@@ -6,6 +6,7 @@ import { fetchListingBySlug, fetchListings } from '@/lib/api';
 import { findDemoListing, ALL_DEMO_LISTINGS } from '@/lib/demo-data';
 import legacyRedirects from '@/lib/legacy-slug-redirects.json';
 import { ListingDetailClientView } from './ListingDetailClientView';
+// MobileStickyContactBar is rendered inside ListingDetailClientView for responsive sticky booking bar
 
 interface Props {
   params: { slug: string };
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .replace(/^\[MẪU\]\s*/i, '')
       .replace(/\[MẪU\]/gi, '')
       .trim();
-    const desc = listing.description?.slice(0, 160) ?? `${cleanTitle} tại ${listing.location?.name ?? 'Việt Nam'}`;
+    const rawDesc = listing.description?.slice(0, 160) ?? `${cleanTitle} tại ${listing.location?.name ?? 'Việt Nam'}`;
+    const desc = rawDesc.replace(/\.+$/, '');
     return {
       title: `${cleanTitle} | NHACUALAND`,
       description: desc,
@@ -71,15 +73,55 @@ export default async function ListingDetailPage({ params }: Props) {
 
   if (similarListings.length === 0 && listing.propertyType) {
     similarListings = ALL_DEMO_LISTINGS.filter(
-      (it) => it.propertyType === listing.propertyType && it.id !== listing.id
+      (it) => it.propertyType === listing.propertyType && it.id !== listing.id,
     ).slice(0, 4);
   }
 
+  const cleanTitle = (listing.title ?? 'Phòng cho thuê')
+    .replace(/^\[MẪU\]\s*/i, '')
+    .replace(/\[MẪU\]/gi, '')
+    .trim();
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':
+      listing.propertyType === 'can_ho'
+        ? 'Apartment'
+        : listing.propertyType === 'mat_bang'
+          ? 'Store'
+          : 'RealEstateListing',
+    name: cleanTitle,
+    description: (listing.description?.slice(0, 200) || cleanTitle).replace(/\.+$/, ''),
+    url: `https://nhacualand.com/tin/${params.slug}`,
+    image: listing.images?.map((img) => img.imageUrl) || [],
+    offers: {
+      '@type': 'Offer',
+      price: Number(listing.price),
+      priceCurrency: 'VND',
+      availability:
+        (listing.status || '').toLowerCase() === 'rented'
+          ? 'https://schema.org/Discontinued'
+          : 'https://schema.org/InStock',
+      priceValidUntil: '2027-12-31',
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: listing.location?.name || 'Hà Nội',
+      addressCountry: 'VN',
+    },
+  };
+
   return (
-    <ListingDetailClientView
-      initialListing={listing}
-      slug={params.slug}
-      similarListings={similarListings}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ListingDetailClientView
+        initialListing={listing}
+        slug={params.slug}
+        similarListings={similarListings}
+      />
+    </>
   );
 }
