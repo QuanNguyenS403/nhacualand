@@ -1,4 +1,5 @@
 const { spawn, exec } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 // Tìm đường dẫn thực tế của binary next để chạy trực tiếp qua Node.js — loại bỏ overhead của npx và shell
@@ -8,6 +9,60 @@ try {
 } catch {
   nextBin = path.join(__dirname, '..', 'node_modules', 'next', 'dist', 'bin', 'next');
 }
+
+// Tự động bảo vệ Next.js Dev Overlay khỏi lỗi ngoại lai của tiện ích mở rộng trình duyệt (Chrome/Firefox/Safari Extensions)
+function patchNextDevOverlayForBrowserExtensions() {
+  try {
+    const nextDistDir = path.resolve(path.dirname(nextBin), '..');
+    const targets = [
+      path.join(nextDistDir, 'client', 'components', 'react-dev-overlay', 'internal', 'helpers', 'use-error-handler.js'),
+      path.join(nextDistDir, 'esm', 'client', 'components', 'react-dev-overlay', 'internal', 'helpers', 'use-error-handler.js'),
+    ];
+    const helperFn = `function isBrowserExtensionError(err, ev) {
+    try {
+        const filename = ev && ev.filename ? String(ev.filename) : "";
+        const message = err && err.message ? String(err.message) : ev && ev.message ? String(ev.message) : "";
+        const stack = err && err.stack ? String(err.stack) : "";
+        const combined = filename + "\\n" + message + "\\n" + stack;
+        return (
+            combined.includes("chrome-extension://") ||
+            combined.includes("moz-extension://") ||
+            combined.includes("safari-extension://") ||
+            combined.includes("safari-web-extension://") ||
+            combined.includes("eppiocemhmnlbhjplcgkofciiegomcon") ||
+            combined.includes("executors/200.js") ||
+            combined.includes("reading 'M_ID'")
+        );
+    } catch (_) {
+        return false;
+    }
+}`;
+    for (const file of targets) {
+      if (!fs.existsSync(file)) continue;
+      let content = fs.readFileSync(file, 'utf8');
+      if (content.includes('isBrowserExtensionError')) continue;
+      content = content.replace(
+        'const rejectionHandlers = [];',
+        `const rejectionHandlers = [];\n${helperFn}`
+      );
+      content = content.replace(
+        'if ((0, _isnextroutererror.isNextRouterError)(ev.error)) {',
+        'if ((0, _isnextroutererror.isNextRouterError)(ev.error) || isBrowserExtensionError(ev == null ? void 0 : ev.error, ev)) {'
+      );
+      content = content.replace(
+        'if (isNextRouterError(ev.error)) {',
+        'if (isNextRouterError(ev.error) || isBrowserExtensionError(ev == null ? void 0 : ev.error, ev)) {'
+      );
+      content = content.replace(
+        'const reason = ev == null ? void 0 : ev.reason;\n        if (!reason',
+        'const reason = ev == null ? void 0 : ev.reason;\n        if (isBrowserExtensionError(reason, ev)) {\n            ev.preventDefault();\n            return;\n        }\n        if (!reason'
+      );
+      fs.writeFileSync(file, content, 'utf8');
+    }
+  } catch (_) {}
+}
+
+patchNextDevOverlayForBrowserExtensions();
 
 // Khởi chạy Next.js với Turbopack (--turbo) bằng chính tiến trình Node hiện tại
 const child = spawn(process.execPath, [nextBin, 'dev', '--turbo'], {

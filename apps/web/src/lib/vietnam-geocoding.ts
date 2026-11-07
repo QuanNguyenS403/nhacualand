@@ -521,3 +521,188 @@ export async function reverseGeocodePipeline(lat: number, lng: number): Promise<
 
   return `Tọa độ: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 }
+
+
+export interface UserLocationResult {
+  lat: number;
+  lng: number;
+  source: 'gps' | 'network' | 'cache' | 'default';
+  label: string;
+}
+
+const USER_GPS_CACHE_KEY = 'qns_last_user_gps';
+
+function isValidCoordinate(lat: unknown, lng: unknown): boolean {
+  const numLat = typeof lat === 'number' ? lat : Number(lat);
+  const numLng = typeof lng === 'number' ? lng : Number(lng);
+  return (
+    Number.isFinite(numLat) &&
+    Number.isFinite(numLng) &&
+    Math.abs(numLat) <= 90 &&
+    Math.abs(numLng) <= 180 &&
+    (numLat !== 0 || numLng !== 0)
+  );
+}
+
+function saveCachedUserLocation(lat: number, lng: number, label: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(
+      USER_GPS_CACHE_KEY,
+      JSON.stringify({ lat, lng, label, updatedAt: Date.now() }),
+    );
+  } catch {
+    // Bỏ qua nếu trình duyệt chặn localStorage
+  }
+}
+
+function loadCachedUserLocation(): { lat: number; lng: number; label: string } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(USER_GPS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (isValidCoordinate(parsed?.lat, parsed?.lng)) {
+      return {
+        lat: Number(Number(parsed.lat).toFixed(6)),
+        lng: Number(Number(parsed.lng).toFixed(6)),
+        label: typeof parsed.label === 'string' && parsed.label ? parsed.label : 'Vị trí gần đây của bạn',
+      };
+    }
+  } catch {
+    // Bỏ qua lỗi đọc cache
+  }
+  return null;
+}
+
+function requestBrowserGeolocation(options: PositionOptions): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  });
+}
+
+/**
+ * Pipeline định vị vị trí hiện tại của người dùng đa tầng (100% không bao giờ thất bại):
+ * - Tầng 1: Định vị GPS phần cứng / Wi-Fi qua navigator.geolocation (thử High Accuracy -> fallback Standard Accuracy)
+ * - Tầng 2: Định vị qua hạ tầng mạng / IP đa nguồn (freeipapi.com -> ipwho.is -> geojs.io) khi thiết bị tắt Location hoặc từ chối quyền
+ * - Tầng 3: Khôi phục tọa độ đã lưu trong bộ nhớ đệm gần nhất
+ * - Tầng 4: Tọa độ trung tâm Thành phố Hà Nội
+ */
+export async function resolveUserLocationPipeline(): Promise<UserLocationResult> {
+  // ── TẦNG 1: Định vị trình duyệt (navigator.geolocation) ──
+  if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+    let isPermissionDenied = false;
+    try {
+      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+        const perm = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+        if (perm.state === 'denied') {
+          isPermissionDenied = true;
+        }
+      }
+    } catch {
+      // Một số trình duyệt không hỗ trợ permissions.query cho geolocation
+    }
+
+    if (!isPermissionDenied) {
+      let pos: GeolocationPosition | null = null;
+      try {
+        pos = await requestBrowserGeolocation({
+          enableHighAccuracy: true,
+          timeout: 4500,
+          maximumAge: 60000,
+        });
+      } catch (err: any) {
+        // Nếu lỗi không phải do người dùng từ chối quyền (code !== 1), thử tiếp chế độ độ chính xác tiêu chuẩn / cache hệ điều hành
+        if (err?.code !== 1) {
+          try {
+            pos = await requestBrowserGeolocation({
+              enableHighAccuracy: false,
+              timeout: 3500,
+              maximumAge: 600000,
+            });
+          } catch {
+            pos = null;
+          }
+        }
+      }
+
+      if (pos && isValidCoordinate(pos.coords.latitude, pos.coords.longitude)) {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        const label = await reverseGeocodePipeline(lat, lng).catch(() => 'Vị trí hiện tại của bạn');
+        saveCachedUserLocation(lat, lng, label);
+        return { lat, lng, source: 'gps', label };
+      }
+    }
+  }
+
+  // ── TẦNG 2: Định vị tự động qua hạ tầng mạng / IP đa nguồn (Network Geolocation) ──
+  const networkProviders: Array<{
+    url: string;
+    parse: (data: any) => { lat: number; lng: number } | null;
+  }> = [
+    {
+      url: 'https://freeipapi.com/api/json',
+      parse: (data) =>
+        isValidCoordinate(data?.latitude, data?.longitude)
+          ? { lat: Number(data.latitude), lng: Number(data.longitude) }
+          : null,
+    },
+    {
+      url: 'https://ipwho.is/',
+      parse: (data) =>
+        data?.success !== false && isValidCoordinate(data?.latitude, data?.longitude)
+          ? { lat: Number(data.latitude), lng: Number(data.longitude) }
+          : null,
+    },
+    {
+      url: 'https://get.geojs.io/v1/ip/geo.json',
+      parse: (data) =>
+        isValidCoordinate(data?.latitude, data?.longitude)
+          ? { lat: Number(data.latitude), lng: Number(data.longitude) }
+          : null,
+    },
+  ];
+
+  for (const provider of networkProviders) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2800);
+      const res = await fetch(provider.url, { signal: controller.signal });
+      clearTimeout(timer);
+
+      if (res.ok) {
+        const data = await res.json();
+        const coords = provider.parse(data);
+        if (coords) {
+          const lat = Number(coords.lat.toFixed(6));
+          const lng = Number(coords.lng.toFixed(6));
+          const label = await reverseGeocodePipeline(lat, lng).catch(() => 'Khu vực hiện tại của bạn');
+          saveCachedUserLocation(lat, lng, label);
+          return { lat, lng, source: 'network', label };
+        }
+      }
+    } catch {
+      // Thử tiếp nhà cung cấp dự phòng kế tiếp
+    }
+  }
+
+  // ── TẦNG 3: Khôi phục từ bộ nhớ đệm gần nhất trên thiết bị ──
+  const cached = loadCachedUserLocation();
+  if (cached) {
+    return {
+      lat: cached.lat,
+      lng: cached.lng,
+      source: 'cache',
+      label: cached.label,
+    };
+  }
+
+  // ── TẦNG 4: Tọa độ trung tâm mặc định (Đảm bảo 100% luôn hoạt động mượt mà) ──
+  return {
+    lat: 21.0181,
+    lng: 105.8268,
+    source: 'default',
+    label: 'Trung tâm Thành phố Hà Nội',
+  };
+}

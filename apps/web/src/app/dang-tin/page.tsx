@@ -443,17 +443,9 @@ export default function DangTinPage() {
   return (
     <div className="container-max max-w-4xl px-4 py-8 sm:py-12">
       <div className="mb-7 rounded-2xl border border-brand-200/80 bg-gradient-to-br from-brand-50/70 via-white to-brand-50/40 p-5 sm:p-6 shadow-sm">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-100 text-brand-800 text-xs font-bold mb-2">
-          <span>NHACUALAND PRO-PORTAL</span>
-          <span>•</span>
-          <span>Đăng tin minh bạch</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Đăng tin cho thuê bất động sản
         </h1>
-        <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-          Hệ thống biểu mẫu thích ứng thông minh (Adaptive Form) tự động tối ưu trường dữ liệu theo phân khúc phòng trọ, chung cư hoặc mặt bằng
-        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 rounded-2xl border border-surface-border bg-white p-6 sm:p-8 md:p-9 shadow-elevated">
@@ -1080,19 +1072,6 @@ export default function DangTinPage() {
                 );
               })}
             </div>
-          </div>
-
-          {/* Hộp bảo mật tài liệu đối chiếu */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-600 space-y-1.5">
-            <div className="flex items-center gap-1.5 font-bold text-slate-800">
-              <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
-              </svg>
-              <span>Cam kết bảo mật tài liệu đối chiếu nội bộ</span>
-            </div>
-            <p className="leading-relaxed">
-              Tài liệu pháp lý (Sổ hồng, Hợp đồng ủy quyền, Biên bản PCCC) nếu được tải lên sẽ chỉ dành riêng cho Admin NHACUALAND đối chiếu cấp tích xanh xác thực 45 ngày, cam kết bảo mật tuyệt đối và không hiển thị công khai cho bất kỳ ai
-            </p>
           </div>
         </div>
 

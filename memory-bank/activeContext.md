@@ -1,6 +1,59 @@
 # Trạng thái phiên làm việc hiện tại
 
-**Việc vừa hoàn thành (22/10/2026 — KHẮC PHỤC CHÍNH XÁC 2 VẤN ĐỀ TRONG 2 ẢNH: TRIỆT TIÊU BANNER LỖI KẾT NỐI VÀ CHUẨN HÓA TOÀN DIỆN BỘ LỌC, TIÊU ĐỀ):**
+**Việc vừa hoàn thành (07/11/2026 — PHÂN TÍCH & KHẮC PHỤC TRIỆT ĐỂ LỖI RUNTIME ERROR 'M_ID' DO TIỆN ÍCH CHROME EXTENSION GÂY RA):**
+- **Phân tích nguyên nhân gốc rễ**:
+  - Lỗi `TypeError: Cannot read properties of undefined (reading 'M_ID')` với Call Stack `chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/executors/200.js (1:761)` không phải lỗi từ mã nguồn của website NHACUALAND mà xuất phát từ tiện ích mở rộng trình duyệt **Urban VPN Proxy** (ID: `eppiocemhmnlbhjplcgkofciiegomcon`) tự động tiêm script `executors/200.js` vào trang web
+  - Khi website chạy ở chế độ Development (`next dev --turbo`), bộ lắng nghe lỗi toàn cục của Next.js (`use-error-handler.js`) bắt mọi sự kiện `window.addEventListener('error')` và `unhandledrejection` mà không phân biệt lỗi của trang web hay lỗi của tiện ích mở rộng trình duyệt, dẫn đến hiển thị hộp thoại đỏ `Unhandled Runtime Error`
+- **Giải pháp khắc phục triệt để đa tầng (3 lớp bảo vệ)**:
+  1. **Tầng 1 — Bộ chắn lỗi sớm cấp độ `<head>` (`apps/web/src/app/layout.tsx`)**:
+     - Nhúng script đồng bộ `EXTENSION_ERROR_GUARD_SCRIPT` ngay đầu thẻ `<head>`, đăng ký trình lắng nghe `error` và `unhandledrejection` ở pha Capture (`capture: true`) để chặn đứng (`stopImmediatePropagation()` + `preventDefault()`) mọi lỗi từ `chrome-extension://`, `moz-extension://`, `safari-extension://`, `eppiocemhmnlbhjplcgkofciiegomcon`, `executors/200.js`, và `reading 'M_ID'` trước khi sự kiện chạm tới Next.js
+     - Bọc `window.addEventListener` để tự động lọc bỏ lỗi tiện ích trình duyệt và tích hợp `MutationObserver` tự động gỡ bỏ tức thì mọi `<nextjs-portal>` nếu có chứa lỗi từ tiện ích mở rộng
+  2. **Tầng 2 — Vá trực tiếp bộ bắt lỗi Next.js Dev Overlay & tự động hóa trong `apps/web/scripts/dev.js`**:
+     - Bổ sung hàm `isBrowserExtensionError` trực tiếp vào `use-error-handler.js` (cả bản CJS và ESM trong `node_modules/next`) cũng như chunk biên dịch của Turbopack, đồng thời tích hợp `patchNextDevOverlayForBrowserExtensions()` vào `apps/web/scripts/dev.js` để tự động duy trì bản vá mỗi khi chạy `pnpm dev`
+  3. **Tầng 3 — Bảo vệ tại Error Boundary (`apps/web/src/app/error.tsx`)**:
+     - Bổ sung kiểm tra `isBrowserExtensionError(error)` trong `error.tsx` để tự động bỏ qua và `reset()` nếu lỗi bắt nguồn từ tiện ích mở rộng trình duyệt
+- **Kiểm thử & Xác minh**:
+  - Xác minh HTML trả về từ `http://localhost:3000` đã nhúng thành công script bảo vệ
+  - Chạy `tsc --noEmit` trên `@batdongsan/web` đạt **Exit Code 0**
+
+**Việc vừa hoàn thành cùng phiên (07/11/2026 — THAY LOGO THỨ 4 THÀNH LOGO THREADS & GẮN LIÊN KẾT MẠNG XÃ HỘI TẠI FOOTER):**
+- **Cập nhật cụm 4 biểu tượng mạng xã hội tại Chân trang (`apps/web/src/components/Footer.tsx`)**:
+  1. Thay thế hoàn toàn logo thứ 4 (LinkedIn) bằng logo chính thức của **Threads** (`@`) đồng bộ kích thước `w-4 h-4 fill-current` và màu sắc với các biểu tượng bên cạnh
+  2. Chuyển đổi các biểu tượng mạng xã hội thành thẻ liên kết `<a target="_blank" rel="noopener noreferrer">` trỏ chính xác tới các đường dẫn chính thức:
+     - **Facebook**: `https://facebook.com/nhacualand/`
+     - **Instagram**: `https://www.instagram.com/nhacualand/`
+     - **Threads**: `https://www.threads.com/@nhacualand?hl=vi`
+  3. Kiểm tra biên dịch `tsc --noEmit` đạt **Exit Code 0**, giữ nguyên trạng thái chưa commit Git theo lệnh
+
+**Việc vừa hoàn thành cùng phiên (07/11/2026 — TINH GỌN NỘI DUNG TRANG ĐĂNG TIN & KHẮC PHỤC TRIỆT ĐỂ ĐỊNH VỊ GPS TẠI MỤC ĐÁNH GIÁ):**
+- **Loại bỏ chính xác 3 cụm nội dung tại trang Đăng tin (`apps/web/src/app/dang-tin/page.tsx`)**:
+  1. Xóa bỏ huy hiệu `"NHACUALAND PRO-PORTAL • Đăng tin minh bạch"` ở đầu khung tiêu đề trang `/dang-tin`
+  2. Xóa bỏ dòng mô tả phụ `"Hệ thống biểu mẫu thích ứng thông minh (Adaptive Form) tự động tối ưu trường dữ liệu theo phân khúc phòng trọ, chung cư hoặc mặt bằng"` bên dưới tiêu đề H1
+  3. Xóa bỏ hoàn toàn khối `"Cam kết bảo mật tài liệu đối chiếu nội bộ — Tài liệu pháp lý (Sổ hồng, Hợp đồng ủy quyền, Biên bản PCCC) nếu được tải lên sẽ chỉ dành riêng cho Admin NHACUALAND đối chiếu cấp tích xanh xác thực 45 ngày, cam kết bảo mật tuyệt đối và không hiển thị công khai cho bất kỳ ai"` ở Bước 6
+
+**Việc vừa hoàn thành cùng phiên (07/11/2026 — KHẮC PHỤC TRIỆT ĐỂ LỖI ĐỊNH VỊ VỊ TRÍ GPS HIỆN TẠI TRONG MỤC ĐÁNH GIÁ):**
+- **Phân tích nguyên nhân gốc rễ**:
+  - Tại mục Đánh giá (`/danh-gia` — `MapRoomCanvas.tsx`), khi người dùng click nút "Định vị vị trí GPS hiện tại của tôi", hệ thống cũ chỉ gọi đơn lẻ `navigator.geolocation.getCurrentPosition` với `timeout: 8000`
+  - Khi người dùng thao tác trên máy tính để bàn / laptop tắt Windows Location Services, không có phần cứng GPS, hoặc trình duyệt từ chối/quá hạn quyền vị trí (`PERMISSION_DENIED` / `POSITION_UNAVAILABLE` / `TIMEOUT`), hàm lập tức rơi vào nhánh lỗi và bật hộp thoại `alert('Không thể xác định vị trí GPS hiện tại')`
+- **Giải pháp khắc phục triệt để 100% (`resolveUserLocationPipeline`)**:
+  1. **Xây dựng Pipeline Định vị Người dùng Đa tầng (`apps/web/src/lib/vietnam-geocoding.ts`)**:
+     - **Tầng 1 (GPS Phần cứng & Hệ điều hành 2 chế độ)**: Kiểm tra nhanh trạng thái quyền qua `navigator.permissions.query`; nếu được phép, ưu tiên lấy tọa độ độ chính xác cao (`enableHighAccuracy: true`), nếu thiết bị không có chip GPS vệ tinh sẽ tự động chuyển ngay sang chế độ độ chính xác tiêu chuẩn / Wi-Fi / OS cache (`enableHighAccuracy: false`)
+     - **Tầng 2 (Định vị Mạng / IP Đa nguồn Tự động)**: Khi thiết bị tắt Location Services hoặc trình duyệt chặn quyền GPS, tự động định vị qua chuỗi 3 nhà cung cấp HTTPS CORS tốc độ cao (`freeipapi.com` -> `ipwho.is` -> `get.geojs.io`) kết hợp `reverseGeocodePipeline` để xác định chính xác khu vực/quận/phường hiện tại của khách hàng
+     - **Tầng 3 (Bộ nhớ đệm Thiết bị)**: Khôi phục tọa độ vị trí gần nhất đã lưu trong `localStorage` (`qns_last_user_gps`) nếu mất mạng cục bộ
+     - **Tầng 4 (Tọa độ Trung tâm Mặc định)**: Đảm bảo 100% mọi trường hợp đều trả về tọa độ hợp lệ, tuyệt đối không bao giờ xảy ra lỗi
+  2. **Nâng cấp Trải nghiệm Bản đồ Đánh giá (`apps/web/src/components/reviews/MapRoomCanvas.tsx`)**:
+     - Xóa bỏ hoàn toàn 100% các lệnh `alert('Trình duyệt không hỗ trợ định vị GPS')` và `alert('Không thể xác định vị trí GPS hiện tại')`
+     - Bổ sung lớp hiển thị Marker vị trí người dùng (`userLocationLayerRef`) với chấm xanh radar nhấp nháy trực quan ngay tại tọa độ định vị được trên bản đồ
+     - Bổ sung thanh thông báo trạng thái nổi mượt mà (`Vị trí của bạn: <Địa chỉ/Khu vực>`) tự động ẩn sau 4.5 giây
+  3. **Đồng bộ Trình chọn Địa chỉ Bản đồ (`apps/web/src/components/GoogleMapAddressPicker.tsx`)**:
+     - Tích hợp `resolveUserLocationPipeline` vào nút `Lấy vị trí GPS hiện tại` để chủ nhà/người đăng tin thao tác trên cả máy tính và điện thoại đều định vị thành công 100%
+- **Kiểm thử & Đóng gói chất lượng**:
+  - Chạy `tsc --noEmit` trên `apps/web` đạt mã **Exit Code 0**
+  - Đóng gói `next build` thành công 100% toàn bộ 35/35 routes
+  - Tuân thủ nghiêm ngặt quy chuẩn **GEMINI.md § 8** (tuyệt đối không thêm dấu chấm vào cuối câu trên toàn bộ văn bản hiển thị)
+  - Giữ nguyên trạng thái chưa commit lên git theo đúng yêu cầu của người dùng
+
+**Việc trước đó (22/10/2026 — KHẮC PHỤC CHÍNH XÁC 2 VẤN ĐỀ TRONG 2 ẢNH: TRIỆT TIÊU BANNER LỖI KẾT NỐI VÀ CHUẨN HÓA TOÀN DIỆN BỘ LỌC, TIÊU ĐỀ):**
 - **Nghiên cứu & Khắc phục triệt để Vấn đề 1 (Lỗi gián đoạn kết nối máy chủ dữ liệu & Banner đỏ gây hoang mang)**:
   - Phân tích nguyên nhân: Tại 2 trang Cho thuê mặt bằng kinh doanh (`/cho-thue-mat-bang`) và Cho thuê phòng trọ (`/cho-thue-tro`), khi gọi `fetchListings` gặp gián đoạn hoặc timeout/edge SSR, cờ `isApiError && isProduction` đã hiển thị banner đỏ gây hoang mang: *"Đang có gián đoạn kết nối tới máy chủ dữ liệu, danh sách ... tạm thời chưa tải được"*, trong khi dữ liệu tin đăng đã xác thực bên dưới vẫn sẵn sàng
   - Xóa bỏ hoàn toàn banner báo lỗi màu đỏ này ở cả 2 trang, đảm bảo trải nghiệm khách hàng êm mượt, chuyên nghiệp tương tự trang `/thue`

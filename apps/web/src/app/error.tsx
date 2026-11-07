@@ -3,6 +3,20 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 
+function isBrowserExtensionError(error?: Error & { digest?: string }): boolean {
+  if (!error) return false;
+  const combined = `${error.message || ''}\n${error.stack || ''}`;
+  return (
+    combined.includes('chrome-extension://') ||
+    combined.includes('moz-extension://') ||
+    combined.includes('safari-extension://') ||
+    combined.includes('safari-web-extension://') ||
+    combined.includes('eppiocemhmnlbhjplcgkofciiegomcon') ||
+    combined.includes('executors/200.js') ||
+    combined.includes("reading 'M_ID'")
+  );
+}
+
 export default function GlobalError({
   error,
   reset,
@@ -10,9 +24,19 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const isExtErr = isBrowserExtensionError(error);
+
   useEffect(() => {
+    if (isExtErr) {
+      reset();
+      return;
+    }
     console.error('Unhandled app error:', error);
-  }, [error]);
+  }, [error, isExtErr, reset]);
+
+  if (isExtErr) {
+    return null;
+  }
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">

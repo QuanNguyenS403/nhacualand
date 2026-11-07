@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import type { MapRoom, CommunityReviewPin } from '@/lib/map-rooms-data';
+import { resolveUserLocationPipeline } from '@/lib/vietnam-geocoding';
 
 interface MapRoomCanvasProps {
   rooms: MapRoom[];
@@ -30,8 +31,13 @@ export function MapRoomCanvas({
   const mapInstanceRef = useRef<any>(null);
   const roomMarkersLayerRef = useRef<any>(null);
   const reviewMarkersLayerRef = useRef<any>(null);
+  const userLocationLayerRef = useRef<any>(null);
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [isLeafletReady, setIsLeafletReady] = useState(false);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationNotice, setLocationNotice] = useState<string | null>(null);
   const [currentZoom, setCurrentZoom] = useState(13);
 
   // Mặc định trung tâm Hà Nội
@@ -154,8 +160,10 @@ export function MapRoomCanvas({
 
     const roomMarkersLayer = L.layerGroup().addTo(map);
     const reviewMarkersLayer = L.layerGroup().addTo(map);
+    const userLocationLayer = L.layerGroup().addTo(map);
     roomMarkersLayerRef.current = roomMarkersLayer;
     reviewMarkersLayerRef.current = reviewMarkersLayer;
+    userLocationLayerRef.current = userLocationLayer;
     mapInstanceRef.current = map;
 
     setTimeout(() => {
@@ -169,6 +177,9 @@ export function MapRoomCanvas({
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (noticeTimerRef.current) {
+        clearTimeout(noticeTimerRef.current);
+      }
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.stop?.();
@@ -324,7 +335,43 @@ export function MapRoomCanvas({
     });
   }, [communityReviews, selectedReview, showReviewsLayer, isLeafletReady, onSelectReview]);
 
-  // 6. Cập nhật tâm bản đồ khi centerCoords hoặc selectedRoom thay đổi
+  // 6. Vẽ Marker Vị trí hiện tại của người dùng
+  useEffect(() => {
+    if (!mapInstanceRef.current || !userLocationLayerRef.current || !isLeafletReady) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    const layer = userLocationLayerRef.current;
+    layer.clearLayers();
+
+    if (!userCoords) return;
+
+    const userIconHtml = `
+      <div class="relative flex items-center justify-center pointer-events-none z-40">
+        <div class="w-11 h-11 rounded-full bg-sky-500/30 animate-ping absolute"></div>
+        <div class="w-7 h-7 rounded-full bg-sky-500/20 border border-sky-400/60 flex items-center justify-center">
+          <div class="w-3.5 h-3.5 rounded-full bg-sky-600 border-2 border-white shadow-lg"></div>
+        </div>
+      </div>
+    `;
+
+    const userIcon = L.divIcon({
+      className: 'custom-user-location-icon',
+      html: userIconHtml,
+      iconSize: [44, 44],
+      iconAnchor: [22, 22],
+    });
+
+    const userMarker = L.marker([userCoords.lat, userCoords.lng], {
+      icon: userIcon,
+      interactive: false,
+      zIndexOffset: 900,
+    });
+
+    layer.addLayer(userMarker);
+  }, [userCoords, isLeafletReady]);
+
+  // 7. Cập nhật tâm bản đồ khi centerCoords hoặc selectedRoom thay đổi
   const prevRoomIdRef = useRef<string | null>(null);
   const prevCenterKeyRef = useRef<string | null>(null);
 
@@ -350,27 +397,31 @@ export function MapRoomCanvas({
     }
   }, [centerCoords, selectedRoom]);
 
-  // 7. Định vị GPS người dùng
-  const handleLocateMe = () => {
-    if (!navigator.geolocation) {
-      alert('Trình duyệt không hỗ trợ định vị GPS');
-      return;
-    }
+  // 8. Định vị vị trí hiện tại của người dùng qua Pipeline đa tầng (không bao giờ báo lỗi popup)
+  const handleLocateMe = async () => {
+    if (isLocatingUser) return;
     setIsLocatingUser(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setIsLocatingUser(false);
-        const { latitude, longitude } = pos.coords;
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([latitude, longitude], 16, { duration: 1 });
-        }
-      },
-      () => {
-        setIsLocatingUser(false);
-        alert('Không thể xác định vị trí GPS hiện tại');
-      },
-      { timeout: 8000 }
-    );
+
+    try {
+      const result = await resolveUserLocationPipeline();
+      setUserCoords({ lat: result.lat, lng: result.lng });
+
+      if (mapInstanceRef.current) {
+        const targetZoom = result.source === 'gps' ? 16 : 15;
+        mapInstanceRef.current.flyTo([result.lat, result.lng], targetZoom, { duration: 0.9 });
+      }
+
+      const cleanLabel = result.label.replace(/\.+$/, '');
+      setLocationNotice(`Vị trí của bạn: ${cleanLabel}`);
+      if (noticeTimerRef.current) {
+        clearTimeout(noticeTimerRef.current);
+      }
+      noticeTimerRef.current = setTimeout(() => {
+        setLocationNotice(null);
+      }, 4500);
+    } finally {
+      setIsLocatingUser(false);
+    }
   };
 
   return (
@@ -384,6 +435,16 @@ export function MapRoomCanvas({
           <span>{rooms.length} phòng đang hiển thị</span>
         </div>
       </div>
+
+      {/* Thông báo vị trí định vị hiện tại */}
+      {locationNotice && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none max-w-[calc(100%-96px)]">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold shadow-xl border border-sky-400/40">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+            <span className="truncate">{locationNotice}</span>
+          </div>
+        </div>
+      )}
 
       {/* Điều khiển bản đồ góc dưới bên phải */}
       <div className="absolute bottom-6 right-4 sm:right-6 z-20 flex flex-col items-end gap-2.5">
@@ -438,7 +499,7 @@ export function MapRoomCanvas({
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-100/90 backdrop-blur-xs">
           <div className="w-9 h-9 border-3 border-brand border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-xs sm:text-sm font-bold text-slate-700">
-            Đang tải bản đồ phòng trọ Google Maps...
+            Đang tải bản đồ phòng trọ Google Maps
           </p>
         </div>
       )}

@@ -8,7 +8,11 @@ import {
   type UniversityData,
   type NearbyUniversityResult,
 } from '@/lib/vietnam-universities';
-import { geocodeAddressPipeline, reverseGeocodePipeline } from '@/lib/vietnam-geocoding';
+import {
+  geocodeAddressPipeline,
+  reverseGeocodePipeline,
+  resolveUserLocationPipeline,
+} from '@/lib/vietnam-geocoding';
 
 export interface SelectedUniversityDistance {
   universityId?: number;
@@ -457,55 +461,36 @@ export function GoogleMapAddressPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialAddress, initialLat, initialLng]);
 
-  // Hàm lấy vị trí GPS hiện tại của thiết bị và tự động Reverse Geocode địa chỉ
-  function handleGetDeviceGps() {
-    if (!navigator.geolocation) {
-      setGeoNotice('Trình duyệt của bạn không hỗ trợ định vị GPS trực tiếp');
-      return;
-    }
-
+  // Hàm lấy vị trí GPS hiện tại của thiết bị qua Pipeline đa tầng và tự động Reverse Geocode địa chỉ
+  async function handleGetDeviceGps() {
+    if (isLocatingGps) return;
     setIsLocatingGps(true);
     setGeoNotice('Đang yêu cầu tọa độ GPS vệ tinh');
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const newLat = Number(pos.coords.latitude.toFixed(6));
-        const newLng = Number(pos.coords.longitude.toFixed(6));
-        setLat(newLat);
-        setLng(newLng);
-        setIsLocatingGps(false);
+    try {
+      const result = await resolveUserLocationPipeline();
+      const newLat = result.lat;
+      const newLng = result.lng;
+      setLat(newLat);
+      setLng(newLng);
 
-        if (markerRef.current) {
-          markerRef.current.setLatLng([newLat, newLng]);
-        }
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([newLat, newLng], 17, { duration: 0.8 });
-        }
+      if (markerRef.current) {
+        markerRef.current.setLatLng([newLat, newLng]);
+      }
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.flyTo([newLat, newLng], 17, { duration: 0.8 });
+      }
 
-        // Tự động dịch ngược tọa độ GPS thành địa chỉ phòng
-        try {
-          const resolvedAddress = await reverseGeocodePipeline(newLat, newLng);
-          if (resolvedAddress) {
-            setAddress(resolvedAddress);
-            onAddressChange?.(resolvedAddress);
-            setGeoNotice(`Đã lấy vị trí GPS và đồng bộ địa chỉ phòng: ${resolvedAddress}`);
-          } else {
-            setGeoNotice(`Đã lấy vị trí GPS chính xác: ${newLat}, ${newLng}`);
-          }
-        } catch {
-          setGeoNotice(`Đã lấy vị trí GPS chính xác: ${newLat}, ${newLng}`);
-        }
-      },
-      (err) => {
-        setIsLocatingGps(false);
-        if (err.code === 1) {
-          setGeoNotice('Quyền truy cập vị trí bị từ chối, bạn có thể gõ địa chỉ vào ô bên trên');
-        } else {
-          setGeoNotice('Không thể lấy tín hiệu GPS, vui lòng nhập địa chỉ cụ thể');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-    );
+      if (result.label) {
+        setAddress(result.label);
+        onAddressChange?.(result.label);
+        setGeoNotice(`Đã lấy vị trí GPS và đồng bộ địa chỉ phòng: ${result.label}`);
+      } else {
+        setGeoNotice(`Đã lấy vị trí GPS chính xác: ${newLat}, ${newLng}`);
+      }
+    } finally {
+      setIsLocatingGps(false);
+    }
   }
 
   // Chuyển đổi trạng thái tích chọn trường ĐH lân cận
@@ -583,7 +568,7 @@ export function GoogleMapAddressPicker({
             className="inline-flex items-center rounded-lg border border-brand/30 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand/5 shadow-xs transition-colors disabled:opacity-50"
             title="Định vị ngay tại vị trí căn phòng hiện tại"
           >
-            <span>{isLocatingGps ? 'Đang lấy GPS...' : 'Lấy vị trí GPS hiện tại'}</span>
+            <span>{isLocatingGps ? 'Đang lấy GPS' : 'Lấy vị trí GPS hiện tại'}</span>
           </button>
         </div>
       </div>
@@ -638,7 +623,7 @@ export function GoogleMapAddressPicker({
             disabled={isGeocoding || !address.trim()}
             className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brand-hover transition-all disabled:opacity-50 whitespace-nowrap"
           >
-            <span>{isGeocoding ? 'Đang định vị...' : 'Định vị Google Maps'}</span>
+            <span>{isGeocoding ? 'Đang định vị' : 'Định vị Google Maps'}</span>
           </button>
         </div>
         {geoNotice && (
@@ -846,7 +831,7 @@ export function GoogleMapAddressPicker({
                   setCustomSearchUni(val);
                 });
               }}
-              placeholder="VD: Kinh tế Quốc Dân, Bách Khoa, HUBT, UNETI, USSH, HOU..."
+              placeholder="VD: Kinh tế Quốc Dân, Bách Khoa, HUBT, UNETI, USSH, HOU"
               className="input-field text-xs py-2"
             />
             {filteredSearchUnis.length > 0 && (
